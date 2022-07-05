@@ -16,51 +16,63 @@ from utils import MAIN_LAYER
 
 
 # Open the file in binary mode
-with open('files/ex.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/ex.pkl', 'rb') as file:
     ex = tf.cast(pickle.load(file),tf.dtypes.float32)
-with open('files/ey.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/ey.pkl', 'rb') as file:
     ey = tf.cast(pickle.load(file),tf.dtypes.float32)
-with open('files/hx_x.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/hx_x.pkl', 'rb') as file:
     hx_x = tf.cast(pickle.load(file),tf.dtypes.float32)
-with open('files/hy_x.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/hy_x.pkl', 'rb') as file:
     hy_x = tf.cast(pickle.load(file),tf.dtypes.float32)
-with open('files/hx_y.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/hx_y.pkl', 'rb') as file:
     hx_y =tf.cast(pickle.load(file),tf.dtypes.float32)
-with open('files/hy_y.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/hy_y.pkl', 'rb') as file:
     hy_y = tf.cast(pickle.load(file),tf.dtypes.float32)
 
 E_input = keras.Input(shape=(Constants.N,Constants.N,1), name="E")
 Hx_input = keras.Input(shape=(Constants.N-2,Constants.N-1,1), name="Hx")
 Hy_input = keras.Input(shape=(Constants.N-1,Constants.N-2,1), name="Hy")
-E_output, Hx_output, Hy_output =MAIN_LAYER()([E_input, Hx_input, Hy_input])
+layer1=MAIN_LAYER()
+E_output, Hx_output, Hy_output =layer1([E_input, Hx_input, Hy_input])
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
     outputs=[E_output, Hx_output, Hy_output]
 )
-# model.compile(
-#     optimizer=keras.optimizers.SGD(learning_rate=1000),
-#     loss= [keras.losses.MeanAbsoluteError()]
-# )
-#print(model([ex[1:100, :, :, :], hx_x[1:100, :, :, :], hy_x[1:100, :, :, :]]).shape)
-optimizer = keras.optimizers.SGD(learning_rate=1e-2)
-loss_fn=keras.losses.MeanAbsoluteError()
+model.compile(
+    optimizer=keras.optimizers.SGD(learning_rate=1000),
+    loss= [keras.losses.MeanAbsoluteError(),keras.losses.MeanAbsoluteError(),keras.losses.MeanAbsoluteError()]
+)
+
+history=model.fit(
+    [ex,hx_x, hy_x],[ey,hx_y,hy_y],
+    epochs=10,
+    batch_size=64,
+    shuffle=True, validation_split=0.2
+)
+print(history.history.keys())
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.show()
+# #print(model([ex[1:100, :, :, :], hx_x[1:100, :, :, :], hy_x[1:100, :, :, :]]).shape)
+# optimizer = keras.optimizers.SGD(learning_rate=1e-2)
+# loss_fn=keras.losses.MeanAbsoluteError()
+# batch_size = 64
 
 
 
 
 
-
-epochs = 20
-for epoch in range(epochs):
-
-    with tf.GradientTape() as tape:
-        e, hx, hy = model(([ex, hx_x, hy_x]), training=True)
-        #print(model.trainable_weights)
-        loss_value = loss_fn(ey,e)+ loss_fn(hx_y,hx)+ loss_fn(hy_y,hy)
-        grads = tape.gradient(loss_value, model.trainable_weights)
-        print(loss_value)
-        optimizer.apply_gradients(zip(grads, model.trainable_weights))
-        #print(loss_value)
+# epochs = 20
+# for epoch in range(epochs):
+#
+#     with tf.GradientTape() as tape:
+#         e, hx, hy = model(([ex, hx_x, hy_x]), training=True)
+#         #print(model.trainable_weights)
+#         loss_value = loss_fn(ey,e)+ loss_fn(hx_y,hx)+ loss_fn(hy_y,hy)
+#         grads = tape.gradient(loss_value, model.trainable_weights)
+#         print(loss_value)
+#         optimizer.apply_gradients(zip(grads, model.trainable_weights))
+#         #print(loss_value)
 
 
 

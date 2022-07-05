@@ -39,19 +39,19 @@ def generate_data(k1_train, k2_train):
 k1 = Constants.K1_TRAIN
 k2 = Constants.K2_TRAIN
 ex, ey, hx_x, hx_y, hy_x, hy_y = generate_data(k1, k2)
-pickle.dump(ex.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N,1)), open("files/ex.pkl", "wb"))
-pickle.dump(hx_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N-2, Constants.N-1,1)), open("files/hx_x.pkl", "wb"))
-pickle.dump(hy_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N-1, Constants.N-2,1)), open("files/hy_x.pkl", "wb"))
-pickle.dump(ey.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N*2, Constants.N,1)), open("files/ey.pkl", "wb"))
-pickle.dump(hx_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N-2)*2, Constants.N-1,1)), open("files/hx_y.pkl", "wb"))
-pickle.dump(hy_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N-1)*2, Constants.N-2,1)), open("files/hy_y.pkl", "wb"))
+pickle.dump(ex.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N,1)), open("/Users/idanversano/documents/pycharm/files/ex.pkl", "wb"))
+pickle.dump(hx_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N-2, Constants.N-1,1)), open("/Users/idanversano/documents/pycharm/files/hx_x.pkl", "wb"))
+pickle.dump(hy_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N-1, Constants.N-2,1)), open("/Users/idanversano/documents/pycharm/files/hy_x.pkl", "wb"))
+pickle.dump(ey.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N*2, Constants.N,1)), open("/Users/idanversano/documents/pycharm/files/ey.pkl", "wb"))
+pickle.dump(hx_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N-2)*2, Constants.N-1,1)), open("/Users/idanversano/documents/pycharm/files/hx_y.pkl", "wb"))
+pickle.dump(hy_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N-1)*2, Constants.N-2,1)), open("/Users/idanversano/documents/pycharm/files/hy_y.pkl", "wb"))
 
 k1_test = Constants.K1_TEST
 k2_test = Constants.K2_TEST
 ex, ey, hx_x, hx_y, hy_x, hy_y = generate_data(k1_test, k2_test)
-pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N, Constants.N,1)), open("files/ex_test.pkl", "wb"))
-pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N-2, Constants.N-1,1)), open("files/hx_x_test.pkl", "wb"))
-pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N-1, Constants.N-2,1)), open("files/hy_x_test.pkl", "wb"))
+pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N, Constants.N,1)), open("/Users/idanversano/documents/pycharm/files/ex_test.pkl", "wb"))
+pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N-2, Constants.N-1,1)), open("/Users/idanversano/documents/pycharm/files/hx_x_test.pkl", "wb"))
+pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N-1, Constants.N-2,1)), open("/Users/idanversano/documents/pycharm/files/hy_x_test.pkl", "wb"))
 
 
 

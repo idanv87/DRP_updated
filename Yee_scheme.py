@@ -11,16 +11,16 @@ import math
 import matplotlib.animation as animation
 
 from constants import Constants
-with open('files/e_test.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/e_test.pkl', 'rb') as file:
     e_true = pickle.load(file)
-with open('files/hx_test.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/hx_test.pkl', 'rb') as file:
     hx_true = pickle.load(file)
-with open('files/hy_test.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/hy_test.pkl', 'rb') as file:
     hy_true = pickle.load(file)
 
-with open('files/ex.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/ex.pkl', 'rb') as file:
     ex = tf.cast(pickle.load(file),tf.dtypes.float32)
-with open('files/ey.pkl', 'rb') as file:
+with open('/Users/idanversano/documents/pycharm/files/ey.pkl', 'rb') as file:
     ey = tf.cast(pickle.load(file),tf.dtypes.float32)
 # Grid parameters.
 k1, k2 = Constants.K1_TEST[0], Constants.K2_TEST[0]
