@@ -35,7 +35,11 @@ E_input = keras.Input(shape=(Constants.N,Constants.N,1), name="E")
 Hx_input = keras.Input(shape=(Constants.N-2,Constants.N-1,1), name="Hx")
 Hy_input = keras.Input(shape=(Constants.N-1,Constants.N-2,1), name="Hy")
 layer1=MAIN_LAYER()
-E_output,Hx_output,Hy_output =layer1([E_input, Hx_input, Hy_input])
+layer2=MAIN_LAYER()
+layer3=MAIN_LAYER()
+E_output=layer1([E_input, Hx_input, Hy_input])[0]
+Hx_output=layer2([E_input, Hx_input, Hy_input])[1]
+Hy_output =layer3([E_input, Hx_input, Hy_input])[2]
 
 
 model = keras.Model(
@@ -47,16 +51,16 @@ model.compile(
     loss= [keras.losses.MeanAbsoluteError(),keras.losses.MeanAbsoluteError(),keras.losses.MeanAbsoluteError()]
 )
 
-history=model.fit(
-[ex,hx_x, hy_x],[ey,hx_y,hy_y],
-epochs=2,
-batch_size=64,
-shuffle=True, validation_split=0.2)
-model.save('/Users/idanversano/documents/pycharm/files/mymodel')
-pickle.dump(history, open("/Users/idanversano/documents/pycharm/files/model_history.pkl", "wb"))
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.show()
+# history=model.fit(
+# [ex,hx_x, hy_x],[ey,hx_y,hy_y],
+# epochs=2,
+# batch_size=64,
+# shuffle=True, validation_split=0.2)
+# model.save('/Users/idanversano/documents/pycharm/files/mymodel')
+# pickle.dump(history, open("/Users/idanversano/documents/pycharm/files/model_history.pkl", "wb"))
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+# plt.show()
 
 
 
