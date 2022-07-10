@@ -9,22 +9,23 @@ import tensorflow as tf
 
 @dataclass(frozen=True)
 class Constants:
-    FROG = 2
-    FROG1 = 2
-    N = 110
+
+    N = 100
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
     Z = 1.
-    T = 0.01
+    T = 0.1
     TIME_STEPS = 400
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
     DX = LX / (N - 1)
     DY = LY / (N - 1)
+    X1=np.linspace(0., XMAX, N)
+    X2=np.linspace(0., XMAX, N)
 
-    X, Y = np.meshgrid(np.linspace(0., XMAX, N), np.linspace(0., XMAX, N), indexing='ij')
+    X, Y = np.meshgrid(X1, X2, indexing='ij')
     K1_TRAIN = [1.,3.]
     K2_TRAIN = [1.,3.]
     K1_TEST = [1.]
@@ -65,3 +66,5 @@ class Constants:
                      #  PADUP)
     #FOURTH_DOWN = tf.pad(tf.constant([0, -1/DX, 1/DX, 0], shape=[1, 4, 1, 1],dtype=tf.dtypes.float64),
                       #   PADDOWN)
+
+
