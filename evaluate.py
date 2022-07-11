@@ -1,20 +1,12 @@
-import math
 import pickle
 
 from tensorflow import keras
-import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from constants import Constants
 from utils import loss_yee, loss_model, custom_loss, f_a
-# k1=1.
-# k2=1.
-# c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
-# for n in range(2, Constants.TIME_STEPS + 2):
-#     f_a(c, n - 2, k1, k2)
-#
-# print(q)
+
 
 
 

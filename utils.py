@@ -2,8 +2,36 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from scipy.integrate import quad, simps
+import keras.backend as K
+import tensorflow_probability as tfp
+from tensorflow.python.ops import math_ops
 
 from constants import Constants
+
+
+def trapz(y, x):
+    if len(y.shape) == 1:
+        elem = tf.cast(tf.range(0), tf.dtypes.float64)
+    else:
+        elem = tf.cast(tf.range(y.shape[1]), tf.dtypes.float64)
+    dx = Constants.DX
+    T = tf.map_fn(fn=lambda k: (dx / 2) * tf.math.reduce_sum(y[1:, int(k)] + y[:-1, int(k)], axis=0), elems=elem)
+    return T
+
+
+def trapz2(y, x):
+    return trapz(tf.reshape(trapz(y, x), [y.shape[1], 1]), x)
+
+
+def trapz2_batch(f, x):
+    if f.shape[0] == None:
+        elem = tf.cast(tf.range(0), tf.dtypes.float64)
+        T = tf.map_fn(fn=lambda k: trapz2(f[0, :, :, 0], x), elems=elem)
+
+    else:
+        elem = tf.cast(tf.range(f.shape[0]), tf.dtypes.float64)
+        T = tf.map_fn(fn=lambda k: trapz2(f[int(k), :, :, 0], x), elems=elem)
+    return T
 
 
 def amper(E, Hx, Hy, par):
@@ -13,14 +41,14 @@ def amper(E, Hx, Hy, par):
     pad7 = pad_function([2, 2, Constants.N - 2, 1])
     pad4 = pad_function([1, Constants.N - 2, 2, 2])
 
-    s1 = tf.pad(par * Dx(Hy, tf.transpose(Constants.FILTER1, perm=[1, 0, 2, 3])) + \
+    s1 = tf.pad(tf.math.multiply(par, Dx(Hy, tf.transpose(Constants.FILTER1, perm=[1, 0, 2, 3]))) + \
                 Dx(Hy, tf.transpose(Constants.FILTER2, perm=[1, 0, 2, 3])), pad1) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_FORWARD, perm=[1, 0, 2, 3])), Constants.PADY_FORWARD) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_BACKWARD, perm=[1, 0, 2, 3])), Constants.PADY_BACWARD) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_UP, perm=[1, 0, 2, 3])), pad6) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_DOWN, perm=[1, 0, 2, 3])), pad7)
 
-    s2 = tf.pad(par * Dy(Hx, Constants.FILTER1) + Dy(Hx, Constants.FILTER2), pad1) + \
+    s2 = tf.pad(tf.math.multiply(par, Dy(Hx, Constants.FILTER1)) + Dy(Hx, Constants.FILTER2), pad1) + \
          tf.pad(Dy(Hx, Constants.KERNEL_FORWARD), Constants.PADX_FORWARD) + \
          tf.pad(Dy(Hx, Constants.KERNEL_BACKWARD), Constants.PADX_BACWARD) + \
          tf.pad(Dy(Hx, Constants.FOURTH_UP), pad4) + \
@@ -32,11 +60,11 @@ def faraday(E, Hx, Hy, par):
     pad2 = pad_function([0, 0, 1, 1])
     pad3 = pad_function([1, 1, 0, 0])
 
-    s3 = tf.pad(par * Dy(E, Constants.FILTER1) + Dy(E, Constants.FILTER2), pad2) + \
+    s3 = tf.pad(tf.math.multiply(par, Dy(E, Constants.FILTER1)) + Dy(E, Constants.FILTER2), pad2) + \
          tf.pad(Dy(E, Constants.KERNEL_E_FORWARD), Constants.PADEX_FORWARD)[:, 1:-1, :, :] + \
          tf.pad(Dy(E, Constants.KERNEL_E_BACKWARD), Constants.PADEX_BACKWARD)[:, 1:-1, :, :]
 
-    s4 = tf.pad(par * Dx(E, tf.transpose(Constants.FILTER1, perm=[1, 0, 2, 3])) + \
+    s4 = tf.pad(tf.math.multiply(par, Dx(E, tf.transpose(Constants.FILTER1, perm=[1, 0, 2, 3]))) + \
                 Dx(E, tf.transpose(Constants.FILTER2, perm=[1, 0, 2, 3])), pad3) + \
          tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_FORWARD, perm=[1, 0, 2, 3])), Constants.PADEY_FORWARD)[:,
          :, 1:-1, :] + \
@@ -55,7 +83,7 @@ def Dx(B, kernel):
 
 
 def f_a(c, n, k1, k2):
-    e = c*np.cos(c * n * Constants.DT) * (
+    e = c * np.cos(c * n * Constants.DT) * (
             np.sin(Constants.PI * k1 * Constants.X) * np.sin(Constants.PI * k2 * Constants.Y) +
             np.sin(Constants.PI * k2 * Constants.X) * np.sin(
         Constants.PI * k1 * Constants.Y))
@@ -69,15 +97,15 @@ def f_a(c, n, k1, k2):
             Constants.PI * k1 * np.cos(Constants.PI * k1 * (Constants.X + Constants.DX / 2)) * np.sin(
         Constants.PI * k2 * Constants.Y) + Constants.PI * k2 * np.cos(
         Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
-    #int1=simps(simps(e**2, Constants.X1), Constants.X2)
-    #int2=simps(simps(hx**2, Constants.X1), Constants.X2)
-    #int3=simps(simps(hy**2, Constants.X1), Constants.X2)
 
+    if k1 == k2:
+        err2 = c ** 2 * (np.sin(c * (2 * n + 1) * Constants.DT / 2) ** 2)
+        err1 = c ** 2 * (np.cos(c * n * Constants.DT) ** 2)
+    else:
+        err2 = c ** 2 * (np.sin(c * (2 * n + 1) * Constants.DT / 2) ** 2) / 2
+        err1 = c ** 2 * (np.cos(c * n * Constants.DT) ** 2) / 2
 
-    #print(int2+int3-2*Constants.PI**2*(np.sin(np.sqrt(2)*Constants.PI*((2 * n + 1))*Constants.DT/2)**2))
-    #print(int1 - 2 * Constants.PI**2*(np.cos(np.sqrt(2)*Constants.PI * n * Constants.DT )** 2)/c**2)
-
-    return e, hx[1:-1, :-1], hy[:-1, 1:-1]
+    return e, hx[1:-1, :-1], hy[:-1, 1:-1], err1, err2
 
 
 def pad_function(input):
@@ -100,8 +128,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     for n in range(Constants.TIME_STEPS - 1):
         # E1 = amper(E1, Hx1, Hy1, w)
         # Hx1, Hy1 = faraday(E1, Hx1, Hy1, w)
-
-        E1, Hx1, Hy1 = model([E1, Hx1, Hy1])
+        E1, Hx1, Hy1, inte = model([E1, Hx1, Hy1])
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -112,9 +139,9 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 
 def custom_loss(y_true, y_pred):
-    loss=tf.reduce_mean(abs(y_true-y_pred))
+    loss = tf.reduce_mean(abs(y_true - y_pred))
+    return loss / Constants.DT
 
-    return loss/Constants.DT
 
 class MAIN_LAYER(keras.layers.Layer):
 
@@ -131,4 +158,10 @@ class MAIN_LAYER(keras.layers.Layer):
         E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
                     self.pars)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars)
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1)
+
+        inte = trapz2_batch(E_n ** 2, Constants.X)
+
+        # int2 = simps(simps((Hx_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
+        # int3 = simps(simps((Hy_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
+
+        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte
