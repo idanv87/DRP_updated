@@ -9,7 +9,7 @@ import tensorflow as tf
 
 @dataclass(frozen=True)
 class Constants:
-
+    PATH='/Users/idanversano/documents/pycharm/files/'
     N = 20
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0

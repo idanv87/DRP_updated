@@ -9,22 +9,22 @@ import matplotlib.pyplot as plt
 from constants import Constants
 from utils import MAIN_LAYER, custom_loss
 
-
-with open('/Users/idanversano/documents/pycharm/files/ex.pkl', 'rb') as file:
+path=Constants.PATH
+with open(path+'ex.pkl', 'rb') as file:
     ex = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/ey.pkl', 'rb') as file:
+with open(path+'ey.pkl', 'rb') as file:
     ey = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/hx_x.pkl', 'rb') as file:
+with open(path+'hx_x.pkl', 'rb') as file:
     hx_x = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/hy_x.pkl', 'rb') as file:
+with open(path+'hy_x.pkl', 'rb') as file:
     hy_x = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/hx_y.pkl', 'rb') as file:
+with open(path+'hx_y.pkl', 'rb') as file:
     hx_y = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/hy_y.pkl', 'rb') as file:
+with open(path+'hy_y.pkl', 'rb') as file:
     hy_y = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/inte.pkl', 'rb') as file:
+with open(path+'inte.pkl', 'rb') as file:
     inte_test = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open('/Users/idanversano/documents/pycharm/files/inth.pkl', 'rb') as file:
+with open(path+'inth.pkl', 'rb') as file:
     inth_test = tf.cast(pickle.load(file), tf.dtypes.float64)
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
@@ -55,8 +55,8 @@ if __name__ == "__main__":
         batch_size=64,
         shuffle=True, validation_split=0.2)
     print(model.trainable_weights)
-    model.save('/Users/idanversano/documents/pycharm/files/mymodel_multiple')
-    pickle.dump(history.history, open("/Users/idanversano/documents/pycharm/files/multiple_history.pkl", "wb"))
+    model.save(path+'mymodel_multiple')
+    pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.show()
