@@ -9,28 +9,31 @@ from tensorflow.python.ops import math_ops
 from constants import Constants
 
 
-def trapz(y, x):
-    if len(y.shape) == 1:
+def trapz(f, x):
+    if len(f.shape) == 1:
         elem = tf.cast(tf.range(0), tf.dtypes.float64)
     else:
-        elem = tf.cast(tf.range(y.shape[1]), tf.dtypes.float64)
+        elem = tf.cast(tf.range(f.shape[1]), tf.dtypes.float64)
     dx = Constants.DX
-    T = tf.map_fn(fn=lambda k: (dx / 2) * tf.math.reduce_sum(y[1:, int(k)] + y[:-1, int(k)], axis=0), elems=elem)
+    T = tf.map_fn(fn=lambda k: (dx / 2) * tf.math.reduce_sum(f[1:, int(k)] + f[:-1, int(k)], axis=0), elems=elem)
     return T
 
 
-def trapz2(y, x):
-    return trapz(tf.reshape(trapz(y, x), [y.shape[1], 1]), x)
+def trapz2(f, x,y):
+
+    return trapz(tf.reshape(trapz(f, x), [f.shape[1], 1]), y)
 
 
-def trapz2_batch(f, x):
+def trapz2_batch(f, x,y):
     if f.shape[0] == None:
-        elem = tf.cast(tf.range(0), tf.dtypes.float64)
-        T = tf.map_fn(fn=lambda k: trapz2(f[0, :, :, 0], x), elems=elem)
+        #elem = tf.cast(np.arange(0), tf.dtypes.float64)
+        elem=np.arange(0).astype('float64')
+        T = tf.map_fn(fn=lambda k: trapz2(f[0, :, :, 0], x,y), elems=elem)
 
     else:
-        elem = tf.cast(tf.range(f.shape[0]), tf.dtypes.float64)
-        T = tf.map_fn(fn=lambda k: trapz2(f[int(k), :, :, 0], x), elems=elem)
+        #elem = tf.cast(np.arange(f.shape[0]), tf.dtypes.float64)
+        elem = np.arange(f.shape[0]).astype('float64')
+        T = tf.map_fn(fn=lambda k: trapz2(f[int(k), :, :, 0], x,y), elems=elem)
     return T
 
 
@@ -159,9 +162,11 @@ class MAIN_LAYER(keras.layers.Layer):
                     self.pars)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars)
 
-        inte = trapz2_batch(E_n ** 2, Constants.X)
+        inte = trapz2_batch(E_n ** 2, Constants.X,Constants.X)
+        inthx = trapz2_batch(Hx_n ** 2, Constants.X[-1:1],Constants.X[:-1])
+        inthy = trapz2_batch(Hy_n ** 2, Constants.X[:-1], Constants.X[1:-1])
 
         # int2 = simps(simps((Hx_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
         # int3 = simps(simps((Hy_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
 
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte
+        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte, inthx+inthy
