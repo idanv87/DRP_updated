@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from scipy.integrate import quad, simps
 import keras.backend as K
-import tensorflow_probability as tfp
+
 from tensorflow.python.ops import math_ops
 
 from constants import Constants

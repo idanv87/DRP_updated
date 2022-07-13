@@ -1,4 +1,5 @@
 import pickle
+import os
 
 import keras.backend as K
 import numpy as np
@@ -9,6 +10,8 @@ import matplotlib.pyplot as plt
 from constants import Constants
 from utils import MAIN_LAYER, custom_loss
 
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 path=Constants.PATH
 with open(path+'ex.pkl', 'rb') as file:
     ex = tf.cast(pickle.load(file), tf.dtypes.float64)

@@ -55,13 +55,7 @@ for n in range(Constants.TIME_STEPS-1):
     #print(S)
     l += tf.reduce_mean(abs(E - e_true[n + 1, :, :, 0]))
 print(l/(Constants.TIME_STEPS-1))
-# FILTER1 = tf.constant([[0., 0., 0., 0.], [1 / (3 ), -1. , 1. , -1 / (3 )], [0., 0., 0., 0.]],
-#                           shape=[3, 4, 1, 1],dtype=tf.dtypes.float32)
-# FILTER2 = tf.constant([[0., 0., 0., 0.], [-1 / (3 ), 0., 0., 1 / (3 )], [0., 0., 0., 0.]], shape=[3, 4, 1, 1],dtype=tf.dtypes.float32)
-# pad2 = pad_function([0, 0, 1, 1])
-# Sx=np.random.randint(10, size=(1,5, 6,1))
-# print( tf.pad(Dx(Sx, FILTER1) + Dx(Sx, FILTER2),pad2)[0,:,:,0])
-# print(np.diff(Sx[0,1:-1, :,0], axis=1))
+
 
 
 

@@ -1,26 +1,26 @@
 import pickle
-from pathlib import Path
 
 from tensorflow import keras
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from constants import Constants
-from utils import loss_yee, loss_model, custom_loss, f_a
+from utils import loss_yee, loss_model, custom_loss, Dx
+from data_generator import create_test_data
 
+create_test_data()
 
-path=Constants.PATH
+path = Constants.PATH
 
-model = keras.models.load_model(path+'mymodel_multiple', custom_objects={'custom_loss': custom_loss})
-with open(path+'multiple_history.pkl', 'rb') as file:
+model = keras.models.load_model(path + 'mymodel_multiple', custom_objects={'custom_loss': custom_loss})
+with open(path + 'multiple_history.pkl', 'rb') as file:
     history = pickle.load(file)
-with open(path+'ex_test.pkl', 'rb') as file:
+with open(path + 'ex_test.pkl', 'rb') as file:
     e_true = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open(path+'hx_x_test.pkl', 'rb') as file:
+with open(path + 'hx_x_test.pkl', 'rb') as file:
     hx_true = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open(path+'hy_x_test.pkl', 'rb') as file:
+with open(path + 'hy_x_test.pkl', 'rb') as file:
     hy_true = tf.cast(pickle.load(file), tf.dtypes.float64)
-
 
 l_yee = []
 l_model = []
