@@ -37,21 +37,28 @@ def trapz2_batch(f, x,y):
     return T
 
 
-def amper(E, Hx, Hy, par):
+def amper(E, Hx, Hy, par1, par2):
     pad1 = pad_function([2, 2, 2, 2])
     pad5 = pad_function([Constants.N - 2, 1, 2, 2])
     pad6 = pad_function([2, 2, 1, Constants.N - 2])
     pad7 = pad_function([2, 2, Constants.N - 2, 1])
     pad4 = pad_function([1, Constants.N - 2, 2, 2])
 
-    s1 = tf.pad(tf.math.multiply(par, Dx(Hy, tf.transpose(Constants.FILTER1, perm=[1, 0, 2, 3]))) + \
-                Dx(Hy, tf.transpose(Constants.FILTER2, perm=[1, 0, 2, 3])), pad1) + \
+    x1=tf.math.multiply(par1, Dx(Hy, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
+    x2 = tf.math.multiply(par2, Dx(Hy, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
+    x3 = Dx(Hy, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+
+    s1 = tf.pad(x1+x2+x3, pad1) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_FORWARD, perm=[1, 0, 2, 3])), Constants.PADY_FORWARD) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_BACKWARD, perm=[1, 0, 2, 3])), Constants.PADY_BACWARD) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_UP, perm=[1, 0, 2, 3])), pad6) + \
          tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_DOWN, perm=[1, 0, 2, 3])), pad7)
 
-    s2 = tf.pad(tf.math.multiply(par, Dy(Hx, Constants.FILTER1)) + Dy(Hx, Constants.FILTER2), pad1) + \
+    x1=tf.math.multiply(par1, Dy(Hx, Constants.FILTER_BETA))
+    x2=tf.math.multiply(par2, Dy(Hx, Constants.FILTER_DELTA))
+    x3=Dy(Hx, Constants.FILTER_YEE)
+
+    s2 = tf.pad(x1+x2+x3, pad1) + \
          tf.pad(Dy(Hx, Constants.KERNEL_FORWARD), Constants.PADX_FORWARD) + \
          tf.pad(Dy(Hx, Constants.KERNEL_BACKWARD), Constants.PADX_BACWARD) + \
          tf.pad(Dy(Hx, Constants.FOURTH_UP), pad4) + \
@@ -59,16 +66,23 @@ def amper(E, Hx, Hy, par):
     return E + Constants.DT * (s1 - s2)
 
 
-def faraday(E, Hx, Hy, par):
+def faraday(E, Hx, Hy, beta, delta):
     pad2 = pad_function([0, 0, 1, 1])
     pad3 = pad_function([1, 1, 0, 0])
 
-    s3 = tf.pad(tf.math.multiply(par, Dy(E, Constants.FILTER1)) + Dy(E, Constants.FILTER2), pad2) + \
+    x1 = tf.math.multiply(beta, Dy(E, Constants.FILTER_BETA))
+    x2=tf.math.multiply(delta, Dy(E, Constants.FILTER_DELTA))
+    x3= Dy(E, Constants.FILTER_YEE)
+
+    s3 = tf.pad(x1+x2+x3, pad2) + \
          tf.pad(Dy(E, Constants.KERNEL_E_FORWARD), Constants.PADEX_FORWARD)[:, 1:-1, :, :] + \
          tf.pad(Dy(E, Constants.KERNEL_E_BACKWARD), Constants.PADEX_BACKWARD)[:, 1:-1, :, :]
 
-    s4 = tf.pad(tf.math.multiply(par, Dx(E, tf.transpose(Constants.FILTER1, perm=[1, 0, 2, 3]))) + \
-                Dx(E, tf.transpose(Constants.FILTER2, perm=[1, 0, 2, 3])), pad3) + \
+    x1=tf.math.multiply(beta, Dx(E, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
+    x2 = tf.math.multiply(delta, Dx(E, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
+    x3 = Dx(E, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+
+    s4 = tf.pad(x1+x2+x3, pad3) + \
          tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_FORWARD, perm=[1, 0, 2, 3])), Constants.PADEY_FORWARD)[:,
          :, 1:-1, :] + \
          tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_BACKWARD, perm=[1, 0, 2, 3])), Constants.PADEY_BACKWARD)[
@@ -115,11 +129,14 @@ def pad_function(input):
     return tf.constant([[0, 0], [input[0], input[1]], [input[2], input[3]], [0, 0]], shape=[4, 2])
 
 
-def loss_yee(w, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
+def loss_yee(name,beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0
     for n in range(Constants.TIME_STEPS - 1):
-        E1 = amper(E1, Hx1, Hy1, w)
-        Hx1, Hy1 = faraday(E1, Hx1, Hy1, w)
+        E1 = amper(E1, Hx1, Hy1, beta, delta)
+        if name=='DRP':
+           Hx1, Hy1 = faraday(E1, Hx1, Hy1, 0., 0.)
+        else:
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
@@ -131,7 +148,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     for n in range(Constants.TIME_STEPS - 1):
         # E1 = amper(E1, Hx1, Hy1, w)
         # Hx1, Hy1 = faraday(E1, Hx1, Hy1, w)
-        E1, Hx1, Hy1, inte = model([E1, Hx1, Hy1])
+        E1, Hx1, Hy1, inte, inth = model([E1, Hx1, Hy1])
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -150,17 +167,18 @@ class MAIN_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super(MAIN_LAYER, self).__init__()
-        self.pars = tf.Variable(2., trainable=True, dtype=tf.dtypes.float64, name='w')
+        self.pars1 = tf.Variable(2., trainable=True, dtype=tf.dtypes.float64, name='beta')
+        self.pars2 = tf.Variable(2., trainable=True, dtype=tf.dtypes.float64, name='delta')
 
     def call(self, input):
         E, Hx, Hy = input
         E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
-                    self.pars)
+                    self.pars1, self.pars2)
         Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
-                             tf.cast(Hy, tf.dtypes.float64), self.pars)
+                             tf.cast(Hy, tf.dtypes.float64), self.pars1, self.pars2)
         E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
-                    self.pars)
-        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars)
+                    self.pars1, self.pars2)
+        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
         inte = trapz2_batch(E_n ** 2, Constants.X,Constants.X)
         inthx = trapz2_batch(Hx_n ** 2, Constants.X[-1:1],Constants.X[:-1])

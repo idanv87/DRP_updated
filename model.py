@@ -55,7 +55,7 @@ model.compile(
 if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey, hx_y, hy_y, inte_test, inth_test],
-        epochs=2,
+        epochs=1,
         batch_size=64,
         shuffle=True, validation_split=0.2)
     print(model.trainable_weights)

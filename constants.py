@@ -10,13 +10,14 @@ import tensorflow as tf
 @dataclass(frozen=True)
 class Constants:
     PATH='/Users/idanversano/documents/pycharm/files/'
-    N = 20
+    #PATH = '/content/files/'
+    N = 30
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
     Z = 1.
-    T = 0.1
-    TIME_STEPS = 400
+    T = 10
+    TIME_STEPS = 1000
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
@@ -28,7 +29,7 @@ class Constants:
     X, Y = np.meshgrid(X1, X2, indexing='ij')
     K1_TRAIN = [1.,3.]
     K2_TRAIN = [1.,3.]
-    K1_TEST = [1.]
+    K1_TEST = [1.,2.]
     K2_TEST = [1.]
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
@@ -52,9 +53,23 @@ class Constants:
     KERNEL_E_FORWARD = (1 / DX) * tf.cast(np.append(A, D).reshape(1, N, 1, 1), tf.dtypes.float64)
     KERNEL_E_BACKWARD = -tf.reverse(KERNEL_E_FORWARD, [1])
 
-    FILTER1 = tf.constant([[0., 0., 0., 0.], [1 / (3 * DX), -1 / DX, 1 / DX, -1 / (3 * DX)], [0., 0., 0., 0.]],
-                          shape=[3, 4, 1, 1],dtype=tf.dtypes.float64)
-    FILTER2 = tf.constant([[0., 0., 0., 0.], [-1 / (3 * DX), 0, 0, 1 / (3 * DX)], [0., 0., 0., 0.]], shape=[3, 4, 1, 1],dtype=tf.dtypes.float64)
+    #FILTER1 = tf.constant([[0., 0., 0., 0.], [1 / (3 * DX), -1 / DX, 1 / DX, -1 / (3 * DX)], [0., 0., 0., 0.]],
+      #                    shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+    #FILTER2 = tf.constant([[0., 0., 0., 0.], [-1 / (3 * DX), 0, 0, 1 / (3 * DX)], [0., 0., 0., 0.]], shape=[3, 4, 1, 1],
+     #                     dtype=tf.dtypes.float64)
+
+
+
+
+
+    FILTER_BETA= tf.constant([[0., -1/DX, 1/DX, 0.], [0, 2/DX , -2/DX, 0], [0., -1/DX, 1/DX, 0.]],
+                          shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+    FILTER_DELTA = tf.constant([[0., 0, 0, 0.], [-1/DX, 3/DX, -3/DX, 1/DX], [0., 0., 0., 0.]],
+                              shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+    FILTER_YEE = tf.constant([[0., 0, 0, 0.], [0, -1 / DX, 1 / DX, 0], [0., 0., 0., 0.]],
+                             shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+
+
 
 
 

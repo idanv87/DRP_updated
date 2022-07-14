@@ -25,15 +25,23 @@ with open(path + 'hy_x_test.pkl', 'rb') as file:
 l_yee = []
 l_model = []
 l_fourth = []
+l_drp=[]
 for i in range(len(Constants.K1_TEST) * len(Constants.K2_TEST)):
     E1 = tf.identity(tf.reshape(e_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N, Constants.N, 1]))
     Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
     Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
-    l_yee.append(loss_yee(1., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
-    l_fourth.append(loss_yee(9 / 8, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+    l_yee.append(loss_yee('Yee',0., 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+    l_fourth.append(loss_yee('4order',0., -1/24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+    l_drp.append(loss_yee('DRP', 0., -1 / 24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+    # make that dt =0.1 dx
     l_model.append(loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
+pickle.dump(l_yee, open(path+"l_fourth.pkl", "wb"))
+pickle.dump(l_yee, open(path+"l_model.pkl", "wb"))
+pickle.dump(l_yee, open(path+"l_drp.pkl", "wb"))
 
 plt.plot(l_yee)
 plt.plot(l_fourth)
 plt.plot(l_model)
+plt.plot(l_drp)
 plt.show()
