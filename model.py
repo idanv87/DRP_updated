@@ -7,12 +7,19 @@ import tensorflow
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
+from tensorflow.python.keras import backend as K
 
 from constants import Constants
 from utils import MAIN_LAYER, custom_loss
 
 
+
+
+print(K._get_available_gpus())
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
 path=Constants.PATH
 with open(path+'ex.pkl', 'rb') as file:
     ex = tf.cast(pickle.load(file), tf.dtypes.float64)

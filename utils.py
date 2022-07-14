@@ -6,7 +6,8 @@ from tensorflow import keras
 from constants import Constants
 
 
-def trapz(f, x):
+def trapz(f,x):
+
     if len(f.shape) == 1:
         elem = tf.cast(tf.range(0), tf.dtypes.float64)
     else:
@@ -31,6 +32,7 @@ def trapz2_batch(f, x,y):
 
 
 def amper(E, Hx, Hy, par1, par2):
+
     pad1 = pad_function([2, 2, 2, 2])
     pad5 = pad_function([Constants.N - 2, 1, 2, 2])
     pad6 = pad_function([2, 2, 1, Constants.N - 2])

@@ -11,13 +11,13 @@ import tensorflow as tf
 class Constants:
     PATH='/Users/idanversano/documents/pycharm/files/'
     #PATH = '/content/files/'
-    N = 30
+    N = 20
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
     Z = 1.
-    T = 10
-    TIME_STEPS = 1000
+    T = 1
+    TIME_STEPS = 100
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
