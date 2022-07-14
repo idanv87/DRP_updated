@@ -12,9 +12,8 @@ create_test_data()
 
 path = Constants.PATH
 
-model1 = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss})
-model1.load_weights(path + 'mymodel_weights.pkl').expect_partial()
-
+model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss})
+model.load_weights(path + 'mymodel_weights.pkl').expect_partial()
 
 with open(path + 'multiple_history.pkl', 'rb') as file:
     history = pickle.load(file)
@@ -33,11 +32,12 @@ for i in range(len(Constants.K1_TEST) * len(Constants.K2_TEST)):
     E1 = tf.identity(tf.reshape(e_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N, Constants.N, 1]))
     Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
     Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
+    l_model.append(loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_yee.append(loss_yee('Yee',0., 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_fourth.append(loss_yee('4order',0., -1/24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_drp.append(loss_yee('DRP', 0., -1 / 24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     # make that dt =0.1 dx
-    l_model.append(loss_model(model1, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+
 pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
 pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
 pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
