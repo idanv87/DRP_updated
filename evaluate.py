@@ -30,7 +30,7 @@ l_model = []
 l_fourth = []
 l_drp=[]
 for i in range(len(Constants.K1_TEST) * len(Constants.K2_TEST)):
-    E1 = tf.reshape(e_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N, Constants.N, 1])
+    E1 = tf.identity(tf.reshape(e_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N, Constants.N, 1]))
     Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
     Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
     l_yee.append(loss_yee('Yee',0., 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))

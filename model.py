@@ -44,10 +44,10 @@ Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
 layer1 = MAIN_LAYER()
 layer2 = MAIN_LAYER()
 E_output = layer1([E_input, Hx_input, Hy_input])[0]
-Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
-Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
+Hx_output = layer2([E_input, Hx_input, Hy_input])[1]
+Hy_output = layer2([E_input, Hx_input, Hy_input])[2]
 inte_output=layer1([E_input, Hx_input, Hy_input])[3]
-inth_output=layer1([E_input, Hx_input, Hy_input])[4]
+inth_output=layer2([E_input, Hx_input, Hy_input])[4]
 
 
 
@@ -62,15 +62,13 @@ model.compile(
 )
 
 model.save(path+'mymodel_multiple.pkl')
-model.save_weights(path + 'mymodel_weights.pkl')
-print(q)
+
 if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey,hx_y, hy_y, inte_y, inth_y],
         epochs=32,
         batch_size=32,
         shuffle=True, validation_split=0.2)
-    print(model.trainable_weights)
     model.save_weights(path + 'mymodel_weights.pkl')
     pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
     plt.plot(history.history['loss'])
