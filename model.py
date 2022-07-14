@@ -3,6 +3,7 @@ import os
 
 import keras.backend as K
 import numpy as np
+import tensorflow
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
@@ -26,9 +27,9 @@ with open(path+'hx_y.pkl', 'rb') as file:
 with open(path+'hy_y.pkl', 'rb') as file:
     hy_y = tf.cast(pickle.load(file), tf.dtypes.float64)
 with open(path+'inte.pkl', 'rb') as file:
-    inte_test = tf.cast(pickle.load(file), tf.dtypes.float64)
+    inte_y = tf.cast(pickle.load(file), tf.dtypes.float64)
 with open(path+'inth.pkl', 'rb') as file:
-    inth_test = tf.cast(pickle.load(file), tf.dtypes.float64)
+    inth_y = tf.cast(pickle.load(file), tf.dtypes.float64)
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
@@ -38,23 +39,22 @@ layer2 = MAIN_LAYER()
 E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer2([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer2([E_input, Hx_input, Hy_input])[2]
-#inte_output=layer1([E_input, Hx_input, Hy_input])[3]
-#inth_output=layer1([E_input, Hx_input, Hy_input])[4]
-
+inte_output=layer1([E_input, Hx_input, Hy_input])[3]
+inth_output=layer2([E_input, Hx_input, Hy_input])[4]
 
 
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output]
+    outputs=[E_output, Hx_output, Hy_output, inte_output, inth_output]
 )
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-2),
-    loss=[custom_loss, custom_loss, custom_loss]
+    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsoluteError()]
 )
 if __name__ == "__main__":
     history = model.fit(
-        [ex, hx_x, hy_x], [ey, hx_y, hy_y],
+        [ex, hx_x, hy_x], [ey,hx_y, hy_y, inte_y, inth_y],
         epochs=2,
         batch_size=64,
         shuffle=True, validation_split=0.2)

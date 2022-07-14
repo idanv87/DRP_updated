@@ -1,10 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from scipy.integrate import quad, simps
-import keras.backend as K
 
-from tensorflow.python.ops import math_ops
 
 from constants import Constants
 
@@ -20,16 +17,12 @@ def trapz(f, x):
 
 
 def trapz2(f, x,y):
-
     return trapz(tf.reshape(trapz(f, x), [f.shape[1], 1]), y)
 
 
 def trapz2_batch(f, x,y):
     if f.shape[0] == None:
-        #elem = tf.cast(np.arange(0), tf.dtypes.float64)
-        elem=np.arange(0).astype('float64')
-        T = tf.map_fn(fn=lambda k: trapz2(f[0, :, :, 0], x,y), elems=elem)
-
+        T = trapz2(f[-1, :, :, 0], x,y)
     else:
         #elem = tf.cast(np.arange(f.shape[0]), tf.dtypes.float64)
         elem = np.arange(f.shape[0]).astype('float64')
@@ -166,7 +159,7 @@ def custom_loss(y_true, y_pred):
 class MAIN_LAYER(keras.layers.Layer):
 
     def __init__(self):
-        super(MAIN_LAYER, self).__init__()
+        super().__init__()
         self.pars1 = tf.Variable(2., trainable=True, dtype=tf.dtypes.float64, name='beta')
         self.pars2 = tf.Variable(2., trainable=True, dtype=tf.dtypes.float64, name='delta')
 
@@ -174,13 +167,17 @@ class MAIN_LAYER(keras.layers.Layer):
         E, Hx, Hy = input
         E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
                     self.pars1, self.pars2)
+
         Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
                              tf.cast(Hy, tf.dtypes.float64), self.pars1, self.pars2)
+
         E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
                     self.pars1, self.pars2)
+
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
         inte = trapz2_batch(E_n ** 2, Constants.X,Constants.X)
+
         inthx = trapz2_batch(Hx_n ** 2, Constants.X[-1:1],Constants.X[:-1])
         inthy = trapz2_batch(Hy_n ** 2, Constants.X[:-1], Constants.X[1:-1])
 
