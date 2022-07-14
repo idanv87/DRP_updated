@@ -141,16 +141,14 @@ def loss_yee(name,beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0
     for n in range(Constants.TIME_STEPS - 1):
-        # E1 = amper(E1, Hx1, Hy1, w)
-        # Hx1, Hy1 = faraday(E1, Hx1, Hy1, w)
-        E1, Hx1, Hy1, inte, inth = model.predict([E1, Hx1, Hy1])
+        E1, Hx1, Hy1, inte, inth = model.call([E1, Hx1, Hy1])
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
-        return l / (3 * (Constants.TIME_STEPS - 1))
+    return l / (3 * (Constants.TIME_STEPS - 1))
 
 
 def custom_loss(y_true, y_pred):

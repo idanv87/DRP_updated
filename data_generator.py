@@ -66,6 +66,6 @@ def create_test_data():
                 open(path + "hx_x_test.pkl", "wb"))
     pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
                 open(path + "hy_x_test.pkl", "wb"))
-    return
+    return 1
 
 
