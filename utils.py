@@ -143,7 +143,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     for n in range(Constants.TIME_STEPS - 1):
         # E1 = amper(E1, Hx1, Hy1, w)
         # Hx1, Hy1 = faraday(E1, Hx1, Hy1, w)
-        E1, Hx1, Hy1, inte, inth = model([E1, Hx1, Hy1])
+        E1, Hx1, Hy1, inte, inth = model.predict([E1, Hx1, Hy1])
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
