@@ -7,7 +7,7 @@ import tensorflow
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
-from tensorflow.python.keras import backend as K
+#from tensorflow.python.keras import backend as K
 
 from constants import Constants
 from utils import MAIN_LAYER, custom_loss
@@ -15,7 +15,7 @@ from utils import MAIN_LAYER, custom_loss
 
 
 
-print(K._get_available_gpus())
+
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -55,28 +55,32 @@ model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
     outputs=[E_output, Hx_output, Hy_output, inte_output, inth_output]
 )
+
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-2),
     loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsoluteError()]
 )
+
+model.save(path+'mymodel_multiple.pkl')
+
 if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey,hx_y, hy_y, inte_y, inth_y],
         epochs=2,
-        batch_size=64,
+        batch_size=3,
         shuffle=True, validation_split=0.2)
     print(model.trainable_weights)
-    model.save(path+'mymodel_multiple')
+    model.save_weights(path + 'mymodel_weights.pkl')
     pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.show()
+    #plt.plot(history.history['loss'])
+    #plt.plot(history.history['val_loss'])
+    #plt.show()
     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
     print('Total params: {:,}'.format(trainable_count + non_trainable_count))
     print('Trainable params: {:,}'.format(trainable_count))
     print('Non-trainable params: {:,}'.format(non_trainable_count))
-
+    print(model.trainable_weights)
 
 
 

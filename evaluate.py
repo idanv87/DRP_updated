@@ -5,14 +5,18 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from constants import Constants
-from utils import loss_yee, loss_model, custom_loss, Dx
+from utils import loss_yee, loss_model, custom_loss
 from data_generator import create_test_data
 
 create_test_data()
 
 path = Constants.PATH
 
-model = keras.models.load_model(path + 'mymodel_multiple', custom_objects={'custom_loss': custom_loss})
+model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss})
+model.load_weights(path + 'mymodel_weights.pkl').expect_partial()
+print(model.trainable_weights)
+
+
 with open(path + 'multiple_history.pkl', 'rb') as file:
     history = pickle.load(file)
 with open(path + 'ex_test.pkl', 'rb') as file:
