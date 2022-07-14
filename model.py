@@ -66,15 +66,15 @@ model.save(path+'mymodel_multiple.pkl')
 if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey,hx_y, hy_y, inte_y, inth_y],
-        epochs=2,
-        batch_size=3,
+        epochs=32,
+        batch_size=32,
         shuffle=True, validation_split=0.2)
     print(model.trainable_weights)
     model.save_weights(path + 'mymodel_weights.pkl')
     pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
-    #plt.plot(history.history['loss'])
-    #plt.plot(history.history['val_loss'])
-    #plt.show()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.show()
     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
     print('Total params: {:,}'.format(trainable_count + non_trainable_count))

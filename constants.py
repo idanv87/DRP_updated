@@ -11,13 +11,13 @@ import tensorflow as tf
 class Constants:
     PATH='/Users/idanversano/documents/pycharm/files/'
 
-    N = 20
+    N = 40
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
     Z = 1.
-    T = 1
-    TIME_STEPS = 100
+    T = 0.1
+    TIME_STEPS = 400
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
@@ -28,8 +28,8 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
     K1_TRAIN = [1.,3.]
-    K2_TRAIN = [1.,3.]
-    K1_TEST = [1.,2.]
+    K2_TRAIN = [1.]
+    K1_TEST = [2.,4.]
     K2_TEST = [1.]
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
