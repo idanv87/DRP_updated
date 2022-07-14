@@ -38,24 +38,24 @@ layer2 = MAIN_LAYER()
 E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer2([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer2([E_input, Hx_input, Hy_input])[2]
-inte_output=layer1([E_input, Hx_input, Hy_input])[3]
-inth_output=layer1([E_input, Hx_input, Hy_input])[4]
+#inte_output=layer1([E_input, Hx_input, Hy_input])[3]
+#inth_output=layer1([E_input, Hx_input, Hy_input])[4]
 
 
 
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, inte_output, inth_output]
+    outputs=[E_output, Hx_output, Hy_output]
 )
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-2),
-    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsoluteError()]
+    loss=[custom_loss, custom_loss, custom_loss]
 )
 if __name__ == "__main__":
     history = model.fit(
-        [ex, hx_x, hy_x], [ey, hx_y, hy_y, inte_test, inth_test],
-        epochs=1,
+        [ex, hx_x, hy_x], [ey, hx_y, hy_y],
+        epochs=2,
         batch_size=64,
         shuffle=True, validation_split=0.2)
     print(model.trainable_weights)
