@@ -57,7 +57,7 @@ model = keras.Model(
 )
 
 model.compile(
-    optimizer=keras.optimizers.SGD(learning_rate=1e-2),
+    optimizer=keras.optimizers.SGD(learning_rate=1e-3),
     loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsoluteError()]
 )
 
