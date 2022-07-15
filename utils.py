@@ -145,7 +145,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         Hx2=tf.identity(Hx1)
         Hy2=tf.identity(Hy1)
 
-        E1, Hx1, Hy1, inte, inth = model([E1, Hx1, Hy1])
+        E1, Hx1, Hy1, inte, inth = model.predict([E1, Hx1, Hy1], batch_size=16)
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]

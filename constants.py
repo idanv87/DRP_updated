@@ -81,4 +81,3 @@ class Constants:
     CENTRAL = tf.constant([-1,1], shape=[1, 2, 1,1],dtype=tf.dtypes.float64)
 
 
-

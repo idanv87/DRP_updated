@@ -57,7 +57,7 @@ model = keras.Model(
 )
 
 model.compile(
-    optimizer=keras.optimizers.SGD(learning_rate=1e-3),
+    optimizer=keras.optimizers.SGD(learning_rate=1e-2),
     loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsoluteError()]
 )
 
@@ -142,4 +142,3 @@ if __name__ == "__main__":
 # )
 # print(model.trainable_weights)
 #
-
