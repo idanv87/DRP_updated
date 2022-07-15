@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 #from tensorflow.python.keras import backend as K
 
 from constants import Constants
-from utils import MAIN_LAYER, custom_loss, custom_loss2, custom_loss3, trapz2_batch, trapz2
+from utils import MAIN_LAYER, custom_loss, custom_loss3
 
 
 
@@ -65,7 +65,7 @@ model = keras.Model(
 
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-3),
-    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError()]
+    loss=[custom_loss, custom_loss, custom_loss, keras.losses.MeanAbsoluteError()]
 )
 
 model.save(path+'mymodel_multiple.pkl')
