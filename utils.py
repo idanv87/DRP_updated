@@ -159,7 +159,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         Hx2 = tf.identity(Hx1)
         Hy2 = tf.identity(Hy1)
 
-        E1, Hx1, Hy1, energy= model.predict([E1, Hx1, Hy1], batch_size=32)
+        E1, Hx1, Hy1, energy= model.predict([E1, Hx1, Hy1], batch_size=64)
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -187,8 +187,8 @@ class MAIN_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0.14, trainable=True, dtype=tf.dtypes.float64, name='beta')
-        self.pars2 = tf.Variable(0.12, trainable=True, dtype=tf.dtypes.float64, name='delta')
+        self.pars1 = tf.Variable(0., trainable=True, dtype=tf.dtypes.float64, name='beta')
+        self.pars2 = tf.Variable(0., trainable=True, dtype=tf.dtypes.float64, name='delta')
 
     def call(self, input):
         E, Hx, Hy = input

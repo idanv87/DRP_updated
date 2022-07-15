@@ -27,10 +27,10 @@ class Constants:
     X2=np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [1.,3.]
+    K1_TRAIN = [2.,5.,8, 10.]
     K2_TRAIN = [1.]
-    K1_TEST = [1., 3.]
-    K2_TEST = [1., 3.]
+    K1_TEST = [5., 8.]
+    K2_TEST = [1., 2.]
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
     PADX_BACWARD = tf.constant([[0, 0], [1, 1], [N - 2, 1], [0, 0]], shape=[4, 2])
