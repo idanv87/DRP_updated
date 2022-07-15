@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 #from tensorflow.python.keras import backend as K
 
 from constants import Constants
-from utils import MAIN_LAYER, custom_loss
+from utils import MAIN_LAYER, custom_loss, custom_loss2, custom_loss3, trapz2_batch, trapz2
 
 
 
@@ -37,6 +37,14 @@ with open(path+'inte.pkl', 'rb') as file:
     inte_y = tf.cast(pickle.load(file), tf.dtypes.float64)
 with open(path+'inth.pkl', 'rb') as file:
     inth_y = tf.cast(pickle.load(file), tf.dtypes.float64)
+energy_y=inte_y+inth_y
+
+#print(tf.math.reduce_max(abs(trapz2_batch(ey[:,0:Constants.N,:,:]**2)[0:300]-inte_y[0:300])))
+
+#print(tf.math.reduce_max(abs((trapz2_batch(hx_y[:,0:Constants.N-2,:,:]**2)+trapz2_batch(hy_y[:,0:Constants.N-1,:,:]**2))[0:300]-inth_y[0:300])))
+#print(inte_y+inth_y)
+#print(trapz2_batch(ey[:,0:Constants.N,:,:]**2)[0:5])
+
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
@@ -46,26 +54,25 @@ layer2 = MAIN_LAYER()
 E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
-inte_output=layer1([E_input, Hx_input, Hy_input])[3]
-inth_output=layer1([E_input, Hx_input, Hy_input])[4]
+energy_output=layer1([E_input, Hx_input, Hy_input])[3]
 
 
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, inte_output, inth_output]
+    outputs=[E_output, Hx_output, Hy_output, energy_output]
 )
 
 model.compile(
-    optimizer=keras.optimizers.SGD(learning_rate=1e-2),
-    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsoluteError()]
+    optimizer=keras.optimizers.SGD(learning_rate=1e-3),
+    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError()]
 )
 
 model.save(path+'mymodel_multiple.pkl')
 
 if __name__ == "__main__":
     history = model.fit(
-        [ex, hx_x, hy_x], [ey,hx_y, hy_y, inte_y, inth_y],
+        [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y],
         epochs=10,
         batch_size=32,
         shuffle=True, validation_split=0.2)
