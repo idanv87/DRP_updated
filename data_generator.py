@@ -60,11 +60,11 @@ def create_test_data():
     return 1
 
 if __name__ == "__main__":
+    print("generating data")
     k1 = Constants.K1_TRAIN
     k2 = Constants.K2_TRAIN
 
     ex, ey, hx_x, hx_y, hy_x, hy_y, inte, inth = generate_data(k1, k2)
-    print(inte.shape)
     pickle.dump(ex.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
                 open(path + "ex.pkl", "wb"))
     pickle.dump(hx_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),

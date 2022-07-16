@@ -125,11 +125,13 @@ def f_a(c, n, k1, k2):
         Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
 
     if k1 == k2:
-        err2 = c ** 2 * (np.sin(c * (2 * n + 1) * Constants.DT / 2) ** 2)
-        err1 = c ** 2 * (np.cos(c * n * Constants.DT) ** 2)
+        err2 = c ** 2 /2
+        err1 = c ** 2 /2
     else:
-        err2 = c ** 2 * (np.sin(c * (2 * n + 1) * Constants.DT / 2) ** 2) / 2
-        err1 = c ** 2 * (np.cos(c * n * Constants.DT) ** 2) / 2
+        err2 = c ** 2 / 4
+        err1 = c ** 2 / 4
+
+
 
     return e, hx[1:-1, :-1], hy[:-1, 1:-1], err1, err2
 

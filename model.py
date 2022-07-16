@@ -39,6 +39,7 @@ with open(path+'inth.pkl', 'rb') as file:
     inth_y = tf.cast(pickle.load(file), tf.dtypes.float64)
 energy_y=inte_y+inth_y
 
+
 #print(tf.math.reduce_max(abs(trapz2_batch(ey[:,0:Constants.N,:,:]**2)[0:300]-inte_y[0:300])))
 
 #print(tf.math.reduce_max(abs((trapz2_batch(hx_y[:,0:Constants.N-2,:,:]**2)+trapz2_batch(hy_y[:,0:Constants.N-1,:,:]**2))[0:300]-inth_y[0:300])))

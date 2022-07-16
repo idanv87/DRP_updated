@@ -27,8 +27,8 @@ class Constants:
     X2=np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [1.,3.]
-    K2_TRAIN = [1.]
+    K1_TRAIN = [3.]
+    K2_TRAIN = [2.]
     K1_TEST = [1., 3.]
     K2_TEST = [1., 3.]
 
