@@ -1,5 +1,6 @@
 import pickle
 import os
+import time
 
 import keras.backend as K
 import numpy as np
@@ -74,16 +75,19 @@ model.save(path+'mymodel_multiple.pkl')
 model.load_weights(path + 'mymodel_weights.pkl').expect_partial()
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     history = model.fit(
         [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y],
         epochs=20,
         batch_size=32,
         shuffle=True, validation_split=0.2)
+    print("--- %s seconds ---" % (time.time() - start_time))
     model.save_weights(path + 'mymodel_weights.pkl')
     pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
-    plt.plot(history.history['loss'])
+    #plt.plot(history.history['loss'])
     #plt.plot(history.history['val_loss'])
-    plt.show()
+    #plt.show()
     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
     print('Total params: {:,}'.format(trainable_count + non_trainable_count))
