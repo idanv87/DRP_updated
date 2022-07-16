@@ -5,11 +5,11 @@ from tensorflow import keras
 from constants import Constants
 
 
-def tf_trapz(y,axis=-2, dx=Constants.DX, rank=4):
-    #y = np.asanyarray(y)
+def tf_trapz(y, axis=-2, dx=Constants.DX, rank=4):
+    # y = np.asanyarray(y)
     nd = rank
-    slice1 = [slice(None)]*nd
-    slice2 = [slice(None)]*nd
+    slice1 = [slice(None)] * nd
+    slice2 = [slice(None)] * nd
     slice1[axis] = slice(1, None)
     slice2[axis] = slice(None, -1)
     ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=-2)
@@ -125,13 +125,11 @@ def f_a(c, n, k1, k2):
         Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
 
     if k1 == k2:
-        err2 = c ** 2 /2
-        err1 = c ** 2 /2
+        err2 = c ** 2 / 2
+        err1 = c ** 2 / 2
     else:
         err2 = c ** 2 / 4
         err1 = c ** 2 / 4
-
-
 
     return e, hx[1:-1, :-1], hy[:-1, 1:-1], err1, err2
 
@@ -161,7 +159,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         Hx2 = tf.identity(Hx1)
         Hy2 = tf.identity(Hy1)
 
-        E1, Hx1, Hy1, energy= model.predict([E1, Hx1, Hy1], batch_size=32)
+        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], batch_size=32)
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -175,9 +173,6 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 def custom_loss(y_true, y_pred):
     loss = tf.reduce_mean(abs(y_true - y_pred))
     return loss / Constants.DT
-
-
-
 
 
 def custom_loss3(y_true, y_pred):
@@ -205,11 +200,11 @@ class MAIN_LAYER(keras.layers.Layer):
 
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
-        inte = tf_trapz(tf_trapz(E_n ** 2,rank=4),rank=3)
+        inte = tf_trapz(tf_trapz(E_n ** 2, rank=4), rank=3)
 
-        inthx = tf_trapz(tf_trapz(Hx_n ** 2,rank=4),rank=3)
-        inthy = tf_trapz(tf_trapz(Hy_n ** 2,rank=4),rank=3)
+        inthx = tf_trapz(tf_trapz(Hx_n ** 2, rank=4), rank=3)
+        inthy = tf_trapz(tf_trapz(Hy_n ** 2, rank=4), rank=3)
         # int2 = simps(simps((Hx_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
         # int3 = simps(simps((Hy_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
 
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy
+        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte + inthx + inthy

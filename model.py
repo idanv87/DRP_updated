@@ -65,22 +65,24 @@ model = keras.Model(
 )
 
 model.compile(
-    optimizer=keras.optimizers.SGD(learning_rate=1e-3),
-    loss=[custom_loss, custom_loss, custom_loss, keras.losses.MeanAbsoluteError()]
+    optimizer=keras.optimizers.SGD(learning_rate=1e-2),
+    loss=[custom_loss, custom_loss, custom_loss, keras.losses.MeanAbsoluteError()],
+    loss_weights=[0.2, 0.2, 0.2, 0.4]
 )
 
 model.save(path+'mymodel_multiple.pkl')
+model.load_weights(path + 'mymodel_weights.pkl').expect_partial()
 
 if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y],
-        epochs=10,
+        epochs=20,
         batch_size=32,
         shuffle=True, validation_split=0.2)
     model.save_weights(path + 'mymodel_weights.pkl')
     pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
     plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
+    #plt.plot(history.history['val_loss'])
     plt.show()
     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
