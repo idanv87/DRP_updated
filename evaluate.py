@@ -43,11 +43,9 @@ pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
 pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
 pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
 
-plt.plot(l_yee, "-b", label="Yee")
+#plt.plot(l_yee, "-b", label="Yee")
 plt.plot(l_fourth, "-r", label="4th")
 plt.plot(l_model, "-g", label="DL2")
-plt.plot(l_drp, "-d", label="DRP")
+#plt.plot(l_drp, "-d", label="DRP")
 plt.legend(loc="upper left")
 plt.show()
-
-print(l_model)
