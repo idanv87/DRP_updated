@@ -53,7 +53,6 @@ E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
 Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
 layer1 = DRP_LAYER()
-layer2 = MAIN_LAYER()
 E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
@@ -75,7 +74,7 @@ model.compile(
 
 model.save(path+'mymodel_multiple.pkl')
 
-model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
+# model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 earlystopping = callbacks.EarlyStopping(monitor ="val_loss",
                                         mode ="min", patience = 5,

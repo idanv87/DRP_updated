@@ -14,14 +14,28 @@ def tf_diff(y, axis, rank=4):
     return ret
 
 def tf_trapz(y, axis=-2, dx=Constants.DX, rank=4):
+    if y.shape[axis] % 2 == 1:
+        ret=tf_simp(y, axis, dx, rank)
+    else:
+        nd = rank
+        slice1 = [slice(None)] * nd
+        slice2 = [slice(None)] * nd
+        slice1[axis] = slice(1, None)
+        slice2[axis] = slice(None, -1)
+        ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=-2)
+
+    return ret
+
+def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):
     nd = rank
     slice1 = [slice(None)] * nd
     slice2 = [slice(None)] * nd
-    slice1[axis] = slice(1, None)
-    slice2[axis] = slice(None, -1)
-    ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=-2)
+    slice3 = [slice(None)] * nd
+    slice1[axis] = slice(2, None,2)
+    slice2[axis] = slice(1,-1,2 )
+    slice3[axis] = slice(None, -2, 2)
+    ret = tf.math.reduce_sum(dx * (y[tuple(slice1)]+4*y[tuple(slice2)] + y[tuple(slice3)]) / 3.0, axis=-2)
     return ret
-
 
 def amper(E, Hx, Hy, par1, par2):
     pad1 = pad_function([2, 2, 2, 2])

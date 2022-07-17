@@ -13,7 +13,7 @@ create_test_data()
 path = Constants.PATH
 
 model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss})
-model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
+#model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 with open(path + 'multiple_history.pkl', 'rb') as file:
     history = pickle.load(file)
