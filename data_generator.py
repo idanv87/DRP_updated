@@ -17,8 +17,7 @@ def generate_data(k1_train, k2_train):
     hy_x = []
     hx_y = []
     hy_y = []
-    inte=[]
-    inth=[]
+    energy=[]
     for k1 in k1_train:
         for k2 in k2_train:
             c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
@@ -33,15 +32,15 @@ def generate_data(k1_train, k2_train):
                 hx_y.append(np.vstack((f1[1], f2[1])))
                 hy_x.append(f0[2])
                 hy_y.append(np.vstack((f1[2], f2[2])))
-                inte.append(f1[3])
-                inth.append(f1[4])
+                energy.append(f1[3])
 
 
 
 
 
 
-    return np.vstack(ex), np.vstack(ey), np.vstack(hx_x), np.vstack(hx_y), np.vstack(hy_x), np.vstack(hy_y), np.vstack(inte), np.vstack(inth)
+
+    return np.vstack(ex), np.vstack(ey), np.vstack(hx_x), np.vstack(hx_y), np.vstack(hy_x), np.vstack(hy_y), np.vstack(energy)
 
 
 
@@ -50,7 +49,7 @@ def generate_data(k1_train, k2_train):
 def create_test_data():
     k1_test = Constants.K1_TEST
     k2_test = Constants.K2_TEST
-    ex, ey, hx_x, hx_y, hy_x, hy_y, inte, inth = generate_data(k1_test, k2_test)
+    ex, ey, hx_x, hx_y, hy_x, hy_y, energy = generate_data(k1_test, k2_test)
     pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
                 open(path + "ex_test.pkl", "wb"))
     pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
@@ -58,13 +57,33 @@ def create_test_data():
     pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
                 open(path + "hy_x_test.pkl", "wb"))
     return 1
+def create_validation_data():
+    k1 = Constants.K1_VAL
+    k2 = Constants.K2_VAL
+
+    ex, ey, hx_x, hx_y, hy_x, hy_y, energy = generate_data(k1, k2)
+    pickle.dump(ex.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
+                open(path + "ex_val.pkl", "wb"))
+    pickle.dump(hx_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
+                open(path + "hx_x_val.pkl", "wb"))
+    pickle.dump(hy_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
+                open(path + "hy_x_val.pkl", "wb"))
+    pickle.dump(ey.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N * 2, Constants.N, 1)),
+                open(path + "ey_val.pkl", "wb"))
+    pickle.dump(hx_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 2) * 2, Constants.N - 1, 1)),
+                open(path + "hx_y_val.pkl", "wb"))
+    pickle.dump(hy_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 1) * 2, Constants.N - 2, 1)),
+                open(path + "hy_y_val.pkl", "wb"))
+    pickle.dump(energy.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, 1)), open(path + "energy_y_val.pkl", "wb"))
+
+    return 1
 
 if __name__ == "__main__":
     print("generating data")
     k1 = Constants.K1_TRAIN
     k2 = Constants.K2_TRAIN
 
-    ex, ey, hx_x, hx_y, hy_x, hy_y, inte, inth = generate_data(k1, k2)
+    ex, ey, hx_x, hx_y, hy_x, hy_y, energy = generate_data(k1, k2)
     pickle.dump(ex.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
                 open(path + "ex.pkl", "wb"))
     pickle.dump(hx_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
@@ -77,5 +96,4 @@ if __name__ == "__main__":
                 open(path + "hx_y.pkl", "wb"))
     pickle.dump(hy_y.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 1) * 2, Constants.N - 2, 1)),
                 open(path + "hy_y.pkl", "wb"))
-    pickle.dump(inte.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, 1)), open(path + "inte.pkl", "wb"))
-    pickle.dump(inth.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, 1)), open(path + "inth.pkl", "wb"))
+    pickle.dump(energy.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, 1)), open(path + "energy_y.pkl", "wb"))

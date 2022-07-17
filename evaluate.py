@@ -13,7 +13,7 @@ create_test_data()
 path = Constants.PATH
 
 model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss})
-model.load_weights(path + 'mymodel_weights.pkl').expect_partial()
+model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 with open(path + 'multiple_history.pkl', 'rb') as file:
     history = pickle.load(file)
@@ -43,9 +43,9 @@ pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
 pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
 pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
 
-#plt.plot(l_yee, "-b", label="Yee")
+plt.plot(l_yee, "-b", label="Yee")
 plt.plot(l_fourth, "-r", label="4th")
 plt.plot(l_model, "-g", label="DL2")
-#plt.plot(l_drp, "-d", label="DRP")
+plt.plot(l_drp, "-d", label="DRP")
 plt.legend(loc="upper left")
 plt.show()

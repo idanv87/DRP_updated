@@ -4,9 +4,16 @@ from tensorflow import keras
 
 from constants import Constants
 
+def tf_diff(y, axis, rank=4):
+    nd = rank
+    slice1 = [slice(None)] * nd
+    slice2 = [slice(None)] * nd
+    slice1[axis] = slice(1, None)
+    slice2[axis] = slice(None, -1)
+    ret = y[tuple(slice1)] - y[tuple(slice2)]
+    return ret
 
 def tf_trapz(y, axis=-2, dx=Constants.DX, rank=4):
-    # y = np.asanyarray(y)
     nd = rank
     slice1 = [slice(None)] * nd
     slice2 = [slice(None)] * nd
@@ -15,36 +22,6 @@ def tf_trapz(y, axis=-2, dx=Constants.DX, rank=4):
     ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=-2)
     return ret
 
-
-# def tf_trapz2(y):
-#     if y.shape[0] == None:
-#         return trapz2_batch(y)
-#     else:
-#         return tf_trapz(tf_trapz(y))
-# #
-# def trapz(f, x=1):
-#     if len(f.shape) == 1:
-#         elem = tf.cast(tf.range(0), tf.dtypes.float64)
-#     else:
-#         elem = tf.cast(tf.range(f.shape[1]), tf.dtypes.float64)
-#     dx = Constants.DX
-#     T = tf.map_fn(fn=lambda k: (dx / 2) * tf.math.reduce_sum(f[1:, int(k)] + f[:-1, int(k)], axis=0), elems=elem)
-#     return T
-#
-#
-# def trapz2(f, x=1, y=1):
-#     return trapz(tf.reshape(trapz(f, x), [f.shape[1], 1]), y)
-#
-#
-# def trapz2_batch(f, x=1, y=1):
-#     if f.shape[0] == None:
-#         T = trapz2(f[-1, :, :, 0], x, y)
-#     else:
-#         # elem = tf.cast(np.arange(f.shape[0]), tf.dtypes.float64)
-#         elem = np.arange(f.shape[0]).astype('float64')
-#         T = tf.map_fn(fn=lambda k: trapz2(f[int(k), :, :, 0], x, y), elems=elem)
-#     return T
-#
 
 def amper(E, Hx, Hy, par1, par2):
     pad1 = pad_function([2, 2, 2, 2])
@@ -109,29 +86,27 @@ def Dx(B, kernel):
 
 
 def f_a(c, n, k1, k2):
-    e = c * np.cos(c * n * Constants.DT) * (
+    e =  np.cos(c * n * Constants.DT) * (
             np.sin(Constants.PI * k1 * Constants.X) * np.sin(Constants.PI * k2 * Constants.Y) +
             np.sin(Constants.PI * k2 * Constants.X) * np.sin(
         Constants.PI * k1 * Constants.Y))
 
-    hx = np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
+    hx = (1/c)*np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
             -Constants.PI * k2 * np.sin(Constants.PI * k1 * Constants.X) * np.cos(
         Constants.PI * k2 * (Constants.Y + Constants.DX / 2)) - Constants.PI * k1 * np.sin(
         Constants.PI * k2 * Constants.X) * np.cos(Constants.PI * k1 * (Constants.Y + Constants.DX / 2)))
 
-    hy = np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
+    hy = (1/c)*np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
             Constants.PI * k1 * np.cos(Constants.PI * k1 * (Constants.X + Constants.DX / 2)) * np.sin(
         Constants.PI * k2 * Constants.Y) + Constants.PI * k2 * np.cos(
         Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
 
     if k1 == k2:
-        err2 = c ** 2 / 2
-        err1 = c ** 2 / 2
+        energy=1
     else:
-        err2 = c ** 2 / 4
-        err1 = c ** 2 / 4
+        energy=1/2
 
-    return e, hx[1:-1, :-1], hy[:-1, 1:-1], err1, err2
+    return e, hx[1:-1, :-1], hy[:-1, 1:-1], energy
 
 
 def pad_function(input):
@@ -155,11 +130,8 @@ def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0
     for n in range(Constants.TIME_STEPS - 1):
-        E2 = tf.identity(E1)
-        Hx2 = tf.identity(Hx1)
-        Hy2 = tf.identity(Hy1)
 
-        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], batch_size=32)
+        E1, Hx1, Hy1, energy, divergnce = model.predict([E1, Hx1, Hy1], batch_size=16, verbose=0)
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -171,13 +143,11 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 
 def custom_loss(y_true, y_pred):
-    loss = tf.reduce_mean(abs(y_true - y_pred))
-    return loss / Constants.DT
+    return tf.math.reduce_mean(abs(y_true - y_pred)) / Constants.DT
 
 
 def custom_loss3(y_true, y_pred):
-    loss = tf.reduce_mean(abs(y_true - y_pred))
-    return loss
+    return tf.math.reduce_max(abs(y_true - y_pred))
 
 
 class MAIN_LAYER(keras.layers.Layer):
@@ -191,20 +161,42 @@ class MAIN_LAYER(keras.layers.Layer):
         E, Hx, Hy = input
         E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
                     self.pars1, self.pars2)
-
         Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
                              tf.cast(Hy, tf.dtypes.float64), self.pars1, self.pars2)
 
         E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
                     self.pars1, self.pars2)
-
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
         inte = tf_trapz(tf_trapz(E_n ** 2, rank=4), rank=3)
-
         inthx = tf_trapz(tf_trapz(Hx_n ** 2, rank=4), rank=3)
         inthy = tf_trapz(tf_trapz(Hy_n ** 2, rank=4), rank=3)
-        # int2 = simps(simps((Hx_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
-        # int3 = simps(simps((Hy_n[0,:,:,0]) ** 2, Constants.X1), Constants.X2)
+        divergence=tf_diff(Hy_n,axis=1)-tf_diff(Hx_n,axis=2)
+        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy, divergence
 
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte + inthx + inthy
+
+class DRP_LAYER(keras.layers.Layer):
+
+    def __init__(self):
+        super().__init__()
+        self.pars1 = tf.Variable(0.14, trainable=True, dtype=tf.dtypes.float64, name='beta')
+        self.pars2 = tf.Variable(0.12, trainable=True, dtype=tf.dtypes.float64, name='delta')
+        self.pars3 = tf.Variable(0., trainable=False, dtype=tf.dtypes.float64, name='zero')
+
+
+    def call(self, input):
+        E, Hx, Hy = input
+        E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
+                    self.pars1, self.pars2)
+        Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
+                             tf.cast(Hy, tf.dtypes.float64), self.pars3, self.pars3)
+
+        E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
+                    self.pars1, self.pars2)
+        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars3, self.pars3)
+
+        inte = tf_trapz(tf_trapz(E_n ** 2, rank=4), rank=3)
+        inthx = tf_trapz(tf_trapz(Hx_n ** 2, rank=4), rank=3)
+        inthy = tf_trapz(tf_trapz(Hy_n ** 2, rank=4), rank=3)
+        divergence=tf_diff(Hy_n,axis=1)-tf_diff(Hx_n,axis=2)
+        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy, divergence

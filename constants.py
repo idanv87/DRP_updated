@@ -11,26 +11,33 @@ import tensorflow as tf
 class Constants:
     PATH='/Users/idanversano/documents/pycharm/files/'
 
-    N = 40
+    BATCHSIZE=128
+
+    N = 41
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
     Z = 1.
-    T = 0.01
-    TIME_STEPS = 400
+    T = 1
+    TIME_STEPS = (N-1)*10
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
     DX = LX / (N - 1)
     DY = LY / (N - 1)
+
     X1=np.linspace(0., XMAX, N)
     X2=np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
     K1_TRAIN = [1.]
     K2_TRAIN = [1.]
-    K1_TEST = [1., 3.]
-    K2_TEST = [1., 3.]
+
+    K1_VAL=[2.]
+    K2_VAL = [2.]
+
+    K1_TEST = [1., 2., 3.]
+    K2_TEST = [2., 3.]
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
     PADX_BACWARD = tf.constant([[0, 0], [1, 1], [N - 2, 1], [0, 0]], shape=[4, 2])

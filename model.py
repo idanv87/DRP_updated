@@ -3,21 +3,23 @@ import os
 import time
 
 import keras.backend as K
+from keras import callbacks
 import numpy as np
 import tensorflow
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
+import matplotlib
 #from tensorflow.python.keras import backend as K
 
 from constants import Constants
-from utils import MAIN_LAYER, custom_loss, custom_loss3
+from utils import MAIN_LAYER, DRP_LAYER, custom_loss, custom_loss3
 
 
 
 
 
-
+#matplotlib.use("TkAgg")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
@@ -34,11 +36,10 @@ with open(path+'hx_y.pkl', 'rb') as file:
     hx_y = tf.cast(pickle.load(file), tf.dtypes.float64)
 with open(path+'hy_y.pkl', 'rb') as file:
     hy_y = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open(path+'inte.pkl', 'rb') as file:
-    inte_y = tf.cast(pickle.load(file), tf.dtypes.float64)
-with open(path+'inth.pkl', 'rb') as file:
-    inth_y = tf.cast(pickle.load(file), tf.dtypes.float64)
-energy_y=inte_y+inth_y
+with open(path+'energy_y.pkl', 'rb') as file:
+    energy_y = tf.cast(pickle.load(file), tf.dtypes.float64)
+
+div_y=tf.zeros([energy_y.shape[0],Constants.N-2,Constants.N-2,1], dtype=tf.dtypes.float64)
 
 
 #print(tf.math.reduce_max(abs(trapz2_batch(ey[:,0:Constants.N,:,:]**2)[0:300]-inte_y[0:300])))
@@ -51,43 +52,48 @@ energy_y=inte_y+inth_y
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
 Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
-layer1 = MAIN_LAYER()
+layer1 = DRP_LAYER()
 layer2 = MAIN_LAYER()
 E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
 energy_output=layer1([E_input, Hx_input, Hy_input])[3]
+div_output=layer1([E_input, Hx_input, Hy_input])[4]
 
 
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, energy_output]
+    outputs=[E_output, Hx_output, Hy_output, energy_output, div_output]
 )
 
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-2),
-    loss=[custom_loss, custom_loss, custom_loss, keras.losses.MeanAbsoluteError()],
-    loss_weights=[0.2, 0.2, 0.2, 0.4]
+    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(),  tf.keras.losses.MeanAbsoluteError()],
+    loss_weights=[1, 1, 1, 1], run_eagerly=True
 )
 
 model.save(path+'mymodel_multiple.pkl')
-model.load_weights(path + 'mymodel_weights.pkl').expect_partial()
 
+model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
+
+earlystopping = callbacks.EarlyStopping(monitor ="val_loss",
+                                        mode ="min", patience = 5,
+                                        restore_best_weights = True)
 if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y],
-        epochs=20,
-        batch_size=32,
-        shuffle=True, validation_split=0.2)
+        [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y, div_y],
+        epochs=100,
+        batch_size=128,
+        shuffle=True, validation_split=0.2, verbose=2, callbacks =[earlystopping])
     print("--- %s seconds ---" % (time.time() - start_time))
-    model.save_weights(path + 'mymodel_weights.pkl')
+    model.save_weights(path + 'mymodel_weights2.pkl')
     pickle.dump(history.history, open(path+'multiple_history.pkl', "wb"))
-    #plt.plot(history.history['loss'])
-    #plt.plot(history.history['val_loss'])
-    #plt.show()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.show()
     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
     print('Total params: {:,}'.format(trainable_count + non_trainable_count))
