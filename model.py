@@ -57,18 +57,18 @@ E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
 energy_output=layer1([E_input, Hx_input, Hy_input])[3]
-div_output=layer1([E_input, Hx_input, Hy_input])[4]
+#div_output=layer1([E_input, Hx_input, Hy_input])[4]
 
 
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, energy_output, div_output]
+    outputs=[E_output, Hx_output, Hy_output, energy_output]
 )
 
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-2),
-    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError(),  tf.keras.losses.MeanAbsoluteError()],
+    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError()],
     loss_weights=[1, 1, 1, 1], run_eagerly=True
 )
 

@@ -150,7 +150,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0
     for n in range(Constants.TIME_STEPS - 1):
 
-        E1, Hx1, Hy1, energy, divergnce = model.predict([E1, Hx1, Hy1], batch_size=16, verbose=0)
+        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], batch_size=16, verbose=0)
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -217,5 +217,5 @@ class DRP_LAYER(keras.layers.Layer):
         inte = tf_simp(tf_simp(E_n ** 2, rank=4), rank=3)
         inthx = tf_simp(tf_simp(Hx_n ** 2, rank=4), rank=3)
         inthy = tf_simp(tf_simp(Hy_n ** 2, rank=4), rank=3)
-        divergence=tf_diff(Hy_n,axis=1)-tf_diff(Hx_n,axis=2)
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy, divergence
+        #divergence=(tf_diff(Hy_n,axis=2)+tf_diff(Hx_n,axis=1))/(2*Constants.DX)
+        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy

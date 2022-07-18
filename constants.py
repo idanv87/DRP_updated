@@ -30,8 +30,8 @@ class Constants:
     X2=np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [1.]
-    K2_TRAIN = [1.]
+    K1_TRAIN = [1.,2., 3.]
+    K2_TRAIN = [1., 2., 3.]
 
     K1_VAL=[2.]
     K2_VAL = [2.]
