@@ -85,7 +85,7 @@ if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y, div_y],
         epochs=100,
-        batch_size=128,
+        batch_size=64,
         shuffle=True, validation_split=0.2, verbose=2, callbacks =[earlystopping])
     print("--- %s seconds ---" % (time.time() - start_time))
     model.save_weights(path + 'mymodel_weights2.pkl')

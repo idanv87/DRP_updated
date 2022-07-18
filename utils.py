@@ -34,7 +34,12 @@ def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):
     slice1[axis] = slice(2, None,2)
     slice2[axis] = slice(1,-1,2 )
     slice3[axis] = slice(None, -2, 2)
-    ret = tf.math.reduce_sum(dx * (y[tuple(slice1)]+4*y[tuple(slice2)] + y[tuple(slice3)]) / 3.0, axis=-2)
+    ret = tf.math.reduce_sum(dx * (y[tuple(slice1)]+4*y[tuple(slice2)] + y[tuple(slice3)]) / 3.0, axis=axis)
+    if y.shape[axis]%2==0:
+        slice1[axis] = slice(-1, None, None)
+        slice2[axis] = slice(-2, -1, None)
+        ret += tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=axis)
+
     return ret
 
 def amper(E, Hx, Hy, par1, par2):
@@ -209,8 +214,8 @@ class DRP_LAYER(keras.layers.Layer):
                     self.pars1, self.pars2)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars3, self.pars3)
 
-        inte = tf_trapz(tf_trapz(E_n ** 2, rank=4), rank=3)
-        inthx = tf_trapz(tf_trapz(Hx_n ** 2, rank=4), rank=3)
-        inthy = tf_trapz(tf_trapz(Hy_n ** 2, rank=4), rank=3)
+        inte = tf_simp(tf_simp(E_n ** 2, rank=4), rank=3)
+        inthx = tf_simp(tf_simp(Hx_n ** 2, rank=4), rank=3)
+        inthy = tf_simp(tf_simp(Hy_n ** 2, rank=4), rank=3)
         divergence=tf_diff(Hy_n,axis=1)-tf_diff(Hx_n,axis=2)
         return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy, divergence
