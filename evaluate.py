@@ -46,7 +46,7 @@ pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
 
 plt.plot(l_yee, "-b", label="Yee")
 plt.plot(l_fourth, "-r", label="4th")
-plt.plot(l_model, "-g", label="DL2")
+plt.plot(l_model, "-g", label="DL2", linestyle='dashed')
 plt.plot(l_drp, "-d", label="DRP")
 plt.legend(loc="upper left")
 plt.show()
