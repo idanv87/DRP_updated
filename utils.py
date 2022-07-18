@@ -135,9 +135,9 @@ def pad_function(input):
 def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0
     for n in range(Constants.TIME_STEPS - 1):
-        E1 = amper(E1, Hx1, Hy1, beta, delta)
+        E1 = amper(E1, Hx1, Hy1, 0., 0.)
         if name == 'DRP':
-            Hx1, Hy1 = faraday(E1, Hx1, Hy1, 0., 0.)
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
         else:
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
@@ -206,13 +206,13 @@ class DRP_LAYER(keras.layers.Layer):
     def call(self, input):
         E, Hx, Hy = input
         E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
-                    self.pars1, self.pars2)
+                    self.pars3, self.pars3)
         Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
-                             tf.cast(Hy, tf.dtypes.float64), self.pars3, self.pars3)
+                             tf.cast(Hy, tf.dtypes.float64), self.pars1, self.pars2)
 
         E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
-                    self.pars1, self.pars2)
-        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars3, self.pars3)
+                    self.pars3, self.pars3)
+        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
         inte = tf_simp(tf_simp(E_n ** 2, rank=4), rank=3)
         inthx = tf_simp(tf_simp(Hx_n ** 2, rank=4), rank=3)

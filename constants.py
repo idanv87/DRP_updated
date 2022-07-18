@@ -36,8 +36,8 @@ class Constants:
     K1_VAL=[2.]
     K2_VAL = [2.]
 
-    K1_TEST = [ 2., 3., 4.]
-    K2_TEST = [2., 3.]
+    K1_TEST = [1,2,3,  9, 10]
+    K2_TEST = [ 1]
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
     PADX_BACWARD = tf.constant([[0, 0], [1, 1], [N - 2, 1], [0, 0]], shape=[4, 2])
