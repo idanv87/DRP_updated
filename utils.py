@@ -32,15 +32,15 @@ def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):
     return ret
 
 
-def amper(E, Hx, Hy, par1, par2):
+def amper(E, Hx, Hy, beta, delta):
     pad1 = pad_function([2, 2, 2, 2])
     pad5 = pad_function([Constants.N - 2, 1, 2, 2])
     pad6 = pad_function([2, 2, 1, Constants.N - 2])
     pad7 = pad_function([2, 2, Constants.N - 2, 1])
     pad4 = pad_function([1, Constants.N - 2, 2, 2])
 
-    x1 = tf.math.multiply(par1, Dx(Hy, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
-    x2 = tf.math.multiply(par2, Dx(Hy, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
+    x1 = tf.math.multiply(beta, Dx(Hy, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
+    x2 = tf.math.multiply(delta, Dx(Hy, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
     x3 = Dx(Hy, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
 
     s1 = tf.pad(x1 + x2 + x3, pad1) + \
@@ -49,8 +49,8 @@ def amper(E, Hx, Hy, par1, par2):
         tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_UP, perm=[1, 0, 2, 3])), pad6) + \
         tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_DOWN, perm=[1, 0, 2, 3])), pad7)
 
-    x1 = tf.math.multiply(par1, Dy(Hx, Constants.FILTER_BETA))
-    x2 = tf.math.multiply(par2, Dy(Hx, Constants.FILTER_DELTA))
+    x1 = tf.math.multiply(beta, Dy(Hx, Constants.FILTER_BETA))
+    x2 = tf.math.multiply(delta, Dy(Hx, Constants.FILTER_DELTA))
     x3 = Dy(Hx, Constants.FILTER_YEE)
 
     s2 = tf.pad(x1 + x2 + x3, pad1) + \

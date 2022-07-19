@@ -36,9 +36,7 @@ with open(path + 'hy_y.pkl', 'rb') as file:
     hy_y = pickle.load(file)
 with open(path + 'energy_y.pkl', 'rb') as file:
     energy_y = pickle.load(file)
-
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 2, Constants.N - 2, 1], dtype=Constants.DTYPE)
-
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
@@ -48,8 +46,6 @@ E_output = layer1([E_input, Hx_input, Hy_input])[0]
 Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
 Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
 energy_output = layer1([E_input, Hx_input, Hy_input])[3]
-# div_output=layer1([E_input, Hx_input, Hy_input])[4]
-
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
@@ -69,6 +65,9 @@ model.save(path + 'mymodel_multiple.pkl')
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=True)
+
+reduce_lr = callbacks.ReduceLROnPlateau(monitor='loss', factor=0.2,
+                                        patience=5, min_lr=0.001)
 if __name__ == "__main__":
     start_time = time.time()
 
@@ -76,9 +75,10 @@ if __name__ == "__main__":
         [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
         epochs=3,
         batch_size=64,
-        shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping])
+        shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping, reduce_lr])
 
     print("--- %s seconds ---" % (time.time() - start_time))
+
     model.save_weights(path + 'mymodel_weights2.pkl')
     pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
     plt.plot(history.history['loss'])
@@ -91,17 +91,6 @@ if __name__ == "__main__":
     print('Trainable params: {:,}'.format(trainable_count))
     print('Non-trainable params: {:,}'.format(non_trainable_count))
     print(model.trainable_weights)
-
-
-
-
-
-
-
-
-
-
-
 
 # optimizer = keras.optimizers.SGD(learning_rate=1e-2)
 # epochs = 2
