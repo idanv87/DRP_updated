@@ -1,13 +1,12 @@
 import math
 import pickle
 
-
 import numpy as np
 
 from constants import Constants
 from utils import f_a
 
-path=Constants.PATH
+path = Constants.PATH
 
 
 def generate_data(k1_train, k2_train):
@@ -17,7 +16,7 @@ def generate_data(k1_train, k2_train):
     hy_x = []
     hx_y = []
     hy_y = []
-    energy=[]
+    energy = []
     for k1 in k1_train:
         for k2 in k2_train:
             c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
@@ -34,16 +33,8 @@ def generate_data(k1_train, k2_train):
                 hy_y.append(np.vstack((f1[2], f2[2])))
                 energy.append(f1[3])
 
-
-
-
-
-
-
-    return np.vstack(ex), np.vstack(ey), np.vstack(hx_x), np.vstack(hx_y), np.vstack(hy_x), np.vstack(hy_y), np.vstack(energy)
-
-
-
+    return np.vstack(ex), np.vstack(ey), np.vstack(hx_x), np.vstack(hx_y), np.vstack(hy_x), np.vstack(hy_y), np.vstack(
+        energy)
 
 
 def create_test_data():
@@ -57,6 +48,8 @@ def create_test_data():
     pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
                 open(path + "hy_x_test.pkl", "wb"))
     return 1
+
+
 def create_validation_data():
     k1 = Constants.K1_VAL
     k2 = Constants.K2_VAL
@@ -77,6 +70,7 @@ def create_validation_data():
     pickle.dump(energy.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, 1)), open(path + "energy_y_val.pkl", "wb"))
 
     return 1
+
 
 if __name__ == "__main__":
     print("generating data")
