@@ -20,26 +20,26 @@ from utils import MAIN_LAYER, DRP_LAYER, custom_loss, custom_loss3
 
 
 #matplotlib.use("TkAgg")
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 path=Constants.PATH
 with open(path+'ex.pkl', 'rb') as file:
-    ex = tf.cast(pickle.load(file), tf.dtypes.float64)
+    ex = tf.cast(pickle.load(file), Constants.DTYPE)
 with open(path+'ey.pkl', 'rb') as file:
-    ey = tf.cast(pickle.load(file), tf.dtypes.float64)
+    ey = tf.cast(pickle.load(file), Constants.DTYPE)
 with open(path+'hx_x.pkl', 'rb') as file:
-    hx_x = tf.cast(pickle.load(file), tf.dtypes.float64)
+    hx_x = tf.cast(pickle.load(file), Constants.DTYPE)
 with open(path+'hy_x.pkl', 'rb') as file:
-    hy_x = tf.cast(pickle.load(file), tf.dtypes.float64)
+    hy_x = tf.cast(pickle.load(file), Constants.DTYPE)
 with open(path+'hx_y.pkl', 'rb') as file:
-    hx_y = tf.cast(pickle.load(file), tf.dtypes.float64)
+    hx_y = tf.cast(pickle.load(file), Constants.DTYPE)
 with open(path+'hy_y.pkl', 'rb') as file:
-    hy_y = tf.cast(pickle.load(file), tf.dtypes.float64)
+    hy_y = tf.cast(pickle.load(file), Constants.DTYPE)
 with open(path+'energy_y.pkl', 'rb') as file:
-    energy_y = tf.cast(pickle.load(file), tf.dtypes.float64)
+    energy_y = tf.cast(pickle.load(file), Constants.DTYPE)
 
-div_y=tf.zeros([energy_y.shape[0],Constants.N-2,Constants.N-2,1], dtype=tf.dtypes.float64)
+div_y=tf.zeros([energy_y.shape[0],Constants.N-2,Constants.N-2,1], dtype=Constants.DTYPE)
 
 
 #print(tf.math.reduce_max(abs(trapz2_batch(ey[:,0:Constants.N,:,:]**2)[0:300]-inte_y[0:300])))
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y, div_y],
-        epochs=100,
+        [ex, hx_x, hy_x], [ey,hx_y, hy_y, energy_y],
+        epochs=3,
         batch_size=64,
         shuffle=True, validation_split=0.2, verbose=2, callbacks =[earlystopping])
     print("--- %s seconds ---" % (time.time() - start_time))

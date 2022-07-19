@@ -10,15 +10,13 @@ import tensorflow as tf
 @dataclass(frozen=True)
 class Constants:
     PATH='/Users/idanversano/documents/pycharm/files/'
-
-    BATCHSIZE=128
-
+    DTYPE=tf.dtypes.float64
     N = 41
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
-    Z = 1.
-    T = 1
+
+    T = 0.01
     TIME_STEPS = (N-1)*10
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
@@ -48,7 +46,7 @@ class Constants:
 
     B = np.zeros((1, N - 5 - 1))
 
-    KERNEL_FORWARD = (1 / DX) * tf.cast(np.append(A, B).reshape(1, N - 1, 1, 1), tf.dtypes.float64)
+    KERNEL_FORWARD = (1 / DX) * tf.cast(np.append(A, B).reshape(1, N - 1, 1, 1), DTYPE)
     KERNEL_BACKWARD = -tf.reverse(KERNEL_FORWARD, [1])
 
     PADEX_FORWARD = tf.constant([[0, 0], [0, 0], [0, N - 2], [0, 0]], shape=[4, 2])
@@ -57,24 +55,24 @@ class Constants:
     PADEY_BACKWARD = tf.constant([[0, 0], [N - 2, 0], [0, 0], [0, 0]], shape=[4, 2])
 
     D = np.zeros((1, N - 5))
-    KERNEL_E_FORWARD = (1 / DX) * tf.cast(np.append(A, D).reshape(1, N, 1, 1), tf.dtypes.float64)
+    KERNEL_E_FORWARD = (1 / DX) * tf.cast(np.append(A, D).reshape(1, N, 1, 1), DTYPE)
     KERNEL_E_BACKWARD = -tf.reverse(KERNEL_E_FORWARD, [1])
 
     #FILTER1 = tf.constant([[0., 0., 0., 0.], [1 / (3 * DX), -1 / DX, 1 / DX, -1 / (3 * DX)], [0., 0., 0., 0.]],
-      #                    shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+      #                    shape=[3, 4, 1, 1], dtype=DTYPE)
     #FILTER2 = tf.constant([[0., 0., 0., 0.], [-1 / (3 * DX), 0, 0, 1 / (3 * DX)], [0., 0., 0., 0.]], shape=[3, 4, 1, 1],
-     #                     dtype=tf.dtypes.float64)
+     #                     dtype=DTYPE)
 
 
 
 
 
     FILTER_BETA= tf.constant([[0., -1/DX, 1/DX, 0.], [0, 2/DX , -2/DX, 0], [0., -1/DX, 1/DX, 0.]],
-                          shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+                          shape=[3, 4, 1, 1], dtype=DTYPE)
     FILTER_DELTA = tf.constant([[0., 0, 0, 0.], [-1/DX, 3/DX, -3/DX, 1/DX], [0., 0., 0., 0.]],
-                              shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+                              shape=[3, 4, 1, 1], dtype=DTYPE)
     FILTER_YEE = tf.constant([[0., 0, 0, 0.], [0, -1 / DX, 1 / DX, 0], [0., 0., 0., 0.]],
-                             shape=[3, 4, 1, 1], dtype=tf.dtypes.float64)
+                             shape=[3, 4, 1, 1], dtype=DTYPE)
 
 
 
@@ -82,8 +80,7 @@ class Constants:
 
     PADUP = tf.constant([[0, N - 3], [0, 0], [0, 0], [0, 0]], shape=[4, 2])
     PADDOWN = tf.constant([[N - 3, 0], [0, 0], [0, 0], [0, 0]], shape=[4, 2])
-    FOURTH_UP = tf.pad(tf.constant([1 / (24 * DX), -9 / (8 * DX), 9 / (8 * DX), -1 / (24 * DX)], shape=[1, 4, 1, 1],dtype=tf.dtypes.float64), PADUP)
-    FOURTH_DOWN = tf.pad(tf.constant([1 / (24 * DX), -9 / (8 * DX), 9 / (8 * DX), -1 / (24 * DX)], shape=[1, 4, 1, 1],dtype=tf.dtypes.float64), PADDOWN)
+    FOURTH_UP = tf.pad(tf.constant([1 / (24 * DX), -9 / (8 * DX), 9 / (8 * DX), -1 / (24 * DX)], shape=[1, 4, 1, 1],dtype=DTYPE), PADUP)
+    FOURTH_DOWN = tf.pad(tf.constant([1 / (24 * DX), -9 / (8 * DX), 9 / (8 * DX), -1 / (24 * DX)], shape=[1, 4, 1, 1],dtype=DTYPE), PADDOWN)
 
-    CENTRAL = tf.constant([-1,1], shape=[1, 2, 1,1],dtype=tf.dtypes.float64)
-
+    CENTRAL = tf.constant([-1,1], shape=[1, 2, 1,1],dtype=DTYPE)

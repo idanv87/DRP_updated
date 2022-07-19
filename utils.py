@@ -13,18 +13,7 @@ def tf_diff(y, axis, rank=4):
     ret = y[tuple(slice1)] - y[tuple(slice2)]
     return ret
 
-def tf_trapz(y, axis=-2, dx=Constants.DX, rank=4):
-    if y.shape[axis] % 2 == 1:
-        ret=tf_simp(y, axis, dx, rank)
-    else:
-        nd = rank
-        slice1 = [slice(None)] * nd
-        slice2 = [slice(None)] * nd
-        slice1[axis] = slice(1, None)
-        slice2[axis] = slice(None, -1)
-        ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=-2)
 
-    return ret
 
 def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):
     nd = rank
@@ -97,11 +86,11 @@ def faraday(E, Hx, Hy, beta, delta):
 
 
 def Dy(B, kernel):
-    return tf.nn.conv2d(tf.cast(B, tf.dtypes.float64), kernel, strides=1, padding='VALID')
+    return tf.nn.conv2d(B, kernel, strides=1, padding='VALID')
 
 
 def Dx(B, kernel):
-    return tf.nn.conv2d(tf.cast(B, tf.dtypes.float64), kernel, strides=1, padding='VALID')
+    return tf.nn.conv2d(B, kernel, strides=1, padding='VALID')
 
 
 def f_a(c, n, k1, k2):
@@ -133,8 +122,9 @@ def pad_function(input):
 
 
 def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
-    l = 0
+    l = 0.
     for n in range(Constants.TIME_STEPS - 1):
+
         E1 = amper(E1, Hx1, Hy1, 0., 0.)
         if name == 'DRP':
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
@@ -147,10 +137,10 @@ def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 
 def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
-    l = 0
+    l = 0.
     for n in range(Constants.TIME_STEPS - 1):
 
-        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], batch_size=16, verbose=0)
+        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], verbose=0)
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
@@ -173,23 +163,23 @@ class MAIN_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0.14, trainable=True, dtype=tf.dtypes.float64, name='beta')
-        self.pars2 = tf.Variable(0.12, trainable=True, dtype=tf.dtypes.float64, name='delta')
+        self.pars1 = tf.Variable(0.14, trainable=True, dtype=Constants.DTYPE, name='beta')
+        self.pars2 = tf.Variable(0.12, trainable=True, dtype=Constants.DTYPE, name='delta')
 
     def call(self, input):
         E, Hx, Hy = input
-        E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
+        E_n = amper(tf.cast(E, Constants.DTYPE), tf.cast(Hx, Constants.DTYPE), tf.cast(Hy, Constants.DTYPE),
                     self.pars1, self.pars2)
-        Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
-                             tf.cast(Hy, tf.dtypes.float64), self.pars1, self.pars2)
+        Hx_n, Hy_n = faraday(tf.cast(E_n, Constants.DTYPE), tf.cast(Hx, Constants.DTYPE),
+                             tf.cast(Hy, Constants.DTYPE), self.pars1, self.pars2)
 
-        E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
+        E_m = amper(tf.cast(E_n, Constants.DTYPE), tf.cast(Hx_n, Constants.DTYPE), tf.cast(Hy_n, Constants.DTYPE),
                     self.pars1, self.pars2)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
-        inte = tf_trapz(tf_trapz(E_n ** 2, rank=4), rank=3)
-        inthx = tf_trapz(tf_trapz(Hx_n ** 2, rank=4), rank=3)
-        inthy = tf_trapz(tf_trapz(Hy_n ** 2, rank=4), rank=3)
+        inte = tf_simp(tf_simp(E_n ** 2, rank=4), rank=3)
+        inthx = tf_simp(tf_simp(Hx_n ** 2, rank=4), rank=3)
+        inthy = tf_simp(tf_simp(Hy_n ** 2, rank=4), rank=3)
         divergence=tf_diff(Hy_n,axis=1)-tf_diff(Hx_n,axis=2)
         return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte+inthx+inthy, divergence
 
@@ -198,19 +188,19 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0.14, trainable=True, dtype=tf.dtypes.float64, name='beta')
-        self.pars2 = tf.Variable(0.12, trainable=True, dtype=tf.dtypes.float64, name='delta')
-        self.pars3 = tf.Variable(0., trainable=False, dtype=tf.dtypes.float64, name='zero')
+        self.pars1 = tf.Variable(0.14, trainable=True, dtype=Constants.DTYPE, name='beta')
+        self.pars2 = tf.Variable(0.12, trainable=True, dtype=Constants.DTYPE, name='delta')
+        self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
 
     def call(self, input):
         E, Hx, Hy = input
-        E_n = amper(tf.cast(E, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64), tf.cast(Hy, tf.dtypes.float64),
+        E_n = amper(tf.cast(E, Constants.DTYPE), tf.cast(Hx, Constants.DTYPE), tf.cast(Hy, Constants.DTYPE),
                     self.pars3, self.pars3)
-        Hx_n, Hy_n = faraday(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx, tf.dtypes.float64),
-                             tf.cast(Hy, tf.dtypes.float64), self.pars1, self.pars2)
+        Hx_n, Hy_n = faraday(tf.cast(E_n, Constants.DTYPE), tf.cast(Hx, Constants.DTYPE),
+                             tf.cast(Hy, Constants.DTYPE), self.pars1, self.pars2)
 
-        E_m = amper(tf.cast(E_n, tf.dtypes.float64), tf.cast(Hx_n, tf.dtypes.float64), tf.cast(Hy_n, tf.dtypes.float64),
+        E_m = amper(tf.cast(E_n, Constants.DTYPE), tf.cast(Hx_n, Constants.DTYPE), tf.cast(Hy_n, Constants.DTYPE),
                     self.pars3, self.pars3)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
