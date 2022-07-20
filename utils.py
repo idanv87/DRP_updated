@@ -88,10 +88,12 @@ def faraday(E, Hx, Hy, beta, delta):
 
 def Dy(B, kernel):
     return tf.nn.conv2d(B, kernel, strides=1, padding='VALID')
+   #return tf.cast(tf.nn.conv2d(tf.cast(B,tf.dtypes.float64), tf.cast(kernel,tf.dtypes.float64), strides=1, padding='VALID'), Constants.DTYPE)
 
 
 def Dx(B, kernel):
     return tf.nn.conv2d(B, kernel, strides=1, padding='VALID')
+   #return tf.cast(tf.nn.conv2d(tf.cast(B,tf.dtypes.float64), tf.cast(kernel,tf.dtypes.float64), strides=1, padding='VALID'), Constants.DTYPE)
 
 
 def f_a(c, n, k1, k2):

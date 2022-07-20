@@ -11,7 +11,7 @@ class Constants:
     PATH = '/Users/idanversano/documents/pycharm/files/'
     #PATH = '/home/ubuntu/files/'
 
-    DTYPE = tf.dtypes.float64
+    DTYPE = tf.dtypes.float32
 
     N = 160
     PI = math.pi

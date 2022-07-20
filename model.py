@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     history = model.fit(
         [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=3,
+        epochs=5,
         batch_size=64,
         shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping, reduce_lr])
 
