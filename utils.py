@@ -44,21 +44,21 @@ def amper(E, Hx, Hy, beta, delta):
     x3 = Dx(Hy, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
 
     s1 = tf.pad(x1 + x2 + x3, pad1) + \
-        tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_FORWARD, perm=[1, 0, 2, 3])), Constants.PADY_FORWARD) + \
-        tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_BACKWARD, perm=[1, 0, 2, 3])), Constants.PADY_BACWARD) + \
-        tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_UP, perm=[1, 0, 2, 3])), pad6) + \
-        tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_DOWN, perm=[1, 0, 2, 3])), pad7)
+         tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_FORWARD, perm=[1, 0, 2, 3])), Constants.PADY_FORWARD) + \
+         tf.pad(Dx(Hy, tf.transpose(Constants.KERNEL_BACKWARD, perm=[1, 0, 2, 3])), Constants.PADY_BACWARD) + \
+         tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_UP, perm=[1, 0, 2, 3])), pad6) + \
+         tf.pad(Dx(Hy, tf.transpose(Constants.FOURTH_DOWN, perm=[1, 0, 2, 3])), pad7)
 
     x1 = tf.math.multiply(beta, Dy(Hx, Constants.FILTER_BETA))
     x2 = tf.math.multiply(delta, Dy(Hx, Constants.FILTER_DELTA))
     x3 = Dy(Hx, Constants.FILTER_YEE)
 
     s2 = tf.pad(x1 + x2 + x3, pad1) + \
-        tf.pad(Dy(Hx, Constants.KERNEL_FORWARD), Constants.PADX_FORWARD) + \
-        tf.pad(Dy(Hx, Constants.KERNEL_BACKWARD), Constants.PADX_BACWARD) + \
-        tf.pad(Dy(Hx, Constants.FOURTH_UP), pad4) + \
-        tf.pad(Dy(Hx, Constants.FOURTH_DOWN), pad5)
-    return E + (Constants.DT/Constants.DX) * (s1 - s2)
+         tf.pad(Dy(Hx, Constants.KERNEL_FORWARD), Constants.PADX_FORWARD) + \
+         tf.pad(Dy(Hx, Constants.KERNEL_BACKWARD), Constants.PADX_BACWARD) + \
+         tf.pad(Dy(Hx, Constants.FOURTH_UP), pad4) + \
+         tf.pad(Dy(Hx, Constants.FOURTH_DOWN), pad5)
+    return E + (Constants.DT / Constants.DX) * (s1 - s2)
 
 
 def faraday(E, Hx, Hy, beta, delta):
@@ -70,20 +70,20 @@ def faraday(E, Hx, Hy, beta, delta):
     x3 = Dy(E, Constants.FILTER_YEE)
 
     s3 = tf.pad(x1 + x2 + x3, pad2) + \
-        tf.pad(Dy(E, Constants.KERNEL_E_FORWARD), Constants.PADEX_FORWARD)[:, 1:-1, :, :] + \
-        tf.pad(Dy(E, Constants.KERNEL_E_BACKWARD), Constants.PADEX_BACKWARD)[:, 1:-1, :, :]
+         tf.pad(Dy(E, Constants.KERNEL_E_FORWARD), Constants.PADEX_FORWARD)[:, 1:-1, :, :] + \
+         tf.pad(Dy(E, Constants.KERNEL_E_BACKWARD), Constants.PADEX_BACKWARD)[:, 1:-1, :, :]
 
     x1 = tf.math.multiply(beta, Dx(E, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
     x2 = tf.math.multiply(delta, Dx(E, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
     x3 = Dx(E, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
 
     s4 = tf.pad(x1 + x2 + x3, pad3) + \
-        tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_FORWARD, perm=[1, 0, 2, 3])),
-               Constants.PADEY_FORWARD)[:,:, 1:-1, :] + \
-        tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_BACKWARD, perm=[1, 0, 2, 3])),
-               Constants.PADEY_BACKWARD)[:, :, 1:-1, :]
+         tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_FORWARD, perm=[1, 0, 2, 3])),
+                Constants.PADEY_FORWARD)[:, :, 1:-1, :] + \
+         tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_BACKWARD, perm=[1, 0, 2, 3])),
+                Constants.PADEY_BACKWARD)[:, :, 1:-1, :]
 
-    return Hx - (Constants.DT/Constants.DX) * s3, Hy + (Constants.DT/Constants.DX) * s4
+    return Hx - (Constants.DT / Constants.DX) * s3, Hy + (Constants.DT / Constants.DX) * s4
 
 
 def Dy(B, kernel):
@@ -98,17 +98,17 @@ def f_a(c, n, k1, k2):
     e = np.cos(c * n * Constants.DT) * (
             np.sin(Constants.PI * k1 * Constants.X) * np.sin(Constants.PI * k2 * Constants.Y) +
             np.sin(Constants.PI * k2 * Constants.X) * np.sin(
-              Constants.PI * k1 * Constants.Y))
+        Constants.PI * k1 * Constants.Y))
 
     hx = (1 / c) * np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
             -Constants.PI * k2 * np.sin(Constants.PI * k1 * Constants.X) * np.cos(
-              Constants.PI * k2 * (Constants.Y + Constants.DX / 2)) - Constants.PI * k1 * np.sin(
-               Constants.PI * k2 * Constants.X) * np.cos(Constants.PI * k1 * (Constants.Y + Constants.DX / 2)))
+        Constants.PI * k2 * (Constants.Y + Constants.DX / 2)) - Constants.PI * k1 * np.sin(
+        Constants.PI * k2 * Constants.X) * np.cos(Constants.PI * k1 * (Constants.Y + Constants.DX / 2)))
 
     hy = (1 / c) * np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
             Constants.PI * k1 * np.cos(Constants.PI * k1 * (Constants.X + Constants.DX / 2)) * np.sin(
-             Constants.PI * k2 * Constants.Y) + Constants.PI * k2 * np.cos(
-              Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
+        Constants.PI * k2 * Constants.Y) + Constants.PI * k2 * np.cos(
+        Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
 
     if k1 == k2:
         energy = 1
@@ -132,8 +132,8 @@ def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         else:
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
-            tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
-            tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
+             tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
+             tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
     return l / (3 * (Constants.TIME_STEPS - 1))
 
 
@@ -146,8 +146,8 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
 
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
-            tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
-            tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
+             tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
+             tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
     return l / (3 * (Constants.TIME_STEPS - 1))
 
 
@@ -157,31 +157,6 @@ def custom_loss(y_true, y_pred):
 
 def custom_loss3(y_true, y_pred):
     return tf.math.reduce_max(abs(y_true - y_pred))
-
-
-class MAIN_LAYER(keras.layers.Layer):
-
-    def __init__(self):
-        super().__init__()
-        self.pars1 = tf.Variable(0.14, trainable=True, dtype=Constants.DTYPE, name='beta')
-        self.pars2 = tf.Variable(0.12, trainable=True, dtype=Constants.DTYPE, name='delta')
-
-    def call(self, input):
-        E, Hx, Hy = input
-
-        E_n = amper(E, Hx, Hy, self.pars1, self.pars2)
-        Hx_n, Hy_n = faraday(E_n, Hx, Hy, self.pars1, self.pars2)
-
-        E_m = amper(E_n, Hx_n, Hy_n, self.pars1, self.pars2)
-        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
-
-        inte = tf_simp(tf_simp(E_n ** 2, rank=4), rank=3)
-        inthx = tf_simp(tf_simp(Hx_n ** 2, rank=4), rank=3)
-        inthy = tf_simp(tf_simp(Hy_n ** 2, rank=4), rank=3)
-        #divergence = tf_diff(Hy_n, axis=1) - tf_diff(Hx_n, axis=2)
-
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m],
-                                                                               1), inte + inthx + inthy
 
 
 class DRP_LAYER(keras.layers.Layer):

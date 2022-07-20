@@ -12,13 +12,13 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 41
+    N = 100
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
 
-    T = 0.01
-    TIME_STEPS = (N - 1) * 10
+    T = 1
+    TIME_STEPS = 1000
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
@@ -29,8 +29,8 @@ class Constants:
     X2 = np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [1., 2., 3.]
-    K2_TRAIN = [1., 2., 3.]
+    K1_TRAIN = [1.]
+    K2_TRAIN = [1.]
 
     K1_VAL = [2.]
     K2_VAL = [2.]
@@ -59,10 +59,6 @@ class Constants:
     D = np.zeros((1, N - 5))
     KERNEL_E_FORWARD = tf.cast(np.append(A, D).reshape(1, N, 1, 1), DTYPE)
     KERNEL_E_BACKWARD = -tf.reverse(KERNEL_E_FORWARD, [1])
-
-    # FILTER1 = tf.constant([[0., 0., 0., 0.], [1 / (3 * DX), -1 / DX, 1 / DX, -1 / (3 * DX)], [0., 0., 0., 0.]],
-    # shape=[3, 4, 1, 1], dtype=DTYPE) FILTER2 = tf.constant([[0., 0., 0., 0.], [-1 / (3 * DX), 0, 0, 1 / (3 * DX)],
-    # [0., 0., 0., 0.]], shape=[3, 4, 1, 1], dtype=DTYPE)
 
     FILTER_BETA = tf.constant([[0., -1, 1, 0.], [0, 2, -2, 0], [0., -1, 1, 0.]],
                               shape=[3, 4, 1, 1], dtype=DTYPE)

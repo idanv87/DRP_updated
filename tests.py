@@ -4,7 +4,9 @@ from tensorflow import keras
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
-
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 from constants import Constants
 from utils import *
 from data_generator import create_test_data
@@ -14,23 +16,62 @@ F=tf.cast(np.exp(Constants.Y).reshape(1,Constants.N,Constants.N,1),tf.dtypes.flo
 
 dFy_conv = Dy(F, Constants.FILTER_YEE)
 
-#print(tf.math.reduce_max(abs(dFy_diff[:,1:-1,1:-1,:]-dFy_conv)))
+class Linear(keras.layers.Layer):
+    def __init__(self, units=32, input_dim=32):
+        super(Linear, self).__init__()
+        w_init = tf.random_normal_initializer()
+        self.w = tf.Variable(
+            initial_value=w_init(shape=(input_dim, units), dtype="float32"),
+            trainable=True,
+        )
+        b_init = tf.zeros_initializer()
+        self.b = tf.Variable(
+            initial_value=b_init(shape=(units,), dtype="float32"), trainable=True
+        )
 
+    def call(self, inputs):
+        x, y=inputs
+        print(type(x))
 
+        return matmul(x, self.w, self.b)
 
-#dFy3=np.diff(F,axis=2)
+def matmul(A,B,C):
+    return tf.matmul(A, B) + C
 
+inputs1 = keras.Input(shape=(784,), name="digits1")
+inputs2 = keras.Input(shape=(784,), name="digits2")
+x = Linear(32,784)([inputs1, inputs2])
+outputs = layers.Dense(10, activation="softmax", name="predictions")(x)
 
+model = keras.Model(inputs=[inputs1, inputs2], outputs=[outputs])
 
-#print(tf.math.reduce_max(abs(dFy-dFy3)))
+(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
+# Preprocess the data (these are NumPy arrays)
+x_train = x_train.reshape(60000, 784).astype("float32") / 255
+x_test = x_test.reshape(10000, 784).astype("float32") / 255
 
-# x1 = tf.math.multiply(beta, Dx(E, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
-# x2 = tf.math.multiply(delta, Dx(E, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
-# x3 = Dx(E, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+y_train = y_train.astype("float32")
+y_test = y_test.astype("float32")
 
-#dFx = tf.pad(x1 + x2 + x3, pad3) + \
-#     tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_FORWARD, perm=[1, 0, 2, 3])), Constants.PADEY_FORWARD)[:,
-#     :, 1:-1, :] + \
-#     tf.pad(Dx(E, tf.transpose(Constants.KERNEL_E_BACKWARD, perm=[1, 0, 2, 3])), Constants.PADEY_BACKWARD)[
-#     :, :, 1:-1, :]
+# Reserve 10,000 samples for validation
+x_val = x_train[-100:]
+y_val = y_train[-100:]
+x_train = x_train[:-100]
+y_train = y_train[:-100]
+
+model.compile(
+    optimizer=keras.optimizers.RMSprop(),  # Optimizer
+    # Loss function to minimize
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    # List of metrics to monitor
+    metrics=[keras.metrics.SparseCategoricalAccuracy()],
+)
+
+print("Fit model on training data")
+history = model.fit(
+    [x_train, x_train],
+    [y_train],
+    batch_size=64,
+    epochs=2
+)

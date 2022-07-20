@@ -15,6 +15,7 @@ from utils import DRP_LAYER, custom_loss
 
 # matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
@@ -38,14 +39,16 @@ with open(path + 'energy_y.pkl', 'rb') as file:
     energy_y = pickle.load(file)
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 2, Constants.N - 2, 1], dtype=Constants.DTYPE)
 
+
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
 Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
 layer1 = DRP_LAYER()
-E_output = layer1([E_input, Hx_input, Hy_input])[0]
-Hx_output = layer1([E_input, Hx_input, Hy_input])[1]
-Hy_output = layer1([E_input, Hx_input, Hy_input])[2]
-energy_output = layer1([E_input, Hx_input, Hy_input])[3]
+output=layer1([E_input, Hx_input, Hy_input])
+E_output = output[0]
+Hx_output = output[1]
+Hy_output = output[2]
+energy_output = output[3]
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
@@ -55,7 +58,7 @@ model = keras.Model(
 model.compile(
     optimizer=keras.optimizers.SGD(learning_rate=1e-2),
     loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError()],
-    loss_weights=[1, 1, 1, 1], run_eagerly=True
+    loss_weights=[1, 1, 1, 1]
 )
 
 model.save(path + 'mymodel_multiple.pkl')
