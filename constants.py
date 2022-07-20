@@ -9,10 +9,11 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Constants:
     PATH = '/Users/idanversano/documents/pycharm/files/'
+    #PATH = '/home/ubuntu/files/'
 
     DTYPE = tf.dtypes.float64
 
-    N = 100
+    N = 160
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
