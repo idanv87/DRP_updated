@@ -207,12 +207,15 @@ def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0.
     for n in range(Constants.TIME_STEPS - 1):
-        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], verbose=0)
+        output = model([E1, Hx1, Hy1])
+        E1=output[0]
+        Hx1=output[1]
+        Hy1=output[2]
         #E1, Hx1, Hy1 = model([E1, Hx1, Hy1])
 
-        E1 = E1[:, 0:Constants.N, :, :]
-        Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
-        Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
+        #E1 = E1[:, 0:Constants.N, :, :]
+        #Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
+        #Hy1 = Hy1[:, 0:Constants.N - 1, :, :]
 
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
@@ -222,8 +225,8 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape==y_pred.shape
-    return tf.math.reduce_mean(abs(y_true- y_pred)) / Constants.DT
-    # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
+    #return tf.math.reduce_mean(abs(y_true- y_pred)) / Constants.DT
+    return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
 
 
 
@@ -235,8 +238,8 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(1., trainable=True, dtype=Constants.DTYPE, name='beta')
-        self.pars2 = tf.Variable(1., trainable=True, dtype=Constants.DTYPE, name='delta')
+        self.pars1 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='beta')
+        self.pars2 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
     def call(self, input):

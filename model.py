@@ -90,7 +90,7 @@ earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         restore_best_weights=True)
 # checkpoint save_best only=True
 #csv loger
-reduce_lr = callbacks.ReduceLROnPlateau(monitor='loss', factor=0.2,
+reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                                        patience=5, min_lr=0.0001)
 if __name__ == "__main__":
     start_time = time.time()
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     history = model.fit(
         [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2, energy_y],
         #[ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=3,
+        epochs=100,
         batch_size=20,
         shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping])
 
