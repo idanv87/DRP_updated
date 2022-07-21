@@ -13,9 +13,11 @@ def generate_data(k1_train, k2_train):
     ex = []
     ey1 = []
     ey2=[]
+
     hx_x = []
     hy_x = []
     hx_y1 = []
+
     hx_y2 = []
     hy_y1 = []
     hy_y2 = []

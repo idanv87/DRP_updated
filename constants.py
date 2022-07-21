@@ -13,7 +13,7 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 123
+    N = 63
     # N should be odd which devided by 3
     assert N%2 != 0
     assert (N) % 3 ==0
@@ -22,7 +22,7 @@ class Constants:
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
 
-    T = 0.1
+    T = 1
     TIME_STEPS = 400
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
@@ -34,7 +34,7 @@ class Constants:
     X2 = np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [ 11,12,13]
+    K1_TRAIN = [ 11.,12.,13.]
     K2_TRAIN = [1.]
 
     K1_VAL = [2.]
