@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 from constants import Constants
-from utils import DRP_LAYER, custom_loss
+from utils import DRP_LAYER, custom_loss, custom_loss3
 
 # matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -47,16 +47,14 @@ with open(path + 'hy_y2.pkl', 'rb') as file:
 
 with open(path + 'energy_y.pkl', 'rb') as file:
     energy_y = pickle.load(file)
-div_y = tf.zeros([energy_y.shape[0], Constants.N - 2, Constants.N - 2, 1], dtype=Constants.DTYPE)
-
-
+div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
 Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
 layer1 = DRP_LAYER()
-output=layer1([E_input, Hx_input, Hy_input])
+output = layer1([E_input, Hx_input, Hy_input])
 
 E_output = output[0]
 Hx_output = output[1]
@@ -65,20 +63,20 @@ Hy_output = output[2]
 E2_output = output[3]
 Hx2_output = output[4]
 Hy2_output = output[5]
-
-energy_output = output[6]
+div_output=output[6]
+# energy_output = output[6]
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output, energy_output]
+    outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output, div_output]
     # outputs = [E_output, Hx_output, Hy_output, energy_output]
 )
 
 model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=1e-3),
-    #loss=[custom_loss, custom_loss, custom_loss],
+    # loss=[custom_loss, custom_loss, custom_loss],
     loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
-          tf.keras.losses.MeanAbsoluteError()]
+          custom_loss3]
 )
 
 model.save(path + 'mymodel_multiple.pkl')
@@ -86,21 +84,22 @@ model.save(path + 'mymodel_multiple.pkl')
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
-                                        mode="min", patience=5,
+                                        mode="min", patience=3,
                                         restore_best_weights=True)
 # checkpoint save_best only=True
-#csv loger
+# csv loger
 reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                                       patience=5, min_lr=0.0001)
+                                        patience=5, min_lr=0.0001)
 if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2, energy_y],
-        #[ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
+        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2, div_y],
+        callbacks=[earlystopping],
+        # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
         epochs=100,
-        batch_size=20,
-        shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping])
+        batch_size=32,
+        shuffle=True, validation_split=0.2, verbose=2)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 

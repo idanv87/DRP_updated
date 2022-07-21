@@ -22,7 +22,7 @@ class Constants:
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
 
-    T = 1
+    T = 0.01
     TIME_STEPS = 400
     DT = T / TIME_STEPS
     LX = XMAX - XMIN

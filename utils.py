@@ -185,12 +185,8 @@ def pad_function(input):
 def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0.
     for n in range(Constants.TIME_STEPS - 1):
-
         E1 = amper(E1, Hx1, Hy1, 0., 0.)
-        if name == 'DRP':
-            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
-        else:
-            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
@@ -225,13 +221,14 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape==y_pred.shape
-    #return tf.math.reduce_mean(abs(y_true- y_pred)) / Constants.DT
-    return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
+    return tf.math.reduce_mean(abs(y_true- y_pred)) / Constants.DT
+    #return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
 
 
 
 def custom_loss3(y_true, y_pred):
-    return tf.math.reduce_max(abs(y_true - y_pred))
+    assert y_true.shape == y_pred.shape
+    return tf.math.reduce_mean(abs(y_true - y_pred))
 
 
 class DRP_LAYER(keras.layers.Layer):
@@ -251,14 +248,16 @@ class DRP_LAYER(keras.layers.Layer):
         E_m = amper(E_n, Hx_n, Hy_n, self.pars3, self.pars3)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
-        hx = complete(Hx_n, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
+        #hx = complete(Hx_n, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
 
-        hy = complete(Hy_n, tf.transpose(Constants.KUP, [1, 0, 2, 3]), tf.transpose(Constants.KDOWN, [1, 0, 2, 3]),
-                     tf.transpose(Constants.KLEFT, [1, 0, 2, 3]), tf.transpose(Constants.KRIGHT, [1, 0, 2, 3]))
+        #hy = complete(Hy_n, tf.transpose(Constants.KUP, [1, 0, 2, 3]), tf.transpose(Constants.KDOWN, [1, 0, 2, 3]),
+          #           tf.transpose(Constants.KLEFT, [1, 0, 2, 3]), tf.transpose(Constants.KRIGHT, [1, 0, 2, 3]))
 
-        inte = tf_simp3(tf_simp3(E_n ** 2, rank=4), rank=3)
-        inthx = tf_simp3(tf_simp4(hx ** 2, rank=4), rank=3)
-        inthy = tf_simp4(tf_simp3(hy ** 2, rank=4), rank=3)
-        # divergence=(tf_diff(Hy_n,axis=2)+tf_diff(Hx_n,axis=1))/(2*Constants.DX)
+        #inte = tf_simp3(tf_simp3(E_n ** 2, rank=4), rank=3)
+        #inthx = tf_simp3(tf_simp4(hx ** 2, rank=4), rank=3)
+        #inthy = tf_simp4(tf_simp3(hy ** 2, rank=4), rank=3)
 
-        return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m, inte+inthx+inthy
+        divergence=(tf_diff(Hy_n[:,1:-1,:,:],axis=2)+tf_diff(Hx_n[:,:,1:-1,:],axis=1))/(2*Constants.DX)
+
+
+        return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m, divergence/Constants.DX

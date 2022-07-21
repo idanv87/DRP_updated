@@ -5,7 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from constants import Constants
-from utils import loss_yee, loss_model, custom_loss
+from utils import loss_yee, loss_model, custom_loss, custom_loss3
 from data_generator import create_test_data
 
 
@@ -13,7 +13,7 @@ create_test_data()
 
 path = Constants.PATH
 
-model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss})
+model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
 model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 
@@ -38,6 +38,7 @@ for i in range(len(Constants.K1_TEST) * len(Constants.K2_TEST)):
     #l_yee.append(loss_yee('Yee',0., 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_fourth.append(loss_yee('4order',0., -1/24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_drp.append(loss_yee('DRP', -0.125, -0.125, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+
 
 pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
 pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
