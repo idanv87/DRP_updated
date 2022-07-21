@@ -52,12 +52,12 @@ energy_output = output[3]
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, energy_output]
+    outputs=[E_output, Hx_output, Hy_output]
 )
 
 model.compile(
-    optimizer=keras.optimizers.SGD(learning_rate=1e-2),
-    loss=[custom_loss, custom_loss, custom_loss, tf.keras.losses.MeanAbsoluteError()],
+    optimizer=keras.optimizers.Adam(learning_rate=1e-3),
+    loss=[custom_loss, custom_loss, custom_loss],
     loss_weights=[1, 1, 1, 1]
 )
 
@@ -68,17 +68,18 @@ model.save(path + 'mymodel_multiple.pkl')
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=True)
-
-reduce_lr = callbacks.ReduceLROnPlateau(monitor='loss', factor=0.2,
-                                        patience=5, min_lr=0.001)
+# checkpoint save_best only=True
+#csv loger
+reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                                       patience=5, min_lr=0.0001)
 if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=5,
+        [ex, hx_x, hy_x], [ey, hx_y, hy_y],
+        epochs=100,
         batch_size=64,
-        shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping, reduce_lr])
+        shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping])
 
     print("--- %s seconds ---" % (time.time() - start_time))
 

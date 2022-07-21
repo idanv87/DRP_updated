@@ -11,15 +11,17 @@ class Constants:
     PATH = '/Users/idanversano/documents/pycharm/files/'
     #PATH = '/home/ubuntu/files/'
 
-    DTYPE = tf.dtypes.float32
+    DTYPE = tf.dtypes.float64
 
-    N = 160
+    N = 81
+    assert N%2 != 0
+
     PI = math.pi
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
 
-    T = 1
-    TIME_STEPS = 1000
+    T = 0.8
+    TIME_STEPS = 400
     DT = T / TIME_STEPS
     LX = XMAX - XMIN
     LY = YMAX - YMIN
@@ -30,7 +32,7 @@ class Constants:
     X2 = np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [1.]
+    K1_TRAIN = [15,16,17]
     K2_TRAIN = [1.]
 
     K1_VAL = [2.]
@@ -78,3 +80,12 @@ class Constants:
         PADDOWN)
 
     CENTRAL = tf.constant([-1, 1], shape=[1, 2, 1, 1], dtype=DTYPE)
+
+    A = np.append(np.array([[35 / 16, -35 / 16, 21 / 16, -5 / 16]]), np.zeros((1, N - 5)))
+    B = np.append(np.array([[4, -6, 4, -1]]), np.zeros((1, N - 6)))
+
+    KLEFT = np.reshape(A, [1, A.shape[0], 1, 1])
+    KRIGHT = tf.reverse(KLEFT, [1])
+
+    KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
+    KDOWN = tf.reverse(KUP, [0])
