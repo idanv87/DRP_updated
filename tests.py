@@ -6,72 +6,49 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+
 from constants import Constants
 from utils import *
 from data_generator import create_test_data
 
-F=tf.cast(np.exp(Constants.Y).reshape(1,Constants.N,Constants.N,1),tf.dtypes.float32)
-#dFy_diff=tf_diff(F,axis=2,rank=4)
+def complete(H, kernelleft, kernelright, kernelup, kerneldown):
+    rowup = tf.nn.conv2d(H, kernelup, strides=1, padding='VALID')
+    rowdown = tf.nn.conv2d(H, kerneldown, strides=1, padding='VALID')
+    a = tf.concat([rowup, H, rowdown], axis=1)
+    colleft = tf.nn.conv2d(a, kernelleft, strides=1, padding='VALID')
+    colright = tf.nn.conv2d(a, kernelright, strides=1, padding='VALID')
 
-dFy_conv = Dy(F, Constants.FILTER_YEE)
+    return tf.concat([colleft, a, colright], axis=2)
 
-class Linear(keras.layers.Layer):
-    def __init__(self, units=32, input_dim=32):
-        super(Linear, self).__init__()
-        w_init = tf.random_normal_initializer()
-        self.w = tf.Variable(
-            initial_value=w_init(shape=(input_dim, units), dtype="float32"),
-            trainable=True,
-        )
-        b_init = tf.zeros_initializer()
-        self.b = tf.Variable(
-            initial_value=b_init(shape=(units,), dtype="float32"), trainable=True
-        )
+n = 91
+Hx = np.random.rand(1, n - 2, n - 1, 1)
+Hy = np.random.rand(1, n - 1, n - 2, 1)
 
-    def call(self, inputs):
-        x, y=inputs
-        print(type(x))
+k1 = np.array([[35 / 16, -35 / 16, 21 / 16, -5 / 16]])
+k2 = np.array([[4, -6, 4, -1]])
 
-        return matmul(x, self.w, self.b)
+A = np.append(k1, np.zeros((1, n - 4)))
+B = np.append(k2, np.zeros((1, n - 4)))
+print(A.shape)
 
-def matmul(A,B,C):
-    return tf.matmul(A, B) + C
+kernelleft = np.reshape(A, [1, A.shape[0], 1, 1])
+assert kernelleft.shape == (1, n, 1, 1)
+kernelright = tf.reverse(kernelleft, [1])
 
-inputs1 = keras.Input(shape=(784,), name="digits1")
-inputs2 = keras.Input(shape=(784,), name="digits2")
-x = Linear(32,784)([inputs1, inputs2])
-outputs = layers.Dense(10, activation="softmax", name="predictions")(x)
+kernelup = np.reshape(B, [B.shape[0], 1, 1, 1])
+assert kernelup.shape == (n, 1, 1, 1)
+kerneldown = tf.reverse(kernelup, [0])
 
-model = keras.Model(inputs=[inputs1, inputs2], outputs=[outputs])
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
-# Preprocess the data (these are NumPy arrays)
-x_train = x_train.reshape(60000, 784).astype("float32") / 255
-x_test = x_test.reshape(10000, 784).astype("float32") / 255
 
-y_train = y_train.astype("float32")
-y_test = y_test.astype("float32")
 
-# Reserve 10,000 samples for validation
-x_val = x_train[-100:]
-y_val = y_train[-100:]
-x_train = x_train[:-100]
-y_train = y_train[:-100]
-
-model.compile(
-    optimizer=keras.optimizers.RMSprop(),  # Optimizer
-    # Loss function to minimize
-    loss=keras.losses.SparseCategoricalCrossentropy(),
-    # List of metrics to monitor
-    metrics=[keras.metrics.SparseCategoricalAccuracy()],
-)
-
-print("Fit model on training data")
-history = model.fit(
-    [x_train, x_train],
-    [y_train],
-    batch_size=64,
-    epochs=2
-)
+x = np.linspace(1, 2, n)
+dx = 1 / (n - 1)
+X, Y = np.meshgrid(x, x, indexing='ij')
+Xa, Ya = np.meshgrid(x - dx, x + dx / 2, indexing='ij')
+f = (np.cos(X) + np.exp(Y)).reshape(1, n, n, 1)
+g = complete(f, kernelleft, kernelright, kernelup, kerneldown)[0, :, :, 0]
+a = np.cos(Xa) + np.exp(Ya)
+print(a[0:5, -1])
+print(g[0:5, -1])

@@ -25,16 +25,26 @@ path = Constants.PATH
 
 with open(path + 'ex.pkl', 'rb') as file:
     ex = pickle.load(file)
-with open(path + 'ey.pkl', 'rb') as file:
-    ey = pickle.load(file)
 with open(path + 'hx_x.pkl', 'rb') as file:
     hx_x = pickle.load(file)
 with open(path + 'hy_x.pkl', 'rb') as file:
     hy_x = pickle.load(file)
-with open(path + 'hx_y.pkl', 'rb') as file:
-    hx_y = pickle.load(file)
-with open(path + 'hy_y.pkl', 'rb') as file:
-    hy_y = pickle.load(file)
+
+with open(path + 'ey1.pkl', 'rb') as file:
+    ey1 = pickle.load(file)
+with open(path + 'ey2.pkl', 'rb') as file:
+    ey2 = pickle.load(file)
+
+with open(path + 'hx_y1.pkl', 'rb') as file:
+    hx_y1 = pickle.load(file)
+with open(path + 'hx_y2.pkl', 'rb') as file:
+    hx_y2 = pickle.load(file)
+
+with open(path + 'hy_y1.pkl', 'rb') as file:
+    hy_y1 = pickle.load(file)
+with open(path + 'hy_y2.pkl', 'rb') as file:
+    hy_y2 = pickle.load(file)
+
 with open(path + 'energy_y.pkl', 'rb') as file:
     energy_y = pickle.load(file)
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 2, Constants.N - 2, 1], dtype=Constants.DTYPE)
@@ -48,16 +58,24 @@ output=layer1([E_input, Hx_input, Hy_input])
 E_output = output[0]
 Hx_output = output[1]
 Hy_output = output[2]
-energy_output = output[3]
+E2_output = output[3]
+Hx2_output = output[4]
+Hy2_output = output[5]
+energy_output = output[6]
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output]
+    outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output, energy_output]
+    # outputs = [E_output, Hx_output, Hy_output, energy_output]
+
 )
 
 model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=1e-3),
-    loss=[custom_loss, custom_loss, custom_loss],
+    #loss=[custom_loss, custom_loss, custom_loss],
+    loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
+          tf.keras.losses.MeanAbsoluteError()],
+
     loss_weights=[1, 1, 1, 1]
 )
 
@@ -76,7 +94,8 @@ if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey, hx_y, hy_y],
+        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey2, hx_y2, hy_y2, energy_y],
+        #[ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
         epochs=100,
         batch_size=64,
         shuffle=True, validation_split=0.2, verbose=2, callbacks=[earlystopping])

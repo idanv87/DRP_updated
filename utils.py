@@ -5,6 +5,23 @@ from tensorflow import keras
 from constants import Constants
 
 
+def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):
+    nd = rank
+    slice1 = [slice(None)] * nd
+    slice2 = [slice(None)] * nd
+    slice3 = [slice(None)] * nd
+    slice1[axis] = slice(2, None, 2)
+    slice2[axis] = slice(1, -1, 2)
+    slice3[axis] = slice(None, -2, 2)
+    ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + 4 * y[tuple(slice2)] + y[tuple(slice3)]) / 3.0, axis=axis)
+    if y.shape[axis] % 2 == 0:
+        slice1[axis] = slice(-1, None, None)
+        slice2[axis] = slice(-2, -1, None)
+        ret += tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=axis)
+
+    return ret
+
+
 def complete(H, kernelleft, kernelright, kernelup, kerneldown):
     rowup = tf.nn.conv2d(H, kernelup, strides=1, padding='VALID')
     rowdown = tf.nn.conv2d(H, kerneldown, strides=1, padding='VALID')
@@ -37,18 +54,19 @@ def tf_simp3(y, axis=-2, dx=Constants.DX, rank=4):
 
 
 def tf_simp4(y, axis=-2, dx=Constants.DX, rank=4):
-    assert y.shape[axis] % 2 == 0
+    assert (y.shape[axis] - 1) % 3 == 0
     nd = rank
     slice1 = [slice(None)] * nd
     slice2 = [slice(None)] * nd
     slice3 = [slice(None)] * nd
     slice4 = [slice(None)] * nd
-    slice1[axis] = slice(7, -4, 3)
-    slice2[axis] = slice(5, -5, 3)
-    slice3[axis] = slice(5, -6, 3)
-    slice4[axis] = slice(4, -7, 3)
+    slice1[axis] = slice(6, -3, 3)
+    slice2[axis] = slice(5, -4, 3)
+    slice3[axis] = slice(4, -5, 3)
+    slice4[axis] = slice(3, -6, 3)
     ret = tf.math.reduce_sum(
-        dx * (y[tuple(slice1)] + 3 * y[tuple(slice2)] + 3 * y[tuple(slice3)] + y[tuple(slice4)]) / 8.0, axis=axis)
+        (3 / 8) * dx * (y[tuple(slice1)] + 3 * y[tuple(slice2)] + 3 * y[tuple(slice3)] + y[tuple(slice4)]), axis=axis)
+
     slice1[axis] = slice(3, 4, 1)
     slice2[axis] = slice(2, 3, 1)
     slice3[axis] = slice(1, 2, 1)
@@ -173,17 +191,24 @@ def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
         else:
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
+
+        # hx=complete(Hx1, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
+
+        # hy=complete(Hy1, tf.transpose(Constants.KUP, [1, 0, 2, 3]), tf.transpose(Constants.KDOWN, [1, 0, 2, 3]),
+        #  tf.transpose(Constants.KLEFT, [1, 0, 2, 3]), tf.transpose(Constants.KRIGHT, [1, 0, 2, 3]))
+
     return l / (3 * (Constants.TIME_STEPS - 1))
 
 
 def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0.
     for n in range(Constants.TIME_STEPS - 1):
-        # E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], verbose=0)
-        E1, Hx1, Hy1, energy = model([E1, Hx1, Hy1])
+        E1, Hx1, Hy1, energy = model.predict([E1, Hx1, Hy1], verbose=0)
+        #E1, Hx1, Hy1 = model([E1, Hx1, Hy1])
 
         E1 = E1[:, 0:Constants.N, :, :]
         Hx1 = Hx1[:, 0:Constants.N - 2, :, :]
@@ -196,7 +221,8 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 
 def custom_loss(y_true, y_pred):
-    return tf.math.reduce_mean(abs(y_true - y_pred)) / Constants.DT
+
+    return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
 
 
 def custom_loss3(y_true, y_pred):
@@ -207,8 +233,8 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(1., trainable=True, dtype=Constants.DTYPE, name='beta')
-        self.pars2 = tf.Variable(2., trainable=True, dtype=Constants.DTYPE, name='delta')
+        self.pars1 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='beta')
+        self.pars2 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
     def call(self, input):
@@ -220,15 +246,14 @@ class DRP_LAYER(keras.layers.Layer):
         E_m = amper(E_n, Hx_n, Hy_n, self.pars3, self.pars3)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
-        hx=complete(Hx_n, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
+        hx = complete(Hx_n, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
 
-        hy=complete(Hy_n, tf.transpose(Constants.KUP, [1, 0, 2, 3]), tf.transpose(Constants.KDOWN, [1, 0, 2, 3]),
-                 tf.transpose(Constants.KLEFT, [1, 0, 2, 3]), tf.transpose(Constants.KRIGHT, [1, 0, 2, 3]))
-
+        hy = complete(Hy_n, tf.transpose(Constants.KUP, [1, 0, 2, 3]), tf.transpose(Constants.KDOWN, [1, 0, 2, 3]),
+                      tf.transpose(Constants.KLEFT, [1, 0, 2, 3]), tf.transpose(Constants.KRIGHT, [1, 0, 2, 3]))
 
         inte = tf_simp3(tf_simp3(E_n ** 2, rank=4), rank=3)
         inthx = tf_simp3(tf_simp4(hx ** 2, rank=4), rank=3)
         inthy = tf_simp4(tf_simp3(hy ** 2, rank=4), rank=3)
         # divergence=(tf_diff(Hy_n,axis=2)+tf_diff(Hx_n,axis=1))/(2*Constants.DX)
 
-        return tf.concat([E_n, E_m], 1), tf.concat([Hx_n, Hx_m], 1), tf.concat([Hy_n, Hy_m], 1), inte + inthx + inthy
+        return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m, inte + inthx + inthy
