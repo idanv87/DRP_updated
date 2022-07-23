@@ -23,29 +23,29 @@ else:
 
 path = Constants.PATH
 
-with open(path + 'ex.pkl', 'rb') as file:
+with open(path + 'train/ex.pkl', 'rb') as file:
     ex = pickle.load(file)
-with open(path + 'hx_x.pkl', 'rb') as file:
+with open(path + 'train/hx_x.pkl', 'rb') as file:
     hx_x = pickle.load(file)
-with open(path + 'hy_x.pkl', 'rb') as file:
+with open(path + 'train/hy_x.pkl', 'rb') as file:
     hy_x = pickle.load(file)
 
-with open(path + 'ey1.pkl', 'rb') as file:
+with open(path + 'train/ey1.pkl', 'rb') as file:
     ey1 = pickle.load(file)
-with open(path + 'ey2.pkl', 'rb') as file:
+with open(path + 'train/ey2.pkl', 'rb') as file:
     ey2 = pickle.load(file)
 
-with open(path + 'hx_y1.pkl', 'rb') as file:
+with open(path + 'train/hx_y1.pkl', 'rb') as file:
     hx_y1 = pickle.load(file)
-with open(path + 'hx_y2.pkl', 'rb') as file:
+with open(path + 'train/hx_y2.pkl', 'rb') as file:
     hx_y2 = pickle.load(file)
 
-with open(path + 'hy_y1.pkl', 'rb') as file:
+with open(path + 'train/hy_y1.pkl', 'rb') as file:
     hy_y1 = pickle.load(file)
-with open(path + 'hy_y2.pkl', 'rb') as file:
+with open(path + 'train/hy_y2.pkl', 'rb') as file:
     hy_y2 = pickle.load(file)
 
-with open(path + 'energy_y.pkl', 'rb') as file:
+with open(path + 'train/energy_y.pkl', 'rb') as file:
     energy_y = pickle.load(file)
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 

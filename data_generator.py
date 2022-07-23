@@ -159,34 +159,34 @@ def create_train_data():
         ENERGY.append(energy)
 
     pickle.dump(np.vstack(EX).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ex.pkl", "wb"))
+                open(path + "train/ex.pkl", "wb"))
     pickle.dump(np.vstack(EY1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ey1.pkl", "wb"))
+                open(path + "train/ey1.pkl", "wb"))
     pickle.dump(np.vstack(EY2).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ey2.pkl", "wb"))
+                open(path + "train/ey2.pkl", "wb"))
 
     pickle.dump(
         np.vstack(HX_X).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
-        open(path + "hx_x.pkl", "wb"))
+        open(path + "train/hx_x.pkl", "wb"))
     pickle.dump(
         np.vstack(HX_Y1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
-        open(path + "hx_y1.pkl", "wb"))
+        open(path + "train/hx_y1.pkl", "wb"))
     pickle.dump(
         np.vstack(HX_Y2).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
-        open(path + "hx_y2.pkl", "wb"))
+        open(path + "train/hx_y2.pkl", "wb"))
 
     pickle.dump(
         np.vstack(HY_X).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
-        open(path + "hy_x.pkl", "wb"))
+        open(path + "train/hy_x.pkl", "wb"))
     pickle.dump(
         np.vstack(HY_Y1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
-        open(path + "hy_y1.pkl", "wb"))
+        open(path + "train/hy_y1.pkl", "wb"))
     pickle.dump(
         np.vstack(HY_Y2).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
-        open(path + "hy_y2.pkl", "wb"))
+        open(path + "train/hy_y2.pkl", "wb"))
 
     pickle.dump(np.vstack(ENERGY).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, 1)),
-                open(path + "energy_y.pkl", "wb"))
+                open(path + "train/energy_y.pkl", "wb"))
 
     return 1
 
@@ -212,9 +212,9 @@ def create_test_data():
     k2_test = Constants.K2_TEST
     ex, hx_x, hy_x = generate_test_data(k1_test, k2_test)
     pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ex_test.pkl", "wb"))
+                open(path + "test/ex_test.pkl", "wb"))
     pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
-                open(path + "hx_x_test.pkl", "wb"))
+                open(path + "test/hx_x_test.pkl", "wb"))
     pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
-                open(path + "hy_x_test.pkl", "wb"))
+                open(path + "test/hy_x_test.pkl", "wb"))
     return 1

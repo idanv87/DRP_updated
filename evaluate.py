@@ -10,10 +10,10 @@ from data_generator import *
 
 
 
-# generate_data(Constants.K1_TRAIN, Constants.K2_TRAIN)
-#generate_train_data()
+#generate_train_data(Constants.K1_TRAIN, Constants.K2_TRAIN)
+create_train_data()
 
-
+print(q)
 create_test_data()
 
 
@@ -27,11 +27,11 @@ model1.load_weights( path+ 'checkpoint/model_weights_1net_nodiv.pkl').expect_par
 
 #with open(path + 'multiple_history.pkl', 'rb') as file:
 #    history = pickle.load(file)
-with open(path + 'ex_test.pkl', 'rb') as file:
+with open(path + 'test/ex_test.pkl', 'rb') as file:
     e_true = pickle.load(file)
-with open(path + 'hx_x_test.pkl', 'rb') as file:
+with open(path + 'test/hx_x_test.pkl', 'rb') as file:
     hx_true =pickle.load(file)
-with open(path + 'hy_x_test.pkl', 'rb') as file:
+with open(path + 'test/hy_x_test.pkl', 'rb') as file:
     hy_true = pickle.load(file)
 
 l_yee = []
