@@ -224,17 +224,17 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='beta')
+        self.pars1 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='beta')
         self.pars2 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
     def call(self, input):
 
         E, Hx, Hy = input
-        E_n = amper(E, Hx, Hy, self.pars3, self.pars3)
+        E_n = amper(E, Hx, Hy, self.pars1, self.pars2)
         Hx_n, Hy_n = faraday(E_n, Hx, Hy, self.pars1, self.pars2)
 
-        E_m = amper(E_n, Hx_n, Hy_n, self.pars3, self.pars3)
+        E_m = amper(E_n, Hx_n, Hy_n, self.pars1, self.pars2)
         Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
 
         # hx = complete(Hx_n, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
@@ -245,15 +245,16 @@ class DRP_LAYER(keras.layers.Layer):
         # inte = tf_simp3(tf_simp3(E_n ** 2, rank=4), rank=3)
         # inthx = tf_simp3(tf_simp4(hx ** 2, rank=4), rank=3)
         # inthy = tf_simp4(tf_simp3(hy ** 2, rank=4), rank=3)
-        y1 = tf.math.multiply(self.pars1, Dy(E_n, Constants.FILTER_BETA))
-        y2 = tf.math.multiply(self.pars2, Dy(E_n, Constants.FILTER_DELTA))
-        y3 = Dy(E_n, Constants.FILTER_YEE)
-        dEdy=Dx(y1+y1+y2, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
 
-        x1 = tf.math.multiply(self.pars1, Dx(E_n, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
-        x2 = tf.math.multiply(self.pars2, Dx(E_n, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
-        x3 = Dx(E_n, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
-        dEdx=Dy(x1+x2+x3, Constants.FILTER_YEE)
+        #y1 = tf.math.multiply(self.pars1, Dy(E_n, Constants.FILTER_BETA))
+        #y2 = tf.math.multiply(self.pars2, Dy(E_n, Constants.FILTER_DELTA))
+        #y3 = Dy(E_n, Constants.FILTER_YEE)
+        #dEdy=Dx(y1+y1+y2, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+
+        #x1 = tf.math.multiply(self.pars1, Dx(E_n, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
+        #x2 = tf.math.multiply(self.pars2, Dx(E_n, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
+        #x3 = Dx(E_n, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+        #dEdx=Dy(x1+x2+x3, Constants.FILTER_YEE)
 
 
 
@@ -261,7 +262,7 @@ class DRP_LAYER(keras.layers.Layer):
         #divergence = ( dhydy[:,1:-1,:,:]+ dhxdx[:, :,  1:-1, :])/Constants.DX
         #divergence = (dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :]) / Constants.DX
 
-        divergence = (tf_diff(Hy_n[:, 1:-1, :, :], axis=2) + tf_diff(Hx_n[:, :, 1:-1, :], axis=1))
+        #divergence = (tf_diff(Hy_n[:, 1:-1, :, :], axis=2) + tf_diff(Hx_n[:, :, 1:-1, :], axis=1))
         #divergence=dEdx-dEdy
 
-        return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m, divergence
+        return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m

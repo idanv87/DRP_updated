@@ -64,7 +64,7 @@ E2_output = output[3]
 Hx2_output = output[4]
 Hy2_output = output[5]
 
-div_output=output[6]
+#div_output=output[6]
 # energy_output = output[6]
 
 model = keras.Model(
@@ -80,14 +80,14 @@ model.compile(
           custom_loss]
 )
 
-model.save(path + 'mymodel_yes_div.pkl')
+model.save(path + 'checkpoint/mymodel_1net_nodiv.pkl')
 
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=False)
-checkpoint_filepath = path+ 'model_weights_yes_div.pkl'
+checkpoint_filepath = path+ 'checkpoint/model_weights_1net_nodiv.pkl'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,
     save_weights_only=True,
@@ -110,16 +110,16 @@ if __name__ == "__main__":
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
+    #pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
+    #plt.plot(history.history['loss'])
+    #plt.plot(history.history['val_loss'])
     #plt.show()
 
-    trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
-    non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
-    print('Total params: {:,}'.format(trainable_count + non_trainable_count))
-    print('Trainable params: {:,}'.format(trainable_count))
-    print('Non-trainable params: {:,}'.format(non_trainable_count))
+    #trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
+    #non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
+    #print('Total params: {:,}'.format(trainable_count + non_trainable_count))
+    #print('Trainable params: {:,}'.format(trainable_count))
+    #print('Non-trainable params: {:,}'.format(non_trainable_count))
     print(model.trainable_weights)
 
 # optimizer = keras.optimizers.SGD(learning_rate=1e-2)
