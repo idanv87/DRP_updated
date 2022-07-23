@@ -11,7 +11,7 @@ from data_generator import *
 
 
 # generate_data(Constants.K1_TRAIN, Constants.K2_TRAIN)
-generate_train_data()
+#generate_train_data()
 
 
 create_test_data()
@@ -19,14 +19,14 @@ create_test_data()
 
 path = Constants.PATH
 
-model1 = keras.models.load_model(path + 'mymodel_yes_div.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
-model1.load_weights( path+ 'model_weights_yes_div.pkl').expect_partial()
+model1 = keras.models.load_model(path + 'checkpoint/mymodel_1net_nodiv.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
+model1.load_weights( path+ 'checkpoint/model_weights_1net_nodiv.pkl').expect_partial()
 
 #model2 = keras.models.load_model(path + 'mymodel_no_div.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
 #model2.load_weights( path+ 'model_weights_no_div.pkl').expect_partial()
 
-with open(path + 'multiple_history.pkl', 'rb') as file:
-    history = pickle.load(file)
+#with open(path + 'multiple_history.pkl', 'rb') as file:
+#    history = pickle.load(file)
 with open(path + 'ex_test.pkl', 'rb') as file:
     e_true = pickle.load(file)
 with open(path + 'hx_x_test.pkl', 'rb') as file:

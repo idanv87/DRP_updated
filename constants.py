@@ -38,14 +38,16 @@ class Constants:
 
     K1_TRAIN = list(np.arange(1,5))
     K2_TRAIN = list(np.arange(1,5))
+    TRAIN_NUM=2
 
     K1_VAL = [2.]
     K2_VAL = [1.]
 
     K1_TEST = [5,6,7,8]
     K2_TEST = [5,6,7,8]
-    TEST_NUM=len(K1_TEST) * len(K2_TEST)
-    TRAIN_NUM=2
+    TEST_NUM=len(K1_TEST*len(K2_TEST))
+
+
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
     PADX_BACWARD = tf.constant([[0, 0], [1, 1], [N - 2, 1], [0, 0]], shape=[4, 2])

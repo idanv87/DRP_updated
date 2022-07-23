@@ -104,7 +104,7 @@ if __name__ == "__main__":
         [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=100,
+        epochs=2,
         batch_size=32,
         shuffle=True, validation_split=0.2, verbose=2)
 
