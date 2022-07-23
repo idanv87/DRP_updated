@@ -6,7 +6,12 @@ import matplotlib.pyplot as plt
 
 from constants import Constants
 from utils import *
-from data_generator import create_test_data
+from data_generator import *
+
+
+
+# generate_data(Constants.K1_TRAIN, Constants.K2_TRAIN)
+generate_train_data()
 
 
 create_test_data()

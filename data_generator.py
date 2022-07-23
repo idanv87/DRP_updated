@@ -10,22 +10,30 @@ path = Constants.PATH
 
 
 def generate_data(k1_train, k2_train):
-    ex = []
-    ey1 = []
-    ey2 = []
+    Ex = []
+    Ey1 = []
+    Ey2 = []
+    Hx_x = []
+    Hx_y1 = []
+    Hx_y2 = []
+    Hy_x = []
+    Hy_y1 = []
+    Hy_y2 = []
+    Energy = []
 
-    hx_x = []
-    hy_x = []
-    hx_y1 = []
-
-    hx_y2 = []
-    hy_y1 = []
-    hy_y2 = []
-
-    energy = []
     for k1 in k1_train:
         for k2 in k2_train:
             c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
+            ex = []
+            ey1 = []
+            ey2 = []
+            hx_x = []
+            hy_x = []
+            hx_y1 = []
+            hx_y2 = []
+            hy_y1 = []
+            hy_y2 = []
+            energy = []
             for n in range(2, Constants.TIME_STEPS + 2):
                 f0 = f_a(c, n - 2, k1, k2)
                 f1 = f_a(c, n - 1, k1, k2)
@@ -45,24 +53,150 @@ def generate_data(k1_train, k2_train):
 
                 energy.append(f1[3])
 
-    return np.vstack(ex), np.vstack(ey1), np.vstack(ey2), \
-           np.vstack(hx_x), np.vstack(hx_y1), np.vstack(hx_y2), np.vstack(hy_x), np.vstack(hy_y1), np.vstack(
-        hy_y2), np.vstack(
-        energy)
+            Ex.append(np.vstack(ex))
+            Ey1.append(np.vstack(ey1))
+            Ey2.append(np.vstack(ey2))
+            Hx_x.append(np.vstack(hx_x))
+            Hx_y1.append(np.vstack(hx_y1))
+            Hx_y2.append(np.vstack(hx_y2))
+            Hy_x.append(np.vstack(hy_x))
+            Hy_y1.append(np.vstack(hy_y1))
+            Hy_y2.append(np.vstack(hy_y2))
+            Energy.append(np.vstack(energy))
+
+    pickle.dump(Ex, open(path + "Ex_train.pkl", "wb"))
+    pickle.dump(Ey1, open(path + "Ey1_train.pkl", "wb"))
+    pickle.dump(Ey2, open(path + "Ey2_train.pkl", "wb"))
+    pickle.dump(Hx_x, open(path + "Hx_x_train.pkl", "wb"))
+    pickle.dump(Hx_y1, open(path + "Hx_y1_train.pkl", "wb"))
+    pickle.dump(Hx_y2, open(path + "Hx_y2_train.pkl", "wb"))
+    pickle.dump(Hy_x, open(path + "Hy_x_train.pkl", "wb"))
+    pickle.dump(Hy_y1, open(path + "Hy_y1_train.pkl", "wb"))
+    pickle.dump(Hy_y2, open(path + "Hy_y2_train.pkl", "wb"))
+    pickle.dump(Energy, open(path + "Energy_train.pkl", "wb"))
+    return 1
 
 
 def create_test_data():
     k1_test = Constants.K1_TEST
     k2_test = Constants.K2_TEST
-    #ex, hx_x, hy_x = generate_test_data(k1_test, k2_test)
-    ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy  = generate_data(k1_test, k2_test)
+    # ex, hx_x, hy_x = generate_test_data(k1_test, k2_test)
+    ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy = generate_data(k1_test, k2_test)
 
-    pickle.dump(ex.reshape((Constants.TEST_NUM  * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
+    pickle.dump(ex.reshape((Constants.TEST_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
                 open(path + "ex_test.pkl", "wb"))
-    pickle.dump(hx_x.reshape((Constants.TEST_NUM  * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
+    pickle.dump(hx_x.reshape((Constants.TEST_NUM * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
                 open(path + "hx_x_test.pkl", "wb"))
-    pickle.dump(hy_x.reshape((Constants.TEST_NUM  * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
+    pickle.dump(hy_x.reshape((Constants.TEST_NUM * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
                 open(path + "hy_x_test.pkl", "wb"))
+    return 1
+
+
+def generate_train_data():
+    with open(path + 'Ex_train.pkl', 'rb') as file:
+        Ex_train = pickle.load(file)
+    with open(path + 'Ey1_train.pkl', 'rb') as file:
+        Ey1_train = pickle.load(file)
+    with open(path + 'Ey2_train.pkl', 'rb') as file:
+        Ey2_train = pickle.load(file)
+
+    with open(path + 'Hx_x_train.pkl', 'rb') as file:
+        Hx_x_train = pickle.load(file)
+    with open(path + 'Hx_y1_train.pkl', 'rb') as file:
+        Hx_y1_train = pickle.load(file)
+    with open(path + 'Hx_y2_train.pkl', 'rb') as file:
+        Hx_y2_train = pickle.load(file)
+
+    with open(path + 'Hy_x_train.pkl', 'rb') as file:
+        Hy_x_train = pickle.load(file)
+    with open(path + 'Hy_y1_train.pkl', 'rb') as file:
+        Hy_y1_train = pickle.load(file)
+    with open(path + 'Hy_y2_train.pkl', 'rb') as file:
+        Hy_y2_train = pickle.load(file)
+
+    with open(path + 'Energy_train.pkl', 'rb') as file:
+        Energy_train = pickle.load(file)
+
+    EX = []
+    EY1 = []
+    EY2 = []
+    HX_X = []
+    HX_Y1 = []
+    HX_Y2 = []
+    HY_X = []
+    HY_Y1 = []
+    HY_Y2 = []
+    ENERGY = []
+
+    for i in range(Constants.TRAIN_NUM):
+        ex = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
+        ey1 = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
+        ey2 = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
+
+        hx_x = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
+        hx_y1 = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
+        hx_y2 = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
+
+        hy_x = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
+        hy_y1 = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
+        hy_y2 = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
+
+        energy = np.zeros((Constants.TIME_STEPS, 1))
+
+        a = np.random.rand(1, len(Ex_train))
+        for j in np.arange(len(Ex_train)):
+            ex += a[0, j] * Ex_train[j]
+            ey1 += a[0, j] * Ey1_train[j]
+            ey2 += a[0, j] * Ey2_train[j]
+
+            hx_x += a[0, j] * Hx_x_train[j]
+            hx_y1 += a[0, j] * Hx_y1_train[j]
+            hx_y2 += a[0, j] * Hx_y2_train[j]
+
+            hy_x += a[0, j] * Hy_x_train[j]
+            hy_y1 += a[0, j] * Hy_y1_train[j]
+            hy_y2 += a[0, j] * Hy_y2_train[j]
+
+            energy += a[0, j] * Energy_train[j]
+
+        EX.append(ex)
+        EY1.append(ey1)
+        EY2.append(ey2)
+
+        HX_X.append(hx_x)
+        HX_Y1.append(hx_y1)
+        HX_Y2.append(hx_y2)
+
+        HY_X.append(hy_x)
+        HY_Y1.append(hy_y1)
+        HY_Y2.append(hy_y2)
+
+        ENERGY.append(energy)
+
+    pickle.dump(np.vstack(EX).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
+                open(path + "ex.pkl", "wb"))
+    pickle.dump(np.vstack(EY1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
+                open(path + "ey1.pkl", "wb"))
+    pickle.dump(np.vstack(EY2).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
+                open(path + "ey2.pkl", "wb"))
+
+    pickle.dump(np.vstack(HX_X).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N-2, Constants.N-1, 1)),
+                open(path + "hx_x.pkl", "wb"))
+    pickle.dump(np.vstack(HX_Y1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N-2, Constants.N-1, 1)),
+                open(path + "hx_y1.pkl", "wb"))
+    pickle.dump(np.vstack(HX_Y2).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N-2, Constants.N-1, 1)),
+                open(path + "hx_y2.pkl", "wb"))
+
+    pickle.dump(np.vstack(HY_X).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N-1, Constants.N-2, 1)),
+                open(path + "hy_x.pkl", "wb"))
+    pickle.dump(np.vstack(HY_Y1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N-1, Constants.N-2, 1)),
+                open(path + "hy_y1.pkl", "wb"))
+    pickle.dump(np.vstack(HY_Y2).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N-1, Constants.N-2, 1)),
+                open(path + "hy_y2.pkl", "wb"))
+
+    pickle.dump(np.vstack(ENERGY).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, 1)),
+                open(path + "energy_y.pkl", "wb"))
+
     return 1
 
 
@@ -72,60 +206,37 @@ def generate_test_data(k1_test, k2_test):
     hy = []
 
     ex = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
-    hx_x = np.zeros((Constants.TIME_STEPS * (Constants.N-2), Constants.N-1))
-    hy_x = np.zeros((Constants.TIME_STEPS * (Constants.N-1), Constants.N-2))
+    hx_x = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
+    hy_x = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
 
     for k1 in k1_test:
         for k2 in k2_test:
             c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
             for n in range(2, Constants.TIME_STEPS + 2):
                 f0 = f_a(c, n - 2, k1, k2)
+
                 e.append(f0[0])
                 hx.append(f0[1])
                 hy.append(f0[2])
     E = np.vstack(e)
     Hx = np.vstack(hx)
     Hy = np.vstack(hy)
-    e=[]
-    hx=[]
-    hy=[]
+    e = []
+    hx = []
+    hy = []
     for i in range(Constants.TEST_NUM):
         a = np.random.rand(1, len(Constants.K1_TEST) * len(Constants.K2_TEST))
         print(a)
         for j in range(len(Constants.K1_TEST) * len(Constants.K2_TEST)):
-            ex += a[0, j] * E[j*Constants.TIME_STEPS*Constants.N:Constants.TIME_STEPS * Constants.N*(j+1), :]
-            hx_x += a[0, j] * Hx[j*Constants.TIME_STEPS*(Constants.N-2):Constants.TIME_STEPS * (Constants.N-2)*(j+1), :]
-            hy_x += a[0, j] * Hy[j*Constants.TIME_STEPS*(Constants.N-1):Constants.TIME_STEPS * (Constants.N-1)*(j+1), :]
+            ex += a[0, j] * E[j * Constants.TIME_STEPS * Constants.N:Constants.TIME_STEPS * Constants.N * (j + 1), :]
+            hx_x += a[0, j] * Hx[
+                              j * Constants.TIME_STEPS * (Constants.N - 2):Constants.TIME_STEPS * (Constants.N - 2) * (
+                                      j + 1), :]
+            hy_x += a[0, j] * Hy[
+                              j * Constants.TIME_STEPS * (Constants.N - 1):Constants.TIME_STEPS * (Constants.N - 1) * (
+                                      j + 1), :]
         e.append(ex)
         hx.append(hx_x)
         hy.append(hy_x)
 
     return np.vstack(e), np.vstack(hx), np.vstack(hy)
-
-
-if __name__ == "__main__":
-    print("generating data")
-    k1 = Constants.K1_TRAIN
-    k2 = Constants.K2_TRAIN
-
-    ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy = generate_data(k1, k2)
-
-    pickle.dump(ex.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ex.pkl", "wb"))
-    pickle.dump(hx_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
-                open(path + "hx_x.pkl", "wb"))
-    pickle.dump(hy_x.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
-                open(path + "hy_x.pkl", "wb"))
-    pickle.dump(ey1.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ey1.pkl", "wb"))
-    pickle.dump(ey2.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
-                open(path + "ey2.pkl", "wb"))
-    pickle.dump(hx_y1.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 2), Constants.N - 1, 1)),
-                open(path + "hx_y1.pkl", "wb"))
-    pickle.dump(hx_y2.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 2), Constants.N - 1, 1)),
-                open(path + "hx_y2.pkl", "wb"))
-    pickle.dump(hy_y1.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 1), Constants.N - 2, 1)),
-                open(path + "hy_y1.pkl", "wb"))
-    pickle.dump(hy_y2.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, (Constants.N - 1), Constants.N - 2, 1)),
-                open(path + "hy_y2.pkl", "wb"))
-    pickle.dump(energy.reshape((len(k1) * len(k2) * Constants.TIME_STEPS, 1)), open(path + "energy_y.pkl", "wb"))
