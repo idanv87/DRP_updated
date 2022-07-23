@@ -35,14 +35,14 @@ class Constants:
     X2 = np.linspace(0., XMAX, N)
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
-    K1_TRAIN = [ 11.,12.,13.]
+    K1_TRAIN = [ 10,11.,12.,13.]
     K2_TRAIN = [1.]
 
     K1_VAL = [2.]
     K2_VAL = [1.]
 
-    K1_TEST = [1,2, 3]
-    K2_TEST = [1]
+    K1_TEST = [5,6,7,8]
+    K2_TEST = [5,6,7,8]
     TEST_NUM=len(K1_TEST) * len(K2_TEST)
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])

@@ -13,7 +13,7 @@ import matplotlib
 from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
 
-# matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 if Constants.DTYPE == tf.dtypes.float64:
@@ -63,6 +63,7 @@ Hy_output = output[2]
 E2_output = output[3]
 Hx2_output = output[4]
 Hy2_output = output[5]
+
 div_output=output[6]
 # energy_output = output[6]
 
@@ -75,17 +76,18 @@ model = keras.Model(
 model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=1e-3),
     # loss=[custom_loss, custom_loss, custom_loss],
-    loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss, custom_loss]
+    loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
+          custom_loss]
 )
 
-model.save(path + 'mymodel_multiple.pkl')
+model.save(path + 'mymodel_yes_div.pkl')
 
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=False)
-checkpoint_filepath = path+ 'model_weights.pkl'
+checkpoint_filepath = path+ 'model_weights_yes_div.pkl'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,
     save_weights_only=True,
@@ -102,7 +104,7 @@ if __name__ == "__main__":
         [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=10,
+        epochs=100,
         batch_size=32,
         shuffle=True, validation_split=0.2, verbose=2)
 
@@ -111,7 +113,7 @@ if __name__ == "__main__":
     pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
-    plt.show()
+    #plt.show()
 
     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
