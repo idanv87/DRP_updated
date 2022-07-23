@@ -160,6 +160,7 @@ def f_a(c, n, k1, k2):
             np.sin(Constants.PI * k2 * Constants.X) * np.sin(
         Constants.PI * k1 * Constants.Y))
 
+
     hx = (1 / c) * np.sin(c * (Constants.DT / 2) * (2 * n + 1)) * (
             -Constants.PI * k2 * np.sin(Constants.PI * k1 * Constants.X) * np.cos(
         Constants.PI * k2 * (Constants.Y + Constants.DX / 2)) - Constants.PI * k1 * np.sin(
@@ -243,10 +244,10 @@ class DRP_LAYER(keras.layers.Layer):
         E, Hx, Hy = input
 
         E_n = amper(E, Hx, Hy, self.pars3, self.pars3)
-        Hx_n, Hy_n = faraday(E_n, Hx, Hy, self.pars1, self.pars2)
+        Hx_n, Hy_n = faraday(E_n, Hx, Hy, self.pars2, self.pars2)
 
         E_m = amper(E_n, Hx_n, Hy_n, self.pars3, self.pars3)
-        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
+        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars2, self.pars2)
 
         #hx = complete(Hx_n, Constants.KLEFT, Constants.KRIGHT, Constants.KUP, Constants.KDOWN)
 

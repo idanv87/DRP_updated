@@ -68,15 +68,14 @@ div_output=output[6]
 
 model = keras.Model(
     inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output, div_output]
+    outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output]
     # outputs = [E_output, Hx_output, Hy_output, energy_output]
 )
 
 model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=1e-3),
     # loss=[custom_loss, custom_loss, custom_loss],
-    loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
-          custom_loss3]
+    loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss, custom_loss]
 )
 
 model.save(path + 'mymodel_multiple.pkl')
@@ -84,9 +83,15 @@ model.save(path + 'mymodel_multiple.pkl')
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
-                                        mode="min", patience=3,
-                                        restore_best_weights=True)
-# checkpoint save_best only=True
+                                        mode="min", patience=5,
+                                        restore_best_weights=False)
+checkpoint_filepath = path+ 'model_weights.pkl'
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_filepath,
+    save_weights_only=True,
+    monitor='val_loss',
+    mode='min',
+    save_best_only=True)
 # csv loger
 reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                                         patience=5, min_lr=0.0001)
@@ -94,16 +99,15 @@ if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2, div_y],
-        callbacks=[earlystopping],
+        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2],
+        callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=100,
+        epochs=10,
         batch_size=32,
         shuffle=True, validation_split=0.2, verbose=2)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    model.save_weights(path + 'mymodel_weights2.pkl')
     pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])

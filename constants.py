@@ -13,7 +13,7 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 63
+    N = 69
     # N should be odd which devided by 3
     assert N%2 != 0
     assert (N) % 3 ==0
@@ -22,9 +22,10 @@ class Constants:
     YMIN, YMAX = 0.0, 1.0
     XMIN, XMAX = 0.0, 1.0
 
-    T = 0.01
-    TIME_STEPS = 400
-    DT = T / TIME_STEPS
+    T = 0.1
+    TIME_STEPS = 63
+    DT = T / (TIME_STEPS)
+
     LX = XMAX - XMIN
     LY = YMAX - YMIN
     DX = LX / (N - 1)
@@ -40,8 +41,9 @@ class Constants:
     K1_VAL = [2.]
     K2_VAL = [1.]
 
-    K1_TEST = [11,12,13]
+    K1_TEST = [1,2, 3]
     K2_TEST = [1]
+    TEST_NUM=len(K1_TEST) * len(K2_TEST)
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
     PADX_BACWARD = tf.constant([[0, 0], [1, 1], [N - 2, 1], [0, 0]], shape=[4, 2])

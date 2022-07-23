@@ -11,11 +11,12 @@ from data_generator import create_test_data
 
 create_test_data()
 
+
 path = Constants.PATH
 
 model = keras.models.load_model(path + 'mymodel_multiple.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
-model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
-
+# model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
+model.load_weights( path+ 'model_weights.pkl').expect_partial()
 
 with open(path + 'multiple_history.pkl', 'rb') as file:
     history = pickle.load(file)
@@ -30,7 +31,7 @@ l_yee = []
 l_model = []
 l_fourth = []
 l_drp=[]
-for i in range(len(Constants.K1_TEST) * len(Constants.K2_TEST)):
+for i in range(Constants.TEST_NUM):
     E1 = tf.identity(tf.reshape(e_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N, Constants.N, 1]))
     Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
     Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
