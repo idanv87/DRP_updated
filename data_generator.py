@@ -73,7 +73,7 @@ def generate_train_data(k1_train, k2_train):
     start_time = time.time()
 
 
-    pickle.dump(Hy_x, open(path + "Ex_train.pkl", "wb"))
+    pickle.dump(Ex, open(path + "Ex_train.pkl", "wb"))
     pickle.dump(Ey1, open(path + "Ey1_train.pkl", "wb"))
     pickle.dump(Ey2, open(path + "Ey2_train.pkl", "wb"))
     pickle.dump(Hx_x, open(path + "Hx_x_train.pkl", "wb"))

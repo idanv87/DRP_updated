@@ -16,7 +16,7 @@ from data_generator import create_train_data
 
 create_train_data()
 
-print(q)
+
 
 
 path = Constants.PATH
@@ -28,12 +28,12 @@ l={"N": Constants.N, "T": Constants.T,"time_steps": Constants.TIME_STEPS, "train
 model_details={"name":'1001_125', "net_num": 1, "energy_loss": False, "div_loss": False,  "div_preserve": True, "initial_":-0.125, "params":l }
 name=model_details["name"]
 
-saving_path=path+'model_'+name+'_details/'
+saving_path=path+'Experiment_'+name+'_details/'
 isExist = os.path.exists(saving_path)
 if not isExist:
-    os.makedirs(path)
+    os.makedirs(saving_path)
 
-pickle.dump(model_details, open(saving_path + 'model_'+name+'_details'+'.pkl', "wb"))
+pickle.dump(model_details, open(saving_path + 'experiment_'+name+'_details'+'.pkl', "wb"))
 
 
 
