@@ -16,7 +16,7 @@ from utils import DRP_LAYER, custom_loss, custom_loss3
 #matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-model_details={"name":'1001', "net_num": '1_', "energy_loss": 'False_', "div_loss": 'False_',  "div_preserve": 'True' }
+model_details={"name":'1001_125', "net_num": 1, "energy_loss": False, "div_loss": False,  "div_preserve": True, "initial_":-0.125 }
 name=model_details["name"]
 
 
