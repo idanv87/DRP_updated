@@ -15,13 +15,25 @@ from data_generator import *
 #create_train_data()
 
 
-create_test_data()
+#create_test_data()
+
+name='1001_125'
+saving_path=path+'Experiment_'+name+'_details/'
 
 
 path = Constants.PATH
 
-model1 = keras.models.load_model(path + 'checkpoint/mymodel_1net_nodiv.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
-model1.load_weights( path+ 'checkpoint/model_weights_1net_nodiv.pkl').expect_partial()
+model1 = keras.models.load_model(saving_path + 'model_name'+name+'.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
+model1.load_weights(saving_path+ 'model_weights_'+name+'.pkl').expect_partial()
+with open(saving_path + 'experiment_'+name+'_details.pkl', 'rb') as file:
+    model_parameters = pickle.load(file)
+
+print("model trained with N="+ str(model_parameters["params"]["N"]))
+print("model trained with T=" +str(model_parameters["params"]["T"]))
+print("modeltrained with time steps="  + str(model_parameters["params"]["time_steps"]))
+
+
+
 
 #model2 = keras.models.load_model(path + 'mymodel_no_div.pkl', custom_objects={'custom_loss': custom_loss,'custom_loss3': custom_loss3 })
 #model2.load_weights( path+ 'model_weights_no_div.pkl').expect_partial()
@@ -49,10 +61,10 @@ for i in range(Constants.TEST_NUM):
     l_drp.append(loss_yee('DRP', -0.125, -0.125, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
 
 
-pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
-pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
-pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
-pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
+#pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
+#pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
+#pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
+#pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
 
 plt.plot(l_yee, "-b", label="Yee")
 plt.plot(l_fourth, "-r", label="4th")
