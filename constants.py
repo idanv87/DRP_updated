@@ -39,8 +39,8 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = list(np.arange(10,20))
-    K2_TRAIN = list(np.arange(10,20))
+    K1_TRAIN = list(np.arange(10,30))
+    K2_TRAIN = list(np.arange(10,30))
     TRAIN_NUM=10
 
     K1_VAL = [2.]
