@@ -34,6 +34,8 @@ class Constants:
     DX = LX / (N - 1)
     DY = LY / (N - 1)
 
+    CFL=DT/DX
+
     X1 = np.linspace(0., XMAX, N)
     X2 = np.linspace(0., XMAX, N)
 
