@@ -1,5 +1,8 @@
 import math
+import pickle
 
+
+import gzip
 import tensorflow as tf
 
 import numpy as np
@@ -24,7 +27,7 @@ class Constants:
 
     T = 0.1
     TIME_STEPS = 63
-    DT = T / (TIME_STEPS)
+    DT = T / (TIME_STEPS-1)
 
     LX = XMAX - XMIN
     LY = YMAX - YMIN
@@ -36,15 +39,15 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = list(np.arange(1,5))
-    K2_TRAIN = list(np.arange(1,5))
-    TRAIN_NUM=2
+    K1_TRAIN = list(np.arange(10,30))
+    K2_TRAIN = list(np.arange(10,30))
+    TRAIN_NUM=10
 
     K1_VAL = [2.]
     K2_VAL = [1.]
 
-    K1_TEST = [5,6,7,8]
-    K2_TEST = [5,6,7,8]
+    K1_TEST = [12,14,16,18,20,22,24,26]
+    K2_TEST = [12,14,16,18,20,22,24,26]
     TEST_NUM=len(K1_TEST*len(K2_TEST))
 
 
@@ -97,3 +100,5 @@ class Constants:
 
     KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
     KDOWN = tf.reverse(KUP, [0])
+
+

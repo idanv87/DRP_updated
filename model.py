@@ -16,6 +16,10 @@ from utils import DRP_LAYER, custom_loss, custom_loss3
 #matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+#model_details={"name":'one_parameter', "net_num": '1_', "energy_loss": 'False_', "div_loss": 'False_',  "div_preserve": 'True' }
+
+
+
 if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
@@ -87,7 +91,9 @@ model.save(path + 'checkpoint/mymodel_1net_nodiv.pkl')
 earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=False)
+
 checkpoint_filepath = path+ 'checkpoint/model_weights_1net_nodiv.pkl'
+
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,
     save_weights_only=True,

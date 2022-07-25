@@ -211,7 +211,7 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true - y_pred)) / Constants.DT
+    return tf.math.reduce_mean(abs(y_true[7:-7,7:-7] - y_pred[7:-7,7:-7])) / Constants.DT
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
 
 

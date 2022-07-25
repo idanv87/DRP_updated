@@ -1,7 +1,10 @@
 import math
 import pickle
+import time
+
 
 import numpy as np
+
 
 from constants import Constants
 from utils import f_a
@@ -24,34 +27,36 @@ def generate_train_data(k1_train, k2_train):
     for k1 in k1_train:
         for k2 in k2_train:
             c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
-            ex = []
-            ey1 = []
-            ey2 = []
-            hx_x = []
-            hy_x = []
-            hx_y1 = []
-            hx_y2 = []
-            hy_y1 = []
-            hy_y2 = []
-            energy = []
-            for n in range(2, Constants.TIME_STEPS + 2):
-                f0 = f_a(c, n - 2, k1, k2)
-                f1 = f_a(c, n - 1, k1, k2)
-                f2 = f_a(c, n, k1, k2)
+            t = np.linspace(0, Constants.T, Constants.TIME_STEPS)
 
-                ex.append(f0[0])
-                ey1.append(f1[0])
-                ey2.append(f2[0])
+            fe = np.sin(Constants.PI * k1 * Constants.X) * np.sin(Constants.PI * k2 * Constants.Y) + \
+                 np.sin(Constants.PI * k2 * Constants.X) * np.sin(
+                Constants.PI * k1 * Constants.Y)
+            ex = [a * fe for a in np.cos(c * t)]
+            ey1 = [a * fe for a in np.cos(c * (t + Constants.DT))]
+            ey2 = [a * fe for a in np.cos(c * (t + 2 * Constants.DT))]
 
-                hx_x.append(f0[1])
-                hx_y1.append(f1[1])
-                hx_y2.append(f2[1])
+            fhx = (1 / c) * (-Constants.PI * k2 * np.sin(Constants.PI * k1 * Constants.X) * np.cos(
+                Constants.PI * k2 * (Constants.Y + Constants.DX / 2)) - Constants.PI * k1 * np.sin(
+                Constants.PI * k2 * Constants.X) * np.cos(Constants.PI * k1 * (Constants.Y + Constants.DX / 2)))
 
-                hy_x.append(f0[2])
-                hy_y1.append(f1[2])
-                hy_y2.append(f2[2])
+            hx_x = [a * fhx[1:-1, :-1] for a in np.sin(c * (t + Constants.DT / 2))]
+            hx_y1 = [a * fhx[1:-1, :-1] for a in np.sin(c * (t + 3 * Constants.DT / 2))]
+            hx_y2 = [a * fhx[1:-1, :-1] for a in np.sin(c * (t + 5 * Constants.DT / 2))]
 
-                energy.append(f1[3])
+            fhy = (1 / c) * (
+                    Constants.PI * k1 * np.cos(Constants.PI * k1 * (Constants.X + Constants.DX / 2)) * np.sin(
+                Constants.PI * k2 * Constants.Y) + Constants.PI * k2 * np.cos(
+                Constants.PI * k2 * (Constants.X + Constants.DX / 2)) * np.sin(Constants.PI * k1 * Constants.Y))
+
+            hy_x = [a * fhy[:-1, 1:-1] for a in np.sin(c * (t + Constants.DT / 2))]
+            hy_y1 = [a * fhy[:-1, 1:-1] for a in np.sin(c * (t + 3 * Constants.DT / 2))]
+            hy_y2 = [a * fhy[:-1, 1:-1] for a in np.sin(c * (t + 5 * Constants.DT / 2))]
+
+            if k1 == k2:
+                energy = [1] * Constants.TIME_STEPS
+            else:
+                energy = [1 / 2] * Constants.TIME_STEPS
 
             Ex.append(np.vstack(ex))
             Ey1.append(np.vstack(ey1))
@@ -63,6 +68,8 @@ def generate_train_data(k1_train, k2_train):
             Hy_y1.append(np.vstack(hy_y1))
             Hy_y2.append(np.vstack(hy_y2))
             Energy.append(np.vstack(energy))
+    print('saving files')
+    start_time = time.time()
 
     pickle.dump(Ex, open(path + "Ex_train.pkl", "wb"))
     pickle.dump(Ey1, open(path + "Ey1_train.pkl", "wb"))
@@ -74,6 +81,7 @@ def generate_train_data(k1_train, k2_train):
     pickle.dump(Hy_y1, open(path + "Hy_y1_train.pkl", "wb"))
     pickle.dump(Hy_y2, open(path + "Hy_y2_train.pkl", "wb"))
     pickle.dump(Energy, open(path + "Energy_train.pkl", "wb"))
+    print("--- %s seconds ---" % (time.time() - start_time))
     return 1
 
 
@@ -128,7 +136,10 @@ def create_train_data():
 
         energy = np.zeros((Constants.TIME_STEPS, 1))
 
-        a = np.random.rand(1, len(Ex_train))
+        a = abs(np.random.rand(1, len(Ex_train)))
+        a=a/a.sum()
+
+
         for j in np.arange(len(Ex_train)):
             ex += a[0, j] * Ex_train[j]
             ey1 += a[0, j] * Ey1_train[j]
@@ -206,6 +217,7 @@ def generate_test_data(k1_test, k2_test):
                 hy_x.append(f0[2])
 
     return np.vstack(ex), np.vstack(hx_x), np.vstack(hy_x)
+
 
 def create_test_data():
     k1_test = Constants.K1_TEST
