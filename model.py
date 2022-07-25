@@ -12,12 +12,30 @@ import matplotlib
 
 from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
+from data_generator import create_train_data
 
+create_train_data()
+
+print(q)
+
+
+path = Constants.PATH
 #matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-model_details={"name":'1001_125', "net_num": 1, "energy_loss": False, "div_loss": False,  "div_preserve": True, "initial_":-0.125 }
+l={"N": Constants.N, "T": Constants.T,"time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
+   "k1": Constants.K1_TRAIN,"k2": Constants.K2_TRAIN}
+model_details={"name":'1001_125', "net_num": 1, "energy_loss": False, "div_loss": False,  "div_preserve": True, "initial_":-0.125, "params":l }
 name=model_details["name"]
+
+saving_path=path+'model_'+name+'_details/'
+isExist = os.path.exists(saving_path)
+if not isExist:
+    os.makedirs(path)
+
+pickle.dump(model_details, open(saving_path + 'model_'+name+'_details'+'.pkl', "wb"))
+
+
 
 
 if Constants.DTYPE == tf.dtypes.float64:
@@ -25,7 +43,7 @@ if Constants.DTYPE == tf.dtypes.float64:
 else:
     tf.keras.backend.set_floatx('float32')
 
-path = Constants.PATH
+
 
 with open(path + 'train/ex.pkl', 'rb') as file:
     ex = pickle.load(file)
@@ -84,7 +102,7 @@ model.compile(
           custom_loss]
 )
 
-model.save(path + 'checkpoint/model_name'+name+'.pkl')
+model.save(saving_path + 'model_name'+name+'.pkl')
 
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
@@ -92,7 +110,8 @@ earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=False)
 
-checkpoint_filepath = path+ 'checkpoint/model_weights_'+name+'.pkl'
+checkpoint_filepath = saving_path+ 'model_weights_'+name+'.pkl'
+
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,

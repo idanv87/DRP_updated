@@ -1,6 +1,7 @@
 import math
 import pickle
 import time
+import os
 
 
 import numpy as np
@@ -71,7 +72,8 @@ def generate_train_data(k1_train, k2_train):
     print('saving files')
     start_time = time.time()
 
-    pickle.dump(Ex, open(path + "Ex_train.pkl", "wb"))
+
+    pickle.dump(Hy_x, open(path + "Ex_train.pkl", "wb"))
     pickle.dump(Ey1, open(path + "Ey1_train.pkl", "wb"))
     pickle.dump(Ey2, open(path + "Ey2_train.pkl", "wb"))
     pickle.dump(Hx_x, open(path + "Hx_x_train.pkl", "wb"))
@@ -81,6 +83,7 @@ def generate_train_data(k1_train, k2_train):
     pickle.dump(Hy_y1, open(path + "Hy_y1_train.pkl", "wb"))
     pickle.dump(Hy_y2, open(path + "Hy_y2_train.pkl", "wb"))
     pickle.dump(Energy, open(path + "Energy_train.pkl", "wb"))
+
     print("--- %s seconds ---" % (time.time() - start_time))
     return 1
 
@@ -169,6 +172,10 @@ def create_train_data():
 
         ENERGY.append(energy)
 
+    isExist = os.path.exists(path+ 'train/')
+    if not isExist:
+        os.makedirs(path+ 'train/')
+
     pickle.dump(np.vstack(EX).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
                 open(path + "train/ex.pkl", "wb"))
     pickle.dump(np.vstack(EY1).reshape((Constants.TRAIN_NUM * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
@@ -223,6 +230,11 @@ def create_test_data():
     k1_test = Constants.K1_TEST
     k2_test = Constants.K2_TEST
     ex, hx_x, hy_x = generate_test_data(k1_test, k2_test)
+
+    isExist = os.path.exists(path+ 'test/')
+    if not isExist:
+        os.makedirs(path+ 'test/')
+
     pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
                 open(path + "test/ex_test.pkl", "wb"))
     pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
@@ -230,3 +242,6 @@ def create_test_data():
     pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
                 open(path + "test/hy_x_test.pkl", "wb"))
     return 1
+
+if __name__ == "__main__":
+    generate_train_data(Constants.K1_TRAIN, Constants.K2_TRAIN)
