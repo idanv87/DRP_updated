@@ -3,6 +3,7 @@ import pickle
 from tensorflow import keras
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import matplotlib
 
 from constants import Constants
 from utils import *
@@ -46,7 +47,7 @@ for i in range(Constants.TEST_NUM):
     Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
     Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
     l_model.append(loss_model(model1, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
-    l_yee.append(loss_yee('Yee', 0., 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+    l_yee.append(loss_yee('Yee', 0.1, 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_fourth.append(loss_yee('4order', 0., -1 / 24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_drp.append(loss_yee('DRP', -0.125, -0.125, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
 
@@ -55,9 +56,9 @@ for i in range(Constants.TEST_NUM):
 # pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
 # pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
 
-plt.plot(l_yee, "-b", label="Yee")
-plt.plot(l_fourth, "-r", label="4th")
-plt.plot(l_model, "-g", label="DL2", linestyle='dashed')
-plt.plot(l_drp, "-d", label="DRP")
+plt.plot(l_yee, "b", label="Yee")
+plt.plot(l_fourth, "r", label="4th",linestyle='dashed')
+#plt.plot(l_model, "g", label="DL2", linestyle='dashed')
+#plt.plot(l_drp, "d", label="DRP")
 plt.legend(loc="upper left")
 plt.show()

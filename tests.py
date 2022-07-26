@@ -1,45 +1,28 @@
 import math
 import pickle
 import time
-
-from tensorflow import keras
-import tensorflow as tf
-import matplotlib.pyplot as plt
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-
 from constants import Constants
-from utils import *
+import numpy as np
 from data_generator import create_test_data
+path=Constants.PATH
 
-t=np.linspace(0,Constants.T,Constants.TIME_STEPS)
-x=np.linspace(0,Constants.XMAX,Constants.N)
-plt.plot(x,np.cos(math.pi*60*x))
-#plt.plot(t,np.cos(math.pi*np.sqrt(2*30**2)*t))
-plt.show()
-print(q)
-n=2
-a=np.random.rand(n,n)
-b=np.random.rand(n,n)
-c=np.random.rand(n,n)
+x=np.random.rand(10,1000,1000)
+y=np.random.rand(10,1000,1000)
+l=[x,y]
+time_start=time.time()
+# pickle.dump(x, open(path+'file1.pkl', "wb"))
+# pickle.dump(y, open(path+'file2.pkl', "wb"))
+pickle.dump(l, open(path+'file3.pkl', "wb"))
 
 
-# l=[a,b,c]
-z=[1,2,3]
-l=np.hstack(np.array([a,b,c]))
-
-z=np.tile(np.repeat(np.array(z), 2),(2,1))
-print(z.shape)
+print(time.time()-time_start)
+# print(f.shape)
+# print(f[0].shape)
+#print(np.squeeze(f)-g)
 
 
 
-start_time = time.time()
-#for k in np.arange(3):
-#  l0.append(z[k]*l[k])
-#l2=map(lambda k: z[k]*l[k], [0,1,2])
-# l=[a*b for a,b in zip(l,z)]
-z*l
-print("--- %s seconds ---" % (time.time() - start_time))
-# print(l)
+
+
+
 # print(l0)

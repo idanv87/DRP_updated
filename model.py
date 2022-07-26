@@ -1,3 +1,4 @@
+
 import pickle
 import os
 import time
@@ -7,7 +8,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
-import matplotlib
+#import matplotlib
+
 
 from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
@@ -35,7 +37,10 @@ if Constants.DTYPE == tf.dtypes.float64:
 else:
     tf.keras.backend.set_floatx('float32')
 
-ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy_y = create_train_data(options=model_details["options"])
+with open(path + 'train/train_data.pkl', 'rb') as file:
+    ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy_y  = pickle.load(file)
+
+
 
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
@@ -95,7 +100,7 @@ if __name__ == "__main__":
         [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=2,
+        epochs=100,
         batch_size=32,
         shuffle=True, validation_split=0.2, verbose=2)
 

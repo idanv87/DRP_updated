@@ -5,6 +5,51 @@ from tensorflow import keras
 from constants import Constants
 
 
+def fE(FE, m, x=Constants.x, y=Constants.y, k1=Constants.k1, k2=Constants.k2):
+    t = Constants.t + Constants.DT * m
+    c = Constants.C
+
+    z = np.cos(c * t) *FE
+
+    return np.vstack(z)
+    # return np.vstack(np.reshape(z,(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),Constants.N*Constants.TIME_STEPS,Constants.N,1)))
+
+
+def fHX(FHX,m, x=Constants.x, y=Constants.y, k1=Constants.k1, k2=Constants.k2):
+    t = Constants.t + m * Constants.DT / 2
+
+    c = Constants.C
+    z = np.sin(c * t) * (1 / c) * FHX
+
+    return np.vstack(z[:, :, :, 1:-1, :-1])
+
+    # return np.vstack(np.reshape(z[:,:,:,1:-1,:-1],(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),(Constants.N-2)*Constants.TIME_STEPS,(Constants.N-1),1)))
+
+
+def fHY(FHY, m, x=Constants.x, y=Constants.y, k1=Constants.k1, k2=Constants.k2):
+    t = Constants.t + m * Constants.DT / 2
+    c = Constants.C
+    z = np.sin(c * t) * (1 / c) * FHY
+
+    return np.vstack(z[:, :, :, :-1, 1:-1])
+
+    # return np.vstack(np.reshape(z[:,:,:,:-1,1:-1],(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),(Constants.N-1)*Constants.TIME_STEPS,(Constants.N-2),1)))
+
+
+# def fast_mul2(a, B):
+#     assert a.ndim == 1
+#     l = np.tile(B, (1, len(a)))
+#     z = np.tile(np.repeat(a, B.shape[1]), (B.shape[0], 1))
+#     return z * l
+#
+#
+# def fast_mul(a, B):
+#     assert a.ndim == 1
+#     l = np.hstack(np.array(B))
+#     z = np.tile(np.repeat(a, B[0].shape[1]), (B[0].shape[0], 1))
+#     return z * l
+
+
 def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):
     nd = rank
     slice1 = [slice(None)] * nd
@@ -185,13 +230,14 @@ def pad_function(input):
 def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
     l = 0.
     for n in range(Constants.TIME_STEPS - 1):
-        E1 = amper(E1, Hx1, Hy1, 0., 0.)
+        E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
-
+    print(beta)
+    print(l)
     return l / (3 * (Constants.TIME_STEPS - 1))
 
 
@@ -211,13 +257,13 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true[7:-7,7:-7] - y_pred[7:-7,7:-7])) / Constants.DT
+    return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7])) / Constants.DT
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / Constants.DT
 
 
 def custom_loss3(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true[7:-7,7:-7] - y_pred[7:-7,7:-7]))
+    return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7]))
 
 
 class DRP_LAYER(keras.layers.Layer):
@@ -229,7 +275,6 @@ class DRP_LAYER(keras.layers.Layer):
         self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
     def call(self, input):
-
         E, Hx, Hy = input
         E_n = amper(E, Hx, Hy, self.pars1, self.pars2)
         Hx_n, Hy_n = faraday(E_n, Hx, Hy, self.pars1, self.pars2)
@@ -246,23 +291,20 @@ class DRP_LAYER(keras.layers.Layer):
         # inthx = tf_simp3(tf_simp4(hx ** 2, rank=4), rank=3)
         # inthy = tf_simp4(tf_simp3(hy ** 2, rank=4), rank=3)
 
-        #y1 = tf.math.multiply(self.pars1, Dy(E_n, Constants.FILTER_BETA))
-        #y2 = tf.math.multiply(self.pars2, Dy(E_n, Constants.FILTER_DELTA))
-        #y3 = Dy(E_n, Constants.FILTER_YEE)
-        #dEdy=Dx(y1+y1+y2, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+        # y1 = tf.math.multiply(self.pars1, Dy(E_n, Constants.FILTER_BETA))
+        # y2 = tf.math.multiply(self.pars2, Dy(E_n, Constants.FILTER_DELTA))
+        # y3 = Dy(E_n, Constants.FILTER_YEE)
+        # dEdy=Dx(y1+y1+y2, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
 
-        #x1 = tf.math.multiply(self.pars1, Dx(E_n, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
-        #x2 = tf.math.multiply(self.pars2, Dx(E_n, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
-        #x3 = Dx(E_n, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
-        #dEdx=Dy(x1+x2+x3, Constants.FILTER_YEE)
+        # x1 = tf.math.multiply(self.pars1, Dx(E_n, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
+        # x2 = tf.math.multiply(self.pars2, Dx(E_n, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
+        # x3 = Dx(E_n, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+        # dEdx=Dy(x1+x2+x3, Constants.FILTER_YEE)
 
+        # divergence = ( dhydy[:,1:-1,:,:]+ dhxdx[:, :,  1:-1, :])/Constants.DX
+        # divergence = (dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :]) / Constants.DX
 
-
-
-        #divergence = ( dhydy[:,1:-1,:,:]+ dhxdx[:, :,  1:-1, :])/Constants.DX
-        #divergence = (dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :]) / Constants.DX
-
-        #divergence = (tf_diff(Hy_n[:, 1:-1, :, :], axis=2) + tf_diff(Hx_n[:, :, 1:-1, :], axis=1))
-        #divergence=dEdx-dEdy
+        # divergence = (tf_diff(Hy_n[:, 1:-1, :, :], axis=2) + tf_diff(Hx_n[:, :, 1:-1, :], axis=1))
+        # divergence=dEdx-dEdy
 
         return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m

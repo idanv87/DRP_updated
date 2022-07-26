@@ -7,13 +7,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Constants:
+
     PATH = '/Users/idanversano/documents/pycharm/files/'
     #PATH = '/home/ubuntu/files/'
 
     DTYPE = tf.dtypes.float64
 
-    N = 153
-    # N should be odd which devided by 3
+    N = 63
+
     assert N%2 != 0
     assert (N) % 3 ==0
 
@@ -22,7 +23,7 @@ class Constants:
     XMIN, XMAX = 0.0, 1/5
 
     T = 0.01/np.sqrt(50)
-    TIME_STEPS = 50
+    TIME_STEPS = 40
     DT = T / (TIME_STEPS-1)
 
     LX = XMAX - XMIN
@@ -37,16 +38,24 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = list(np.arange(10,30))
-    K2_TRAIN = list(np.arange(10,30))
+    K1_TRAIN = np.arange(10, 30)
+    K2_TRAIN = np.arange(10, 30)
     TRAIN_NUM=12
+    k1, k2, t, x, y = np.meshgrid(K1_TRAIN, K2_TRAIN, np.linspace(0,T,TIME_STEPS), X1, X2, indexing='ij')
+
+
+    C=PI*(np.sqrt(k1 ** 2 + k2 ** 2))
+
+
+
+
 
     K1_VAL = [2.]
     K2_VAL = [1.]
 
-    K1_TEST = [12,14,16,18,20,22,24,26]
-    K2_TEST = [12,14,16,18,20,22,24,26]
-    TEST_NUM=len(K1_TEST*len(K2_TEST))
+    K1_TEST = [1,2,3]
+    K2_TEST = [1]
+    TEST_NUM=len(K1_TEST)*len(K2_TEST)
 
 
 
