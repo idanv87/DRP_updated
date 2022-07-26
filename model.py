@@ -23,7 +23,7 @@ path = Constants.PATH
 l = {"N": Constants.N, "T": Constants.T, "time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
      "k1": Constants.K1_TRAIN, "k2": Constants.K2_TRAIN}
 model_details = {"name": '1001_125', "net_num": 1, "energy_loss": False, "div_loss": False, "div_preserve": True,
-                 "initial_": -0.125, "params": l, "options":'all'}
+                 "initial_": -0.125, "params": l, "options":'all', "number_oututs":6}
 name = model_details["name"]
 
 saving_path = path + 'Experiment_' + name + '_details/'
