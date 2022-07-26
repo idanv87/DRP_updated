@@ -1,3 +1,4 @@
+import math
 import pickle
 import time
 
@@ -12,8 +13,12 @@ from constants import Constants
 from utils import *
 from data_generator import create_test_data
 
-
-
+t=np.linspace(0,Constants.T,Constants.TIME_STEPS)
+x=np.linspace(0,Constants.XMAX,Constants.N)
+plt.plot(x,np.cos(math.pi*60*x))
+#plt.plot(t,np.cos(math.pi*np.sqrt(2*30**2)*t))
+plt.show()
+print(q)
 n=2
 a=np.random.rand(n,n)
 b=np.random.rand(n,n)

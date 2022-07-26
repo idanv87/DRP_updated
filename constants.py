@@ -1,10 +1,6 @@
 import math
-import pickle
 
-
-import gzip
 import tensorflow as tf
-
 import numpy as np
 from dataclasses import dataclass
 
@@ -16,17 +12,17 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 63
+    N = 153
     # N should be odd which devided by 3
     assert N%2 != 0
     assert (N) % 3 ==0
 
     PI = math.pi
-    YMIN, YMAX = 0.0, 1.0
-    XMIN, XMAX = 0.0, 1.0
+    YMIN, YMAX = 0.0, 1/5
+    XMIN, XMAX = 0.0, 1/5
 
-    T = 0.01
-    TIME_STEPS = 105
+    T = 0.01/np.sqrt(50)
+    TIME_STEPS = 50
     DT = T / (TIME_STEPS-1)
 
     LX = XMAX - XMIN
@@ -41,8 +37,8 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = list(np.arange(2,10))
-    K2_TRAIN = list(np.arange(2,10))
+    K1_TRAIN = list(np.arange(10,30))
+    K2_TRAIN = list(np.arange(10,30))
     TRAIN_NUM=12
 
     K1_VAL = [2.]

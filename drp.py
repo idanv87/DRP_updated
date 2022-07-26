@@ -26,10 +26,11 @@ cons=[{'type':'ineq', 'fun':cons1 }, {'type':'ineq', 'fun':cons2 }]
 a=np.array([0.1])
 
 
-res = scop.minimize(func, a, args=(k1, k2), method='SLSQP',bounds= scop.Bounds(0,1000),
+res = scop.minimize(func, a, args=(k1, k2), method='SLSQP',bounds= scop.Bounds(0,10),
                      constraints=cons,
                      options=dict(disp=False, iprint=2))
-print(cons2(res['x']))
+print(cons1(10))
+
 
 
 
