@@ -125,38 +125,22 @@ def create_train_data():
     ENERGY = []
 
     for i in range(Constants.TRAIN_NUM):
-        ex = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
-        ey1 = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
-        ey2 = np.zeros((Constants.TIME_STEPS * Constants.N, Constants.N))
-
-        hx_x = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
-        hx_y1 = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
-        hx_y2 = np.zeros((Constants.TIME_STEPS * (Constants.N - 2), Constants.N - 1))
-
-        hy_x = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
-        hy_y1 = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
-        hy_y2 = np.zeros((Constants.TIME_STEPS * (Constants.N - 1), Constants.N - 2))
-
-        energy = np.zeros((Constants.TIME_STEPS, 1))
-
-        a = abs(np.random.rand(1, len(Ex_train)))
+        a = abs(np.random.rand(len(Ex_train)))
         a=a/a.sum()
 
+        ex=np.sum(np.array([a * b for a, b in zip(a, Ex_train)]),axis=0)
+        ey1 = np.sum(np.array([a * b for a, b in zip(a, Ey1_train)]), axis=0)
+        ey2 = np.sum(np.array([a * b for a, b in zip(a, Ey2_train)]), axis=0)
 
-        for j in np.arange(len(Ex_train)):
-            ex += a[0, j] * Ex_train[j]
-            ey1 += a[0, j] * Ey1_train[j]
-            ey2 += a[0, j] * Ey2_train[j]
+        hx_x=np.sum(np.array([a * b for a, b in zip(a, Hx_x_train)]),axis=0)
+        hx_y1 = np.sum(np.array([a * b for a, b in zip(a, Hx_y1_train)]), axis=0)
+        hx_y2 = np.sum(np.array([a * b for a, b in zip(a, Hx_y2_train)]), axis=0)
 
-            hx_x += a[0, j] * Hx_x_train[j]
-            hx_y1 += a[0, j] * Hx_y1_train[j]
-            hx_y2 += a[0, j] * Hx_y2_train[j]
+        hy_x=np.sum(np.array([a * b for a, b in zip(a, Hy_x_train)]),axis=0)
+        hy_y1 = np.sum(np.array([a * b for a, b in zip(a, Hy_y1_train)]), axis=0)
+        hy_y2 = np.sum(np.array([a * b for a, b in zip(a, Hy_y2_train)]), axis=0)
 
-            hy_x += a[0, j] * Hy_x_train[j]
-            hy_y1 += a[0, j] * Hy_y1_train[j]
-            hy_y2 += a[0, j] * Hy_y2_train[j]
-
-            energy += a[0, j] * Energy_train[j]
+        energy= np.sum(np.array([a * b for a, b in zip(a, Energy_train)]), axis=0)
 
         EX.append(ex)
         EY1.append(ey1)

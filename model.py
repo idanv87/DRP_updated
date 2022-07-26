@@ -2,7 +2,7 @@ import pickle
 import os
 import time
 
-import keras.backend as K
+
 from keras import callbacks
 import numpy as np
 import tensorflow as tf
@@ -16,34 +16,27 @@ from data_generator import create_train_data
 
 create_train_data()
 
-
-
-
 path = Constants.PATH
-#matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-l={"N": Constants.N, "T": Constants.T,"time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
-   "k1": Constants.K1_TRAIN,"k2": Constants.K2_TRAIN}
-model_details={"name":'1001_125', "net_num": 1, "energy_loss": False, "div_loss": False,  "div_preserve": True, "initial_":-0.125, "params":l }
-name=model_details["name"]
+l = {"N": Constants.N, "T": Constants.T, "time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
+     "k1": Constants.K1_TRAIN, "k2": Constants.K2_TRAIN}
+model_details = {"name": '1001_125', "net_num": 1, "energy_loss": False, "div_loss": False, "div_preserve": True,
+                 "initial_": -0.125, "params": l}
+name = model_details["name"]
 
-saving_path=path+'Experiment_'+name+'_details/'
+saving_path = path + 'Experiment_' + name + '_details/'
 isExist = os.path.exists(saving_path)
 if not isExist:
     os.makedirs(saving_path)
 
-pickle.dump(model_details, open(saving_path + 'experiment_'+name+'_details'+'.pkl', "wb"))
-
-
-
+pickle.dump(model_details, open(saving_path + 'experiment_' + name + '_details' + '.pkl', "wb"))
 
 if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
     tf.keras.backend.set_floatx('float32')
-
-
 
 with open(path + 'train/ex.pkl', 'rb') as file:
     ex = pickle.load(file)
@@ -71,7 +64,6 @@ with open(path + 'train/energy_y.pkl', 'rb') as file:
     energy_y = pickle.load(file)
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
-
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
 Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
@@ -86,7 +78,7 @@ E2_output = output[3]
 Hx2_output = output[4]
 Hy2_output = output[5]
 
-#div_output=output[6]
+# div_output=output[6]
 # energy_output = output[6]
 
 model = keras.Model(
@@ -102,7 +94,7 @@ model.compile(
           custom_loss]
 )
 
-model.save(saving_path + 'model_name'+name+'.pkl')
+model.save(saving_path + 'model_name' + name + '.pkl')
 
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
@@ -110,8 +102,7 @@ earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                         mode="min", patience=5,
                                         restore_best_weights=False)
 
-checkpoint_filepath = saving_path+ 'model_weights_'+name+'.pkl'
-
+checkpoint_filepath = saving_path + 'model_weights_' + name + '.pkl'
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,
@@ -135,16 +126,16 @@ if __name__ == "__main__":
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    #pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
-    #plt.plot(history.history['loss'])
-    #plt.plot(history.history['val_loss'])
-    #plt.show()
+    # pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
+    # plt.plot(history.history['loss'])
+    # plt.plot(history.history['val_loss'])
+    # plt.show()
 
-    #trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
-    #non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
-    #print('Total params: {:,}'.format(trainable_count + non_trainable_count))
-    #print('Trainable params: {:,}'.format(trainable_count))
-    #print('Non-trainable params: {:,}'.format(non_trainable_count))
+    # trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
+    # non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
+    # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
+    # print('Trainable params: {:,}'.format(trainable_count))
+    # print('Non-trainable params: {:,}'.format(non_trainable_count))
     print(model.trainable_weights)
 
 # optimizer = keras.optimizers.SGD(learning_rate=1e-2)

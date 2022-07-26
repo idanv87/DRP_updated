@@ -20,7 +20,7 @@ def cons1(a, *args):
 def cons2(a, *args):
     return (1/18)*((Constants.DT/Constants.DX)**2)*np.maximum(8*((a+0.5)**2), 64*((a-0.25)**2))
 
-k1, k2 = np.meshgrid(Constants.K1_TRAIN, Constants.K2_TRAIN, indexing='ij')
+k1, k2 = np.meshgrid(Constants.PI*np.arange(1,20), Constants.PI*np.arange(1,20), indexing='ij')
 
 cons=[{'type':'ineq', 'fun':cons1 }, {'type':'ineq', 'fun':cons2 }]
 a=np.array([0.1])
@@ -29,7 +29,7 @@ a=np.array([0.1])
 res = scop.minimize(func, a, args=(k1, k2), method='SLSQP',bounds= scop.Bounds(0,1000),
                      constraints=cons,
                      options=dict(disp=False, iprint=2))
-print(res)
+print(cons2(res['x']))
 
 
 
