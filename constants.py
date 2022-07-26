@@ -26,7 +26,7 @@ class Constants:
     XMIN, XMAX = 0.0, 1.0
 
     T = 0.01
-    TIME_STEPS = 63
+    TIME_STEPS = 105
     DT = T / (TIME_STEPS-1)
 
     LX = XMAX - XMIN
@@ -41,8 +41,8 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = list(np.arange(2,20))
-    K2_TRAIN = list(np.arange(2,20))
+    K1_TRAIN = list(np.arange(2,10))
+    K2_TRAIN = list(np.arange(2,10))
     TRAIN_NUM=12
 
     K1_VAL = [2.]

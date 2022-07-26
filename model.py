@@ -35,32 +35,8 @@ if Constants.DTYPE == tf.dtypes.float64:
 else:
     tf.keras.backend.set_floatx('float32')
 
-create_train_data(options=model_details["options"])
+ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy_y = create_train_data(options=model_details["options"])
 
-with open(path + 'train/ex.pkl', 'rb') as file:
-    ex = pickle.load(file)
-with open(path + 'train/hx_x.pkl', 'rb') as file:
-    hx_x = pickle.load(file)
-with open(path + 'train/hy_x.pkl', 'rb') as file:
-    hy_x = pickle.load(file)
-
-with open(path + 'train/ey1.pkl', 'rb') as file:
-    ey1 = pickle.load(file)
-with open(path + 'train/ey2.pkl', 'rb') as file:
-    ey2 = pickle.load(file)
-
-with open(path + 'train/hx_y1.pkl', 'rb') as file:
-    hx_y1 = pickle.load(file)
-with open(path + 'train/hx_y2.pkl', 'rb') as file:
-    hx_y2 = pickle.load(file)
-
-with open(path + 'train/hy_y1.pkl', 'rb') as file:
-    hy_y1 = pickle.load(file)
-with open(path + 'train/hy_y2.pkl', 'rb') as file:
-    hy_y2 = pickle.load(file)
-
-with open(path + 'train/energy_y.pkl', 'rb') as file:
-    energy_y = pickle.load(file)
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
