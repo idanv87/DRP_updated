@@ -91,6 +91,7 @@ def generate_train_data(k1_train, k2_train):
 def create_train_data(options='all'):
     with open(path + 'Ex_train.pkl', 'rb') as file:
         Ex_train = pickle.load(file)
+        print('h1')
     with open(path + 'Ey1_train.pkl', 'rb') as file:
         Ey1_train = pickle.load(file)
     with open(path + 'Ey2_train.pkl', 'rb') as file:
@@ -125,6 +126,7 @@ def create_train_data(options='all'):
     ENERGY = []
 
     for i in range(Constants.TRAIN_NUM):
+        print(i)
         if options=='all':
             a = abs(np.random.rand(len(Ex_train)))
             a = a / a.sum()

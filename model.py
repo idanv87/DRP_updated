@@ -14,7 +14,7 @@ from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
 from data_generator import create_train_data
 
-create_train_data()
+
 
 path = Constants.PATH
 # matplotlib.use("TkAgg")
@@ -23,7 +23,7 @@ path = Constants.PATH
 l = {"N": Constants.N, "T": Constants.T, "time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
      "k1": Constants.K1_TRAIN, "k2": Constants.K2_TRAIN}
 model_details = {"name": '1001_125', "net_num": 1, "energy_loss": False, "div_loss": False, "div_preserve": True,
-                 "initial_": -0.125, "params": l}
+                 "initial_": -0.125, "params": l, "options":'all'}
 name = model_details["name"]
 
 saving_path = path + 'Experiment_' + name + '_details/'
@@ -37,6 +37,9 @@ if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
     tf.keras.backend.set_floatx('float32')
+
+
+create_train_data(options=model_details["options"])
 
 with open(path + 'train/ex.pkl', 'rb') as file:
     ex = pickle.load(file)

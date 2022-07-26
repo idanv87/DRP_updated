@@ -43,7 +43,7 @@ class Constants:
 
     K1_TRAIN = list(np.arange(2,20))
     K2_TRAIN = list(np.arange(2,20))
-    TRAIN_NUM=10
+    TRAIN_NUM=12
 
     K1_VAL = [2.]
     K2_VAL = [1.]
