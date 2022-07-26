@@ -88,7 +88,7 @@ def generate_train_data(k1_train, k2_train):
     return 1
 
 
-def create_train_data():
+def create_train_data(options='all'):
     with open(path + 'Ex_train.pkl', 'rb') as file:
         Ex_train = pickle.load(file)
     with open(path + 'Ey1_train.pkl', 'rb') as file:
@@ -125,22 +125,37 @@ def create_train_data():
     ENERGY = []
 
     for i in range(Constants.TRAIN_NUM):
-        a = abs(np.random.rand(len(Ex_train)))
-        a=a/a.sum()
+        if options=='all':
+            a = abs(np.random.rand(len(Ex_train)))
+            a = a / a.sum()
 
-        ex=np.sum(np.array([a * b for a, b in zip(a, Ex_train)]),axis=0)
-        ey1 = np.sum(np.array([a * b for a, b in zip(a, Ey1_train)]), axis=0)
-        ey2 = np.sum(np.array([a * b for a, b in zip(a, Ey2_train)]), axis=0)
+            ex = np.sum(np.array([a * b for a, b in zip(a, Ex_train)]), axis=0)
+            ey1 = np.sum(np.array([a * b for a, b in zip(a, Ey1_train)]), axis=0)
+            ey2 = np.sum(np.array([a * b for a, b in zip(a, Ey2_train)]), axis=0)
 
-        hx_x=np.sum(np.array([a * b for a, b in zip(a, Hx_x_train)]),axis=0)
-        hx_y1 = np.sum(np.array([a * b for a, b in zip(a, Hx_y1_train)]), axis=0)
-        hx_y2 = np.sum(np.array([a * b for a, b in zip(a, Hx_y2_train)]), axis=0)
+            hx_x = np.sum(np.array([a * b for a, b in zip(a, Hx_x_train)]), axis=0)
+            hx_y1 = np.sum(np.array([a * b for a, b in zip(a, Hx_y1_train)]), axis=0)
+            hx_y2 = np.sum(np.array([a * b for a, b in zip(a, Hx_y2_train)]), axis=0)
 
-        hy_x=np.sum(np.array([a * b for a, b in zip(a, Hy_x_train)]),axis=0)
-        hy_y1 = np.sum(np.array([a * b for a, b in zip(a, Hy_y1_train)]), axis=0)
-        hy_y2 = np.sum(np.array([a * b for a, b in zip(a, Hy_y2_train)]), axis=0)
+            hy_x = np.sum(np.array([a * b for a, b in zip(a, Hy_x_train)]), axis=0)
+            hy_y1 = np.sum(np.array([a * b for a, b in zip(a, Hy_y1_train)]), axis=0)
+            hy_y2 = np.sum(np.array([a * b for a, b in zip(a, Hy_y2_train)]), axis=0)
 
-        energy= np.sum(np.array([a * b for a, b in zip(a, Energy_train)]), axis=0)
+            energy = np.sum(np.array([a * b for a, b in zip(a, Energy_train)]), axis=0)
+        else:
+            ex = Ex_train[i]
+            ey1 = Ey1_train[i]
+            ey2 =Ey2_train[i]
+
+            hx_x = Hx_x_train[i]
+            hx_y1 = Hx_y1_train[i]
+            hx_y2 = Hx_y2_train[i]
+
+            hy_x = Hy_x_train[i]
+            hy_y1 = Hy_y1_train[i]
+            hy_y2 =Hy_y2_train[i]
+
+            energy =  Energy_train[i]
 
         EX.append(ex)
         EY1.append(ey1)
