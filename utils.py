@@ -224,7 +224,7 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='beta')
+        self.pars1 = tf.Variable(0., trainable=True, dtype=Constants.DTYPE, name='beta')
         self.pars2 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
