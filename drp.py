@@ -29,7 +29,7 @@ a=np.array([0.1])
 res = scop.minimize(func, a, args=(k1, k2), method='SLSQP',bounds= scop.Bounds(0,10),
                      constraints=cons,
                      options=dict(disp=False, iprint=2))
-print(cons1())
+print(cons1(0))
 print(Constants.DT)
 print(Constants.DX)
 

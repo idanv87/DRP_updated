@@ -7,9 +7,11 @@ from constants import Constants
 import numpy as np
 from data_generator import create_test_data
 path=Constants.PATH
+print(np.arange(10, 31, 2))
 
+print(q)
 x=np.linspace(0,0.5,63)
-y=np.cos(math.pi*30*x)
+y=np.sin(math.pi*30*x)
 plt.plot(x,y)
 plt.show()
 print(q)

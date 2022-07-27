@@ -18,8 +18,8 @@ class Constants:
     assert (N) % 3 == 0
 
     PI = math.pi
-    YMIN, YMAX = 0.0, 1.
-    XMIN, XMAX = 0.0, 1.
+    YMIN, YMAX = 0.0, 0.5
+    XMIN, XMAX = 0.0, 0.5
 
     T = 1 / np.sqrt(50)
     TIME_STEPS = 40
@@ -37,8 +37,8 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = np.arange(10, 30)
-    K2_TRAIN = np.arange(10, 30)
+    K1_TRAIN = np.arange(10, 31, 2)
+    K2_TRAIN = np.arange(10, 31, 2)
     TRAIN_NUM = 12
     k1, k2, t, x, y = np.meshgrid(K1_TRAIN, K2_TRAIN, np.linspace(0, T, TIME_STEPS), X1, X2, indexing='ij')
 
