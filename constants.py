@@ -12,7 +12,7 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 93
+    N = 63
 
     assert N % 2 != 0
     assert (N) % 3 == 0
@@ -47,8 +47,8 @@ class Constants:
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = [5, 10]
-    K2_TEST = [5]
+    K1_TEST = np.arange(10, 31, 2)
+    K2_TEST = np.arange(10, 31, 2)
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])

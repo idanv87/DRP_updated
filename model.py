@@ -40,8 +40,6 @@ else:
 with open(path + 'train/train_data.pkl', 'rb') as file:
     ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy_y  = pickle.load(file)
 
-
-
 div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
@@ -97,7 +95,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey1, hx_y2, hy_y2],
+        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey2, hx_y2, hy_y2],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
         epochs=100,
