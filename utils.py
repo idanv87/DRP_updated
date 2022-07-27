@@ -5,33 +5,28 @@ from tensorflow import keras
 from constants import Constants
 
 
-def fE(FE, m, x=Constants.x, y=Constants.y, k1=Constants.k1, k2=Constants.k2):
-    t = Constants.t + Constants.DT * m
-    c = Constants.C
+def fE(FE, m, T, c):
+    t = T + Constants.DT * m
 
-    z = np.cos(c * t) *FE
-
-    return np.vstack(z)
+    return  np.cos(c * t) *FE
+    #return np.vstack(z)
     # return np.vstack(np.reshape(z,(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),Constants.N*Constants.TIME_STEPS,Constants.N,1)))
 
 
-def fHX(FHX,m, x=Constants.x, y=Constants.y, k1=Constants.k1, k2=Constants.k2):
-    t = Constants.t + m * Constants.DT / 2
-
-    c = Constants.C
-    z = np.sin(c * t) * (1 / c) * FHX
-
-    return np.vstack(z[:, :, :, 1:-1, :-1])
+def fHX(FHX, m, T, c):
+    t = T + m * Constants.DT / 2
+    z=np.sin(c * t) * (1 / c) * FHX
+    return z[:, 1:-1, :-1]
 
     # return np.vstack(np.reshape(z[:,:,:,1:-1,:-1],(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),(Constants.N-2)*Constants.TIME_STEPS,(Constants.N-1),1)))
 
 
-def fHY(FHY, m, x=Constants.x, y=Constants.y, k1=Constants.k1, k2=Constants.k2):
-    t = Constants.t + m * Constants.DT / 2
-    c = Constants.C
-    z = np.sin(c * t) * (1 / c) * FHY
+def fHY(FHY, m, T, c):
+    t = T + m * Constants.DT / 2
+    z=np.sin(c * t) * (1 / c) * FHY
+    return z[:, :-1, 1:-1]
 
-    return np.vstack(z[:, :, :, :-1, 1:-1])
+    #return np.vstack(z[:, :-1, 1:-1])
 
     # return np.vstack(np.reshape(z[:,:,:,:-1,1:-1],(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),(Constants.N-1)*Constants.TIME_STEPS,(Constants.N-2),1)))
 
@@ -270,7 +265,7 @@ class DRP_LAYER(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.pars1 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.125, trainable=True, dtype=Constants.DTYPE, name='delta')
+        self.pars2 = tf.Variable(0.1, trainable=True, dtype=Constants.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=Constants.DTYPE, name='zero')
 
     def call(self, input):

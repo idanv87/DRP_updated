@@ -1,4 +1,3 @@
-
 import pickle
 import os
 import time
@@ -7,18 +6,13 @@ from keras import callbacks
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-import matplotlib.pyplot as plt
-#import matplotlib
-
 
 from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
-from data_generator import create_train_data
+
 
 path = Constants.PATH
 # matplotlib.use("TkAgg")
-
-
 l = {"N": Constants.N, "T": Constants.T, "time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
      "k1": Constants.K1_TRAIN, "k2": Constants.K2_TRAIN}
 model_details = {"name": '1001_125', "net_num": 1, "energy_loss": False, "div_loss": False, "div_preserve": True,
@@ -32,15 +26,32 @@ if not isExist:
 
 pickle.dump(model_details, open(saving_path + 'experiment_' + name + '_details' + '.pkl', "wb"))
 
+
 if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
     tf.keras.backend.set_floatx('float32')
 
-with open(path + 'train/train_data.pkl', 'rb') as file:
-    ex, ey1, ey2, hx_x, hx_y1, hx_y2, hy_x, hy_y1, hy_y2, energy_y  = pickle.load(file)
 
-div_y = tf.zeros([energy_y.shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
+
+with open(path + 'train/train_data.pkl', 'rb') as file:
+    sol= pickle.load(file)
+
+train_data={'ex':None , 'ey1': None, 'ey2': None, 'hx_x': None, 'hx_y1': None, 'hx_y2': None, 'hy_x': None, 'hy_y1': None,
+                    'hy_y2': None,
+                    'energy_y': None}
+
+
+
+for nm in list(train_data):
+  if nm!='energy_y':
+      train_data[nm]=np.expand_dims(np.vstack(sol[nm]),axis=-1)
+  else:
+      train_data[nm] = np.vstack(sol['energy'])
+del(sol)
+
+
+div_y = tf.zeros([train_data['energy_y'].shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
 Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
@@ -72,7 +83,7 @@ model.compile(
           custom_loss]
 )
 
-model.save(saving_path + 'model_name' + name + '.pkl')
+model.save(saving_path + "model_name" + name + ".pkl")
 
 # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
@@ -95,7 +106,8 @@ if __name__ == "__main__":
     start_time = time.time()
 
     history = model.fit(
-        [ex, hx_x, hy_x], [ey1, hx_y1, hy_y1, ey2, hx_y2, hy_y2],
+        [train_data['ex'], train_data['hx_x'], train_data['hy_x']],
+         [train_data['ey1'], train_data['hx_y1'], train_data['hy_y1'], train_data['ey2'], train_data['hx_y2'], train_data['hy_y2']],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
         epochs=100,

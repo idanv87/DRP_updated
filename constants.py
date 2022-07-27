@@ -12,16 +12,16 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 93
+    N = 63
 
     assert N % 2 != 0
     assert (N) % 3 == 0
 
     PI = math.pi
-    YMIN, YMAX = 0.0, 0.5
-    XMIN, XMAX = 0.0, 0.5
+    YMIN, YMAX = 0.0, 1.
+    XMIN, XMAX = 0.0, 1.
 
-    T = 1 / np.sqrt(50)
+    T = 0.05
     TIME_STEPS = 40
     DT = T / (TIME_STEPS - 1)
 
@@ -37,18 +37,17 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = np.arange(10, 31, 2)
-    K2_TRAIN = np.arange(10, 31, 2)
-    TRAIN_NUM = 12
-    k1, k2, t, x, y = np.meshgrid(K1_TRAIN, K2_TRAIN, np.linspace(0, T, TIME_STEPS), X1, X2, indexing='ij')
+    K1_TRAIN = np.arange(10, 21, 2)
+    K2_TRAIN = np.arange(10, 21, 2)
+    TRAIN_NUM = 10
 
-    C = PI * (np.sqrt(k1 ** 2 + k2 ** 2))
 
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = np.arange(10, 31, 2)
-    K2_TEST = np.arange(10, 31, 2)
+    K1_TEST = np.arange(2,5)
+    K2_TEST = np.arange(1,2)
+
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
