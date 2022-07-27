@@ -10,8 +10,9 @@ from constants import Constants
 from utils import custom_loss, custom_loss3, loss_model, loss_yee
 from data_generator import create_test_data
 
+C=Constants()
 create_test_data()
-path=Constants.PATH
+path=C.PATH
 
 name = '1001_125'
 saving_path = path + 'Experiment_' + name + '_details/'
@@ -46,10 +47,10 @@ l_model = []
 l_fourth = []
 l_drp = []
 print(model1.trainable_weights)
-for i in range(Constants.TEST_NUM):
-    E1 = tf.identity(tf.reshape(e_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N, Constants.N, 1]))
-    Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
-    Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
+for i in range(C.TEST_NUM):
+    E1 = tf.identity(tf.reshape(e_true[i * C.TIME_STEPS, :, :, :], [1, C.N, C.N, 1]))
+    Hx1 = tf.identity(tf.reshape(hx_true[i * C.TIME_STEPS, :, :, :], [1, C.N - 2, C.N - 1, 1]))
+    Hy1 = tf.identity(tf.reshape(hy_true[i * C.TIME_STEPS, :, :, :], [1, C.N - 1, C.N - 2, 1]))
     l_model.append(loss_model(model1, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_yee.append(loss_yee('Yee', 0, 0, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_fourth.append(loss_yee('4order', 0., -1 / 24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))

@@ -9,12 +9,12 @@ from tensorflow import keras
 
 from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
+C=Constants()
 
-
-path = Constants.PATH
+path = C.PATH
 # matplotlib.use("TkAgg")
-l = {"N": Constants.N, "T": Constants.T, "time_steps": Constants.TIME_STEPS, "train number": Constants.TRAIN_NUM,
-     "k1": Constants.K1_TRAIN, "k2": Constants.K2_TRAIN}
+l = {"N": C.N, "T": C.T, "time_steps": C.TIME_STEPS, "train number": C.TRAIN_NUM,
+     "k1": C.K1_TRAIN, "k2": C.K2_TRAIN}
 model_details = {"name": '1001_125', "net_num": 1, "energy_loss": False, "div_loss": False, "div_preserve": True,
                  "initial_": -0.125, "params": l, "options": 'all', "number_oututs": 6}
 name = model_details["name"]
@@ -27,7 +27,7 @@ if not isExist:
 pickle.dump(model_details, open(saving_path + 'experiment_' + name + '_details' + '.pkl', "wb"))
 
 
-if Constants.DTYPE == tf.dtypes.float64:
+if C.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
     tf.keras.backend.set_floatx('float32')
@@ -49,13 +49,12 @@ for nm in list(train_data):
   else:
       train_data[nm] = np.vstack(sol['energy'])
 del(sol)
-print(train_data["ex"].shape)
-print(q)
-div_y = tf.zeros([train_data['energy_y'].shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
-E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
-Hx_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1), name="hx")
-Hy_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1), name="hy")
+div_y = tf.zeros([train_data['energy_y'].shape[0], C.N - 3, C.N - 3, 1], dtype=C.DTYPE)
+
+E_input = keras.Input(shape=(C.N, C.N, 1), name="e")
+Hx_input = keras.Input(shape=(C.N - 2, C.N - 1, 1), name="hx")
+Hy_input = keras.Input(shape=(C.N - 1, C.N - 2, 1), name="hy")
 layer1 = DRP_LAYER()
 output = layer1([E_input, Hx_input, Hy_input])
 

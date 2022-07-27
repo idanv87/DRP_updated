@@ -98,3 +98,4 @@ class Constants:
 
     KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
     KDOWN = tf.reverse(KUP, [0])
+

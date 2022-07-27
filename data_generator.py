@@ -8,33 +8,34 @@ import numpy as np
 from constants import Constants
 from utils import fE, fHX, fHY, f_a
 
-path = Constants.PATH
+C=Constants()
+path = C.PATH
 
 
-def generate_train_data(k1, k2):
-    c = Constants.PI * np.sqrt(k1 ** 2 + k2 ** 2)
+def generate_basis(k1, k2):
+    c = C.PI * np.sqrt(k1 ** 2 + k2 ** 2)
 
     if k1 == k2:
-        Energy = [1] * Constants.TIME_STEPS
+        Energy = [1] * C.TIME_STEPS
     else:
-        Energy = [1 / 2] * Constants.TIME_STEPS
+        Energy = [1 / 2] * C.TIME_STEPS
 
-    t, x, y = np.meshgrid(np.linspace(0, Constants.T, Constants.TIME_STEPS), Constants.X1, Constants.X2, indexing='ij')
+    t, x, y = np.meshgrid(np.linspace(0, C.T, C.TIME_STEPS), C.X1, C.X2, indexing='ij')
 
-    c = Constants.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
+    c = C.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
 
-    FE = np.sin(Constants.PI * k1 * x) * np.sin(Constants.PI * k2 * y) + \
-         np.sin(Constants.PI * k2 * x) * np.sin(Constants.PI * k1 * y)
+    FE = np.sin(C.PI * k1 * x) * np.sin(C.PI * k2 * y) + \
+         np.sin(C.PI * k2 * x) * np.sin(C.PI * k1 * y)
 
-    FHX = -Constants.PI * k2 * np.sin(Constants.PI * k1 * x) * np.cos(
-        Constants.PI * k2 * (y + Constants.DX / 2)) - Constants.PI * k1 * np.sin(
-        Constants.PI * k2 * x) * np.cos(
-        Constants.PI * k1 * (y + Constants.DX / 2))
+    FHX = -C.PI * k2 * np.sin(C.PI * k1 * x) * np.cos(
+        C.PI * k2 * (y + C.DX / 2)) - C.PI * k1 * np.sin(
+        C.PI * k2 * x) * np.cos(
+        C.PI * k1 * (y + C.DX / 2))
 
-    FHY = Constants.PI * k1 * np.cos(Constants.PI * k1 * (x + Constants.DX / 2)) * np.sin(
-        Constants.PI * k2 * y) + Constants.PI * k2 * np.cos(
-        Constants.PI * k2 * (x + Constants.DX / 2)) * np.sin(
-        Constants.PI * k1 * y)
+    FHY = C.PI * k1 * np.cos(C.PI * k1 * (x + C.DX / 2)) * np.sin(
+        C.PI * k2 * y) + C.PI * k2 * np.cos(
+        C.PI * k2 * (x + C.DX / 2)) * np.sin(
+        C.PI * k1 * y)
 
     isExist = os.path.exists(path + 'base_functions/')
     if not isExist:
@@ -55,13 +56,13 @@ def create_train_data(options='lt'):
            'energy': []}
 
     if options == 'lt':
-        for i in np.arange(Constants.TRAIN_NUM):
+        for i in np.arange(C.TRAIN_NUM):
 
             dict = {'ex': [], 'ey1': [], 'ey2': [], 'hx_x': [], 'hx_y1': [], 'hx_y2': [], 'hy_x': [], 'hy_y1': [],
                     'hy_y2': [],
                     'energy': []}
-            for k1 in Constants.K1_TRAIN:
-                for k2 in Constants.K2_TRAIN:
+            for k1 in C.K1_TRAIN:
+                for k2 in C.K2_TRAIN:
                     with open(path + 'base_functions/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_train.pkl',
                               'rb') as file:
                         l = pickle.load(file)
@@ -72,8 +73,8 @@ def create_train_data(options='lt'):
 
             [sol[list(sol)[k]].append(sum(dict[list(dict)[k]])) for k in np.arange(len(sol))]
     else:
-        for k1 in Constants.K1_TRAIN:
-            for k2 in Constants.K2_TRAIN:
+        for k1 in C.K1_TRAIN:
+            for k2 in C.K2_TRAIN:
                 with open(path + 'base_functions/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_train.pkl',
                               'rb') as file:
                     l = pickle.load(file)
@@ -93,9 +94,9 @@ def generate_test_data(k1_test, k2_test):
     hy_x = []
     for k1 in k1_test:
         for k2 in k2_test:
-            c = Constants.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
+            c = C.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
 
-            for n in range(2, Constants.TIME_STEPS + 2):
+            for n in range(2, C.TIME_STEPS + 2):
                 f0 = f_a(c, n - 2, k1, k2)
                 ex.append(f0[0])
                 hx_x.append(f0[1])
@@ -105,19 +106,19 @@ def generate_test_data(k1_test, k2_test):
 
 
 def create_test_data():
-    k1_test = Constants.K1_TEST
-    k2_test = Constants.K2_TEST
+    k1_test = C.K1_TEST
+    k2_test = C.K2_TEST
     ex, hx_x, hy_x = generate_test_data(k1_test, k2_test)
 
     isExist = os.path.exists(path + 'test/')
     if not isExist:
         os.makedirs(path + 'test/')
 
-    pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N, Constants.N, 1)),
+    pickle.dump(ex.reshape((len(k1_test) * len(k2_test) * C.TIME_STEPS, C.N, C.N, 1)),
                 open(path + "test/ex_test.pkl", "wb"))
-    pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 2, Constants.N - 1, 1)),
+    pickle.dump(hx_x.reshape((len(k1_test) * len(k2_test) * C.TIME_STEPS, C.N - 2, C.N - 1, 1)),
                 open(path + "test/hx_x_test.pkl", "wb"))
-    pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * Constants.TIME_STEPS, Constants.N - 1, Constants.N - 2, 1)),
+    pickle.dump(hy_x.reshape((len(k1_test) * len(k2_test) * C.TIME_STEPS, C.N - 1, C.N - 2, 1)),
                 open(path + "test/hy_x_test.pkl", "wb"))
     return 1
 
@@ -125,7 +126,7 @@ def create_test_data():
 
 
 if __name__ == "__main__":
-    for kx in Constants.K1_TRAIN:
-        for ky in Constants.K2_TRAIN:
-            generate_train_data(kx, ky)
-    create_train_data(options="reg")
+    for kx in C.K1_TRAIN:
+        for ky in C.K2_TRAIN:
+            generate_basis(kx, ky)
+    create_train_data(options="lt")
