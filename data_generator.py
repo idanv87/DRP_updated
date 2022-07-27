@@ -71,13 +71,13 @@ def create_train_data(options='lt'):
                     [dict[list(dict)[k]].append(a * l[k]) for k in np.arange(len(dict))]
 
             [sol[list(sol)[k]].append(sum(dict[list(dict)[k]])) for k in np.arange(len(sol))]
-        else:
-            for k1 in Constants.K1_TRAIN:
-                for k2 in Constants.K2_TRAIN:
-                    with open(path + 'base_functions/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_train.pkl',
+    else:
+        for k1 in Constants.K1_TRAIN:
+            for k2 in Constants.K2_TRAIN:
+                with open(path + 'base_functions/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_train.pkl',
                               'rb') as file:
-                        l = pickle.load(file)
-                    [sol[list(sol)[k]].append(l[k]) for k in np.arange(len(sol))]
+                    l = pickle.load(file)
+                [sol[list(sol)[k]].append(l[k]) for k in np.arange(len(sol))]
 
     isExist = os.path.exists(path + 'train/')
     if not isExist:
@@ -128,4 +128,4 @@ if __name__ == "__main__":
     for kx in Constants.K1_TRAIN:
         for ky in Constants.K2_TRAIN:
             generate_train_data(kx, ky)
-    create_train_data()
+    create_train_data(options="reg")

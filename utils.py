@@ -7,42 +7,19 @@ from constants import Constants
 
 def fE(FE, m, T, c):
     t = T + Constants.DT * m
-
-    return  np.cos(c * t) *FE
-    #return np.vstack(z)
-    # return np.vstack(np.reshape(z,(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),Constants.N*Constants.TIME_STEPS,Constants.N,1)))
+    return np.cos(c * t) * FE
 
 
 def fHX(FHX, m, T, c):
     t = T + m * Constants.DT / 2
-    z=np.sin(c * t) * (1 / c) * FHX
+    z = np.sin(c * t) * (1 / c) * FHX
     return z[:, 1:-1, :-1]
-
-    # return np.vstack(np.reshape(z[:,:,:,1:-1,:-1],(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),(Constants.N-2)*Constants.TIME_STEPS,(Constants.N-1),1)))
 
 
 def fHY(FHY, m, T, c):
     t = T + m * Constants.DT / 2
-    z=np.sin(c * t) * (1 / c) * FHY
+    z = np.sin(c * t) * (1 / c) * FHY
     return z[:, :-1, 1:-1]
-
-    #return np.vstack(z[:, :-1, 1:-1])
-
-    # return np.vstack(np.reshape(z[:,:,:,:-1,1:-1],(len(Constants.K1_TRAIN)*len(Constants.K2_TRAIN),(Constants.N-1)*Constants.TIME_STEPS,(Constants.N-2),1)))
-
-
-# def fast_mul2(a, B):
-#     assert a.ndim == 1
-#     l = np.tile(B, (1, len(a)))
-#     z = np.tile(np.repeat(a, B.shape[1]), (B.shape[0], 1))
-#     return z * l
-#
-#
-# def fast_mul(a, B):
-#     assert a.ndim == 1
-#     l = np.hstack(np.array(B))
-#     z = np.tile(np.repeat(a, B[0].shape[1]), (B[0].shape[0], 1))
-#     return z * l
 
 
 def tf_simp(y, axis=-2, dx=Constants.DX, rank=4):

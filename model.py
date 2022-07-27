@@ -49,8 +49,8 @@ for nm in list(train_data):
   else:
       train_data[nm] = np.vstack(sol['energy'])
 del(sol)
-
-
+print(train_data["ex"].shape)
+print(q)
 div_y = tf.zeros([train_data['energy_y'].shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 E_input = keras.Input(shape=(Constants.N, Constants.N, 1), name="e")
