@@ -7,31 +7,30 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Constants:
-
     PATH = '/Users/idanversano/documents/pycharm/files/'
-    #PATH = '/home/ubuntu/files/'
+    # PATH = '/home/ubuntu/files/'
 
     DTYPE = tf.dtypes.float64
 
     N = 63
 
-    assert N%2 != 0
-    assert (N) % 3 ==0
+    assert N % 2 != 0
+    assert (N) % 3 == 0
 
     PI = math.pi
-    YMIN, YMAX = 0.0, 1/5
-    XMIN, XMAX = 0.0, 1/5
+    YMIN, YMAX = 0.0, 1.
+    XMIN, XMAX = 0.0, 1.
 
-    T = 0.01/np.sqrt(50)
+    T = 1 / np.sqrt(50)
     TIME_STEPS = 40
-    DT = T / (TIME_STEPS-1)
+    DT = T / (TIME_STEPS - 1)
 
     LX = XMAX - XMIN
     LY = YMAX - YMIN
     DX = LX / (N - 1)
     DY = LY / (N - 1)
 
-    CFL=DT/DX
+    CFL = DT / DX
 
     X1 = np.linspace(0., XMAX, N)
     X2 = np.linspace(0., XMAX, N)
@@ -40,24 +39,17 @@ class Constants:
 
     K1_TRAIN = np.arange(10, 30)
     K2_TRAIN = np.arange(10, 30)
-    TRAIN_NUM=12
-    k1, k2, t, x, y = np.meshgrid(K1_TRAIN, K2_TRAIN, np.linspace(0,T,TIME_STEPS), X1, X2, indexing='ij')
+    TRAIN_NUM = 12
+    k1, k2, t, x, y = np.meshgrid(K1_TRAIN, K2_TRAIN, np.linspace(0, T, TIME_STEPS), X1, X2, indexing='ij')
 
+    C = PI * (np.sqrt(k1 ** 2 + k2 ** 2))
 
-    C=PI*(np.sqrt(k1 ** 2 + k2 ** 2))
-
-
-
-
-
-    K1_VAL = [2.]
+    K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = [1,2,3]
-    K2_TEST = [1]
-    TEST_NUM=len(K1_TEST)*len(K2_TEST)
-
-
+    K1_TEST = [5, 10]
+    K2_TEST = [5]
+    TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
     PADX_FORWARD = tf.constant([[0, 0], [1, 1], [1, N - 2], [0, 0]], shape=[4, 2])
     PADX_BACWARD = tf.constant([[0, 0], [1, 1], [N - 2, 1], [0, 0]], shape=[4, 2])
@@ -107,5 +99,3 @@ class Constants:
 
     KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
     KDOWN = tf.reverse(KUP, [0])
-
-

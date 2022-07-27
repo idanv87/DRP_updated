@@ -236,8 +236,7 @@ def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0])) + \
              tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * Constants.TIME_STEPS + (n + 1), :, :, 0]))
-    print(beta)
-    print(l)
+
     return l / (3 * (Constants.TIME_STEPS - 1))
 
 

@@ -3,24 +3,26 @@ import pickle
 import time
 import os
 
+from constants import Constants
 from utils import *
 
-path = Constants.PATH
 
+path = Constants.PATH
 
 def generate_train_data(k1_train, k2_train):
     Energy = []
 
 
-    for k1 in k1_train:
-        for k2 in k2_train:
+    for kx in k1_train:
+        for ky in k2_train:
 
-            if k1 == k2:
+            if kx == ky:
                 energy = [1] * Constants.TIME_STEPS
             else:
                 energy = [1 / 2] * Constants.TIME_STEPS
 
             Energy.append(np.vstack(energy))
+
     FE=np.sin(Constants.PI * Constants.k1 * Constants.x) * np.sin(Constants.PI * Constants.k2 * Constants.y)+ \
        np.sin(Constants.PI * Constants.k2 * Constants.x) * np.sin(Constants.PI * Constants.k1 * Constants.y)
 
@@ -113,7 +115,7 @@ def generate_test_data(k1_test, k2_test):
     hy_x = []
     for k1 in k1_test:
         for k2 in k2_test:
-            c = math.pi * (np.sqrt(k1 ** 2 + k2 ** 2))
+            c = Constants.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
 
             for n in range(2, Constants.TIME_STEPS + 2):
                 f0 = f_a(c, n - 2, k1, k2)

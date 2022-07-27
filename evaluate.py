@@ -47,7 +47,7 @@ for i in range(Constants.TEST_NUM):
     Hx1 = tf.identity(tf.reshape(hx_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 2, Constants.N - 1, 1]))
     Hy1 = tf.identity(tf.reshape(hy_true[i * Constants.TIME_STEPS, :, :, :], [1, Constants.N - 1, Constants.N - 2, 1]))
     l_model.append(loss_model(model1, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
-    l_yee.append(loss_yee('Yee', 0.1, 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
+    l_yee.append(loss_yee('Yee', 0, 0., E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_fourth.append(loss_yee('4order', 0., -1 / 24, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
     l_drp.append(loss_yee('DRP', -0.125, -0.125, E1, Hx1, Hy1, e_true, hx_true, hy_true, i))
 
