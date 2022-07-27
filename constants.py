@@ -12,7 +12,7 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 63
+    N = 93
 
     assert N % 2 != 0
     assert (N) % 3 == 0
