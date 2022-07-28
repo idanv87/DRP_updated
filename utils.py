@@ -204,18 +204,18 @@ def pad_function(input):
     return tf.constant([[0, 0], [input[0], input[1]], [input[2], input[3]], [0, 0]], shape=[4, 2])
 
 
-def loss_yee(name, beta, delta, test_data, i):
-    E1=np.expand_dims(test_data['ex'][i][0],axis=(0,-1))
-    Hx1=np.expand_dims(test_data['hx_x'][i][0],axis=(0,-1))
-    Hy1=np.expand_dims(test_data['hy_x'][i][0], axis=(0,-1))
+def loss_yee(name, beta, delta, test_data):
+    E1=np.expand_dims(test_data['ex'][0],axis=(0,-1))
+    Hx1=np.expand_dims(test_data['hx_x'][0],axis=(0,-1))
+    Hy1=np.expand_dims(test_data['hy_x'][0], axis=(0,-1))
     l = 0.
     for n in range(C.TIME_STEPS - 1):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
-        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['ex'][i][n+1])) + \
-             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx_x'][i][n+1])) + \
-             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy_x'][i][n+1]))
+        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['ex'][n+1])) + \
+             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx_x'][n+1])) + \
+             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy_x'][n+1]))
 
     return l / (3 * (C.TIME_STEPS - 1))
 
@@ -239,13 +239,14 @@ def loss_model(model, test_data, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7])) / C.DT
+    return tf.math.reduce_mean(abs(y_true[3:-3, 3:-3] - y_pred[3:-3, 3:-3])) / C.DT
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 
 def custom_loss3(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7]))
+    return tf.math.reduce_mean(abs(y_true[5:-5, 5:-5] - y_pred[5:-5, 5:-5])) / C.DT
+    #return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7]))
 
 
 class DRP_LAYER(keras.layers.Layer):

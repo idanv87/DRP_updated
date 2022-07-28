@@ -56,7 +56,7 @@ div_y = tf.zeros([train_data['energy_y'].shape[0], C_train.N - 3, C_train.N - 3,
 
 
 start_time = time.time()
-for k in range(5):
+for k in range(C_train.CROSS_VAL):
     E_input = keras.Input(shape=(C_train.N, C_train.N, 1), name="e")
     Hx_input = keras.Input(shape=(C_train.N - 2, C_train.N - 1, 1), name="hx")
     Hy_input = keras.Input(shape=(C_train.N - 1, C_train.N - 2, 1), name="hy")
@@ -83,8 +83,8 @@ for k in range(5):
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=1e-3),
         # loss=[custom_loss, custom_loss, custom_loss],
-        loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
-              custom_loss]
+        loss=[custom_loss, custom_loss, custom_loss,
+              custom_loss3, custom_loss3,custom_loss3]
     )
     if k==0:
        model.save(saving_path + 'model.pkl')
@@ -112,8 +112,8 @@ for k in range(5):
          train_data['hy_y2']],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=100,
-        batch_size=64,
+        epochs=C_train.EPOCHS,
+        batch_size=C_train.BATCH_SIZE,
         shuffle=True, validation_split=0.2, verbose=2)
 
 print("--- %s seconds ---" % (time.time() - start_time))

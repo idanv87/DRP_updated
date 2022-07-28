@@ -12,7 +12,16 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 63
+    N = 21
+    T = 0.1
+    TIME_STEPS = 100
+    CROSS_VAL=2
+    EPOCHS=2
+    BATCH_SIZE=64
+    K1_TRAIN = np.arange(10, 21, 2)
+    K2_TRAIN = np.arange(10, 21, 2)
+    TRAIN_NUM = 10
+
 
     assert N % 2 != 0
     assert (N) % 3 == 0
@@ -21,8 +30,7 @@ class Constants:
     YMIN, YMAX = 0.0, 1.
     XMIN, XMAX = 0.0, 1.
 
-    T = 0.1
-    TIME_STEPS = 400
+
     DT = T / (TIME_STEPS - 1)
 
     LX = XMAX - XMIN
@@ -37,16 +45,14 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-    K1_TRAIN = np.arange(10, 21, 2)
-    K2_TRAIN = np.arange(10, 21, 2)
-    TRAIN_NUM = 10
+
 
 
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = np.arange(10, 21, 2)
-    K2_TEST = np.arange(10, 21, 2)
+    K1_TEST = np.arange(10, 21, 4)
+    K2_TEST = np.arange(10, 21, 4)
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
