@@ -6,6 +6,10 @@ from constants import Constants
 
 C=Constants()
 
+
+
+
+
 def fE(FE, m, T, c):
     t = T + C.DT * m
     return np.cos(c * t) * FE
@@ -130,7 +134,7 @@ def amper(E, Hx, Hy, beta, delta):
          tf.pad(Dy(Hx, C.KERNEL_BACKWARD), C.PADX_BACWARD) + \
          tf.pad(Dy(Hx, C.FOURTH_UP), pad4) + \
          tf.pad(Dy(Hx, C.FOURTH_DOWN), pad5)
-    return E + (C.DT / C.DX) * (s1 - s2)
+    return E + (C.CFL) * (s1 - s2)
 
 
 def faraday(E, Hx, Hy, beta, delta):
@@ -155,7 +159,7 @@ def faraday(E, Hx, Hy, beta, delta):
          tf.pad(Dx(E, tf.transpose(C.KERNEL_E_BACKWARD, perm=[1, 0, 2, 3])),
                 C.PADEY_BACKWARD)[:, :, 1:-1, :]
 
-    return Hx - (C.DT / C.DX) * s3, Hy + (C.DT / C.DX) * s4
+    return Hx - (C.CFL) * s3, Hy + (C.CFL) * s4
 
 
 def Dy(B, kernel):
@@ -200,20 +204,26 @@ def pad_function(input):
     return tf.constant([[0, 0], [input[0], input[1]], [input[2], input[3]], [0, 0]], shape=[4, 2])
 
 
-def loss_yee(name, beta, delta, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
+def loss_yee(name, beta, delta, test_data, i):
+    E1=np.expand_dims(test_data['ex'][i][0],axis=(0,-1))
+    Hx1=np.expand_dims(test_data['hx_x'][i][0],axis=(0,-1))
+    Hy1=np.expand_dims(test_data['hy_x'][i][0], axis=(0,-1))
     l = 0.
     for n in range(C.TIME_STEPS - 1):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
-        l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * C.TIME_STEPS + (n + 1), :, :, 0])) + \
-             tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * C.TIME_STEPS + (n + 1), :, :, 0])) + \
-             tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * C.TIME_STEPS + (n + 1), :, :, 0]))
+        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['ex'][i][n+1])) + \
+             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx_x'][i][n+1])) + \
+             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy_x'][i][n+1]))
 
     return l / (3 * (C.TIME_STEPS - 1))
 
 
-def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
+def loss_model(model, test_data, i):
+    E1 = np.expand_dims(test_data['ex'][i][0], axis=(0, -1))
+    Hx1 = np.expand_dims(test_data['hx_x'][i][0], axis=(0, -1))
+    Hy1 = np.expand_dims(test_data['hy_x'][i][0], axis=(0, -1))
     l = 0.
     for n in range(C.TIME_STEPS - 1):
         output = model([E1, Hx1, Hy1])
@@ -221,9 +231,9 @@ def loss_model(model, E1, Hx1, Hy1, e_true, hx_true, hy_true, i):
         Hx1 = output[1]
         Hy1 = output[2]
 
-        l += tf.reduce_max(abs(E1[0, :, :, 0] - e_true[i * C.TIME_STEPS + (n + 1), :, :, 0])) + \
-             tf.reduce_max(abs(Hx1[0, :, :, 0] - hx_true[i * C.TIME_STEPS + (n + 1), :, :, 0])) + \
-             tf.reduce_max(abs(Hy1[0, :, :, 0] - hy_true[i * C.TIME_STEPS + (n + 1), :, :, 0]))
+        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['ex'][i][n+1])) + \
+             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx_x'][i][n+1])) + \
+             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy_x'][i][n+1]))
     return l / (3 * (C.TIME_STEPS - 1))
 
 
@@ -243,7 +253,7 @@ class DRP_LAYER(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.pars1 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(0.1, trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars2 = tf.Variable(np.random.rand(1), trainable=True, dtype=C.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
 
     def call(self, input):

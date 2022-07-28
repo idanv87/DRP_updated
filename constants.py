@@ -21,8 +21,8 @@ class Constants:
     YMIN, YMAX = 0.0, 1.
     XMIN, XMAX = 0.0, 1.
 
-    T = 0.05
-    TIME_STEPS = 40
+    T = 0.1
+    TIME_STEPS = 400
     DT = T / (TIME_STEPS - 1)
 
     LX = XMAX - XMIN
@@ -45,8 +45,8 @@ class Constants:
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = np.arange(2,5)
-    K2_TEST = np.arange(1,2)
+    K1_TEST = np.arange(10, 21, 2)
+    K2_TEST = np.arange(10, 21, 2)
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
