@@ -17,7 +17,7 @@ print('new test data created')
 with open(path + 'test/test_data.pkl', 'rb') as file:
     test_data = pickle.load(file)
 
-name = '1001_125'
+name = '1001_N=20'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -53,5 +53,5 @@ plt.plot(l_fourth, "r", label="4th")
 plt.plot(l_model, "g", label="DL2", linestyle='dashed')
 plt.plot(l_drp, "-d", label="DRP")
 plt.legend(loc="upper left")
-print(np.vstack(l_fourth) - np.vstack(l_model))
 plt.show()
+

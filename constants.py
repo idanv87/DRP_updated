@@ -11,12 +11,13 @@ class Constants:
     # PATH = '/home/ubuntu/files/'
 
     DTYPE = tf.dtypes.float64
+    NUM_OUTPUT=2
 
-    N = 21
-    T = 0.1
+    N = 63
+    T = 0.01
     TIME_STEPS = 100
     CROSS_VAL=2
-    EPOCHS=2
+    EPOCHS=20
     BATCH_SIZE=64
     K1_TRAIN = np.arange(10, 21, 2)
     K2_TRAIN = np.arange(10, 21, 2)
