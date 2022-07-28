@@ -54,80 +54,96 @@ del(sol)
 
 div_y = tf.zeros([train_data['energy_y'].shape[0], C_train.N - 3, C_train.N - 3, 1], dtype=C_train.DTYPE)
 
-E_input = keras.Input(shape=(C_train.N, C_train.N, 1), name="e")
-Hx_input = keras.Input(shape=(C_train.N - 2, C_train.N - 1, 1), name="hx")
-Hy_input = keras.Input(shape=(C_train.N - 1, C_train.N - 2, 1), name="hy")
-layer1 = DRP_LAYER()
-output = layer1([E_input, Hx_input, Hy_input])
 
-E_output = output[0]
-Hx_output = output[1]
-Hy_output = output[2]
+start_time = time.time()
+for k in range(2):
+    E_input = keras.Input(shape=(C_train.N, C_train.N, 1), name="e")
+    Hx_input = keras.Input(shape=(C_train.N - 2, C_train.N - 1, 1), name="hx")
+    Hy_input = keras.Input(shape=(C_train.N - 1, C_train.N - 2, 1), name="hy")
+    layer1 = DRP_LAYER()
+    output = layer1([E_input, Hx_input, Hy_input])
 
-E2_output = output[3]
-Hx2_output = output[4]
-Hy2_output = output[5]
+    E_output = output[0]
+    Hx_output = output[1]
+    Hy_output = output[2]
 
-# div_output=output[6]
-# energy_output = output[6]
+    E2_output = output[3]
+    Hx2_output = output[4]
+    Hy2_output = output[5]
 
-model = keras.Model(
-    inputs=[E_input, Hx_input, Hy_input],
-    outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output]
-    # outputs = [E_output, Hx_output, Hy_output, energy_output]
-)
+    # div_output=output[6]
+    # energy_output = output[6]
 
-model.compile(
-    optimizer=keras.optimizers.Adam(learning_rate=1e-3),
-    # loss=[custom_loss, custom_loss, custom_loss],
-    loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
-          custom_loss]
-)
+    model = keras.Model(
+        inputs=[E_input, Hx_input, Hy_input],
+        outputs=[E_output, Hx_output, Hy_output, E2_output, Hx2_output, Hy2_output]
+        # outputs = [E_output, Hx_output, Hy_output, energy_output]
+    )
 
-model.save(saving_path + "model_name" + name + ".pkl")
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=1e-3),
+        # loss=[custom_loss, custom_loss, custom_loss],
+        loss=[custom_loss, custom_loss, custom_loss, custom_loss, custom_loss,
+              custom_loss]
+    )
+    if k==0:
+       model.save(saving_path + 'model.pkl')
 
-# model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
+    # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
 
-earlystopping = callbacks.EarlyStopping(monitor="val_loss",
-                                        mode="min", patience=5,
-                                        restore_best_weights=False)
+    earlystopping = callbacks.EarlyStopping(monitor="val_loss",
+                                            mode="min", patience=5,
+                                            restore_best_weights=False)
 
-checkpoint_filepath = saving_path + 'model_weights_' + name + '.pkl'
+    checkpoint_filepath = saving_path + 'model_weights_val_number_' + str(k) + '.pkl'
 
-model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_filepath,
-    save_weights_only=True,
-    monitor='val_loss',
-    mode='min',
-    save_best_only=True)
-# csv loger
-reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                                        patience=5, min_lr=0.0001)
-if __name__ == "__main__":
-    start_time = time.time()
-
+    model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_filepath,
+        save_weights_only=True,
+        monitor='val_loss',
+        mode='min',
+        save_best_only=True)
+    # csv loger
+    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                                            patience=5, min_lr=0.0001)
     history = model.fit(
         [train_data['ex'], train_data['hx_x'], train_data['hy_x']],
-         [train_data['ey1'], train_data['hx_y1'], train_data['hy_y1'], train_data['ey2'], train_data['hx_y2'], train_data['hy_y2']],
+        [train_data['ey1'], train_data['hx_y1'], train_data['hy_y1'], train_data['ey2'], train_data['hx_y2'],
+         train_data['hy_y2']],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=100,
+        epochs=3,
         batch_size=32,
         shuffle=True, validation_split=0.2, verbose=2)
 
-    print("--- %s seconds ---" % (time.time() - start_time))
+print("--- %s seconds ---" % (time.time() - start_time))
 
-    # pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
-    # plt.plot(history.history['loss'])
-    # plt.plot(history.history['val_loss'])
-    # plt.show()
 
-    # trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
-    # non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
-    # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
-    # print('Trainable params: {:,}'.format(trainable_count))
-    # print('Non-trainable params: {:,}'.format(non_trainable_count))
-    print(model.trainable_weights)
+# if __name__ == "__main__":
+#     start_time = time.time()
+#
+#     history = model.fit(
+#         [train_data['ex'], train_data['hx_x'], train_data['hy_x']],
+#          [train_data['ey1'], train_data['hx_y1'], train_data['hy_y1'], train_data['ey2'], train_data['hx_y2'], train_data['hy_y2']],
+#         callbacks=[earlystopping, model_checkpoint_callback],
+#         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
+#         epochs=100,
+#         batch_size=32,
+#         shuffle=True, validation_split=0.2, verbose=2)
+#
+#     print("--- %s seconds ---" % (time.time() - start_time))
+#
+#     # pickle.dump(history.history, open(path + 'multiple_history.pkl', "wb"))
+#     # plt.plot(history.history['loss'])
+#     # plt.plot(history.history['val_loss'])
+#     # plt.show()
+#
+#     # trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
+#     # non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])
+#     # print('Total params: {:,}'.format(trainable_count + non_trainable_count))
+#     # print('Trainable params: {:,}'.format(trainable_count))
+#     # print('Non-trainable params: {:,}'.format(non_trainable_count))
+#     print(model.trainable_weights)
 
 # optimizer = keras.optimizers.SGD(learning_rate=1e-2)
 # epochs = 2
