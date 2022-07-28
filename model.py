@@ -56,7 +56,7 @@ div_y = tf.zeros([train_data['energy_y'].shape[0], C_train.N - 3, C_train.N - 3,
 
 
 start_time = time.time()
-for k in range(2):
+for k in range(5):
     E_input = keras.Input(shape=(C_train.N, C_train.N, 1), name="e")
     Hx_input = keras.Input(shape=(C_train.N - 2, C_train.N - 1, 1), name="hx")
     Hy_input = keras.Input(shape=(C_train.N - 1, C_train.N - 2, 1), name="hy")
@@ -112,8 +112,8 @@ for k in range(2):
          train_data['hy_y2']],
         callbacks=[earlystopping, model_checkpoint_callback],
         # [ex, hx_x, hy_x], [ey, hx_y, hy_y, energy_y],
-        epochs=3,
-        batch_size=32,
+        epochs=100,
+        batch_size=64,
         shuffle=True, validation_split=0.2, verbose=2)
 
 print("--- %s seconds ---" % (time.time() - start_time))
