@@ -12,8 +12,7 @@ from drp import calculate_DRP
 
 path = Constants.PATH
 
-create_test_data()
-print('new test data created')
+
 with open(path + 'test/test_data.pkl', 'rb') as file:
     test_data = pickle.load(file)
 

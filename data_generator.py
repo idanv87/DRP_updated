@@ -73,12 +73,10 @@ def create_train_data(options='lt', loss_nember=2):
                 l = pickle.load(file)
             [sol[key].append(l[key].copy()) for key in list(sol)]
 
+    net_input = dim_red2(sol, 0) + dim_red2(sol, 1) + dim_red2(sol, 2)
+    net_output = dim_red2(sol, 1) + dim_red2(sol, 2) + dim_red1(sol, 3)
 
-
-    net_input=dim_red2(sol, 0)+ dim_red2(sol, 1)+ dim_red2(sol, 2)
-    net_output = dim_red2(sol, 1)+  dim_red2(sol, 2)+ dim_red1(sol, 3)
-
-    pickle.dump(net_input, open(path+'train/input.pkl', "wb"))
+    pickle.dump(net_input, open(path + 'train/input.pkl', "wb"))
     pickle.dump(net_output, open(path + 'train/output.pkl', "wb"))
 
     return 1
@@ -115,18 +113,22 @@ def generate_basis(name):
 
 
 def create_test_data(options='lt', loss_nember=2):
-    output = {'e': [], 'hx': [], 'hy': []}
+    L1 = []
+    L2 = []
+    L3 = []
     generate_basis('test')
     for p in list(base_function.base_pathes['test']):
         with open(p, 'rb') as file:
             l = pickle.load(file)
-        [output[key].append(l[key].copy()) for key in list(output)]
+        L1.append(l['e'])
+        L2.append(l['hx'])
+        L3.append(l['hy'])
 
-
-
-    test_data = {key: output[key].copy() for key in list(output)}
+    test_data = {'e': L1, 'hx': L2, 'hy': L3}
     pickle.dump(test_data, open(path + 'test/test_data.pkl', "wb"))
 
     return 1
+
+
 create_train_data()
 create_test_data()

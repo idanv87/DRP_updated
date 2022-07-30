@@ -11,17 +11,16 @@ class Constants:
     # PATH = '/home/ubuntu/files/'
 
     DTYPE = tf.dtypes.float64
-    NUM_OUTPUT = 2
 
     N = 63
     T = 0.01
     TIME_STEPS = 40
-    CROSS_VAL = 2
-    EPOCHS = 20
-    BATCH_SIZE = 32
-    K1_TRAIN = np.arange(1, 3, 1)
-    K2_TRAIN = np.arange(1, 3, 1)
-    TRAIN_NUM = 5
+    CROSS_VAL = 1
+    EPOCHS = 3
+    BATCH_SIZE = 64
+    K1_TRAIN = np.arange(10, 21, 1)
+    K2_TRAIN = np.arange(10, 21, 1)
+    TRAIN_NUM = 10
 
     assert N % 2 != 0
     assert (N) % 3 == 0
@@ -48,7 +47,7 @@ class Constants:
     K2_VAL = [1.]
 
     K1_TEST = np.arange(1, 4)
-    K2_TEST = np.arange(1,2)
+    K2_TEST = np.arange(1, 2)
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
