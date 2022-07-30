@@ -7,15 +7,14 @@ import numpy as np
 
 from constants import Constants
 
-from auxilary.aux_functions import fE, fHX, fHY
+from auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
 
 # save lists as csv file
 C = Constants()
 path = C.PATH
 
-folders = [path + 'train/', path + 'test/', path + 'base_functions/train/', path + 'base_functions/train/']
-isExist = [os.path.exists(path + 'train/'), os.path.exists(path + 'test/'),
-           os.path.exists(path + 'base_functions/train/'), os.path.exists(path + 'base_functions/train/')]
+folders = [path + 'train/', path + 'test/', path + 'base_functions/train/', path + 'base_functions/test/']
+
 for folder in folders:
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -62,25 +61,27 @@ def create_lt(name):
 
 
 def create_train_data(options='lt', loss_nember=2):
-    output = {'e': [], 'hx': [], 'hy': [], 'energy': []}
+    sol = {'e': [], 'hx': [], 'hy': [], 'energy': []}
+
     generate_basis('train')
     if options == 'lt':
         for i in range(C.TRAIN_NUM):
-            [output[key].append(create_lt('train')[key]) for key in list(output)]
+            [sol[key].append(create_lt('train')[key].copy()) for key in list(sol)]
     else:
         for p in list(base_function.base_pathes['train']):
             with open(p, 'rb') as file:
                 l = pickle.load(file)
-            [output[key].append(l[key]) for key in list(output)]
+            [sol[key].append(l[key].copy()) for key in list(sol)]
 
-    print(output['e'][0:-2].shape)
-    x_train = {key: np.expand_dims(np.vstack(output[key][0:-2]), axis=-1) for key in list(output)}
-    y_train1 = {key: np.expand_dims(np.vstack(output[key][1:-1]), axis=-1) for key in list(output)}
-    y_train2 = {key: np.expand_dims(np.vstack(output[key][2:]), axis=-1) for key in list(output)}
-    x_train = list(x_train[key] for key in ['e', 'hx', 'hy'])
-    y_train = list(y_train1[key] for key in ['e', 'hx', 'hy']) + list(y_train2[key] for key in list(y_train2))
 
-    return x_train, y_train
+
+    net_input=dim_red2(sol, 0)+ dim_red2(sol, 1)+ dim_red2(sol, 2)
+    net_output = dim_red2(sol, 1)+  dim_red2(sol, 2)+ dim_red1(sol, 3)
+
+    pickle.dump(net_input, open(path+'train/input.pkl', "wb"))
+    pickle.dump(net_output, open(path + 'train/output.pkl', "wb"))
+
+    return 1
 
 
 def generate_basis(name):
@@ -121,7 +122,10 @@ def create_test_data(options='lt', loss_nember=2):
             l = pickle.load(file)
         [output[key].append(l[key]) for key in list(output)]
 
-    x_test = {key: np.expand_dims(np.vstack(output[key]), axis=-1) for key in list(output)}
+    test_data = {key: np.expand_dims(np.vstack(output[key]), axis=-1) for key in list(output)}
 
-    return x_test
+    pickle.dump(test_data, open(path + 'train/test_data.pkl', "wb"))
+
+    return 1
 create_train_data()
+create_test_data()

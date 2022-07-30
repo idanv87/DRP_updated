@@ -13,12 +13,12 @@ class Constants:
     DTYPE = tf.dtypes.float64
     NUM_OUTPUT=2
 
-    N = 123
+    N = 63
     T = 0.01
-    TIME_STEPS = 400
+    TIME_STEPS = 40
     CROSS_VAL=2
     EPOCHS=20
-    BATCH_SIZE=64
+    BATCH_SIZE=32
     K1_TRAIN = np.arange(1, 3, 1)
     K2_TRAIN = np.arange(1, 3, 1)
     TRAIN_NUM = 5

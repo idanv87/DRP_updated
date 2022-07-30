@@ -258,12 +258,15 @@ class DRP_LAYER(keras.layers.Layer):
         self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
 
     def call(self, input):
-        E, Hx, Hy = input
-        E_n = amper(E, Hx, Hy, self.pars1, self.pars2)
-        Hx_n, Hy_n = faraday(E_n, Hx, Hy, self.pars1, self.pars2)
+        E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3= input
+        E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2)
+        Hx_2, Hy_2 = faraday(E_2, Hx1, Hy1, self.pars1, self.pars2)
 
-        E_m = amper(E_n, Hx_n, Hy_n, self.pars1, self.pars2)
-        Hx_m, Hy_m = faraday(E_m, Hx_n, Hy_n, self.pars1, self.pars2)
+        E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, self.pars2)
+        Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, self.pars2)
+
+        E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2)
+        Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2)
 
         # hx = complete(Hx_n, C.KLEFT, C.KRIGHT, C.KUP, C.KDOWN)
 
@@ -290,4 +293,4 @@ class DRP_LAYER(keras.layers.Layer):
         # divergence = (tf_diff(Hy_n[:, 1:-1, :, :], axis=2) + tf_diff(Hx_n[:, :, 1:-1, :], axis=1))
         # divergence=dEdx-dEdy
 
-        return E_n, Hx_n, Hy_n, E_m, Hx_m, Hy_m
+        return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
