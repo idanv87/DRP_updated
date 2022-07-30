@@ -13,15 +13,15 @@ class Constants:
     DTYPE = tf.dtypes.float64
     NUM_OUTPUT=2
 
-    N = 63
+    N = 123
     T = 0.01
-    TIME_STEPS = 100
+    TIME_STEPS = 400
     CROSS_VAL=2
     EPOCHS=20
     BATCH_SIZE=64
-    K1_TRAIN = np.arange(10, 21, 2)
-    K2_TRAIN = np.arange(10, 21, 2)
-    TRAIN_NUM = 10
+    K1_TRAIN = np.arange(1, 3, 1)
+    K2_TRAIN = np.arange(1, 3, 1)
+    TRAIN_NUM = 5
 
 
     assert N % 2 != 0

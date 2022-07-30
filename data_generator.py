@@ -6,151 +6,122 @@ import tracemalloc
 import numpy as np
 
 from constants import Constants
-from utils import fE, fHX, fHY
 
+from auxilary.aux_functions import fE, fHX, fHY
+
+# save lists as csv file
 C = Constants()
 path = C.PATH
 
-
-class Names(dict):
-    def __init__(self, xy, train_or_test):
-        assert xy in ['X', 'Y']
-        assert train_or_test in ['train', 'test']
-
-        super().__init__()
-        saving_folder = path + 'base_functions/' + train_or_test + '/'
-        isExist = os.path.exists(saving_folder)
-        if not isExist:
-            os.makedirs(saving_folder)
-        self.path = saving_folder + xy + '_'
-
-        if xy == 'X':
-            [self.__setitem__(name, []) for name in ['e_x', 'hx_x', 'hy_x']]
-        else:
-            for i in range(C.NUM_OUTPUT):
-                [self.__setitem__(name + '_y' + str(i + 1), []) for name in ['e', 'hx', 'hy']]
-            self.__setitem__('energy', [])
+folders = [path + 'train/', path + 'test/', path + 'base_functions/train/', path + 'base_functions/train/']
+isExist = [os.path.exists(path + 'train/'), os.path.exists(path + 'test/'),
+           os.path.exists(path + 'base_functions/train/'), os.path.exists(path + 'base_functions/train/')]
+for folder in folders:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
 
-def generate_basis(k1, k2, name):
-    assert name in ['train', 'test']
-    X_train = Names('X', name)
-    Y_train = Names('Y', name)
+class base_function:
+    base_pathes = {'train': [], 'test': []}
 
-    if k1 == k2:
-        Y_train.__setitem__('energy', np.vstack([1.] * C.TIME_STEPS))
-    else:
-        Y_train.__setitem__('energy', np.vstack([1 / 2] * C.TIME_STEPS))
+    def __init__(self, k1, k2, train_or_test):
+        assert train_or_test in list(base_function.base_pathes)
+        self.path = path + 'base_functions/' + train_or_test + '/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl'
+        base_function.base_pathes[train_or_test].append(self.path)
+        self.valueFE = None
+        self.valueFHX = None
+        self.valueFHY = None
+        self.valueENERGY = None
 
-    t, x, y = np.meshgrid(np.linspace(0, C.T, C.TIME_STEPS), C.X1, C.X2, indexing='ij')
+    def set(self, type, F):
+        if type == 'e':
+            self.valueFE = F
+        if type == 'hx':
+            self.valueFHX = F
+        if type == 'hy':
+            self.valueFHY = F
+        if type == 'energy':
+            self.valueENERGY = F
 
-    c = C.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
-
-    FE = np.sin(C.PI * k1 * x) * np.sin(C.PI * k2 * y) + \
-         np.sin(C.PI * k2 * x) * np.sin(C.PI * k1 * y)
-    X_train.__setitem__('e_x', fE(FE, 0, t, c))
-    [Y_train.__setitem__('e_y' + str(i + 1), fE(FE, i + 1, t, c)) for i in range(C.NUM_OUTPUT)]
-    del FE
-
-    FHX = -C.PI * k2 * np.sin(C.PI * k1 * x) * np.cos(
-        C.PI * k2 * (y + C.DX / 2)) - C.PI * k1 * np.sin(
-        C.PI * k2 * x) * np.cos(
-        C.PI * k1 * (y + C.DX / 2))
-    X_train.__setitem__('hx_x', fHX(FHX, 1, t, c))
-    [Y_train.__setitem__('hx_y' + str(i + 1), fHX(FHX, 2 * (i + 1) + 1, t, c)) for i in range(C.NUM_OUTPUT)]
-    del FHX
-
-    FHY = C.PI * k1 * np.cos(C.PI * k1 * (x + C.DX / 2)) * np.sin(
-        C.PI * k2 * y) + C.PI * k2 * np.cos(
-        C.PI * k2 * (x + C.DX / 2)) * np.sin(
-        C.PI * k1 * y)
-
-    X_train.__setitem__('hy_x', fHY(FHY, 1, t, c))
-    [Y_train.__setitem__('hy_y' + str(i + 1), fHY(FHY, 2 * (i + 1) + 1, t, c)) for i in range(C.NUM_OUTPUT)]
-
-    del FHY
-
-    pickle.dump(X_train, open(X_train.path + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', "wb"))
-    del X_train
-    pickle.dump(Y_train, open(Y_train.path + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', "wb"))
-
-    return 1
+    def save(self):
+        assert [self.valueFE, self.valueFHX, self.valueFHY, self.valueENERGY] not in [None]
+        pickle.dump({'e': self.valueFE, 'hx': self.valueFHX, 'hy': self.valueFHY, 'energy': self.valueENERGY},
+                    open(self.path, "wb"))
 
 
-def create_train_data(options='lt'):
-    train_x = Names('X','train')
-    train_y = Names('Y','train')
+def create_lt(name):
+    output = {'e': 0, 'hx': 0, 'hy': 0, 'energy': 0}
 
+    for p in list(base_function.base_pathes[name]):
+        a = np.random.rand(1)
+        with open(p, 'rb') as file:
+            l = pickle.load(file)
+        for key in list(output):
+            output[key] += l[key]
+    return output
+
+
+def create_train_data(options='lt', loss_nember=2):
+    output = {'e': [], 'hx': [], 'hy': [], 'energy': []}
+    generate_basis('train')
     if options == 'lt':
-
-        for i in np.arange(C.TRAIN_NUM):
-            dictx = {name: 0. for name in list(train_x)}
-            dicty = {name: 0. for name in list(train_y)}
-            for k1 in C.K1_TRAIN:
-                for k2 in C.K2_TRAIN:
-                    a = np.random.rand(1) / (len(C.K1_TRAIN) * len(C.K2_TRAIN))
-                    with open(train_x.path + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', 'rb') as file:
-                        lx = pickle.load(file)
-                    [dictx.__setitem__(name, dictx[name] + a * lx[name]) for name in list(train_x)]
-                    del lx
-
-                    with open(train_y.path + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', 'rb') as file:
-                        ly = pickle.load(file)
-                    [dicty.__setitem__(name, dicty[name] + a * ly[name]) for name in list(train_y)]
-                    del ly
-
-            [train_x[name].append(dictx[name]) for name in list(train_x)]
-            [train_y[name].append(dicty[name]) for name in list(train_y)]
-
-
+        for i in range(C.TRAIN_NUM):
+            [output[key].append(create_lt('train')[key]) for key in list(output)]
     else:
-        for k1 in C.K1_TRAIN:
-            for k2 in C.K2_TRAIN:
-                with open(train_x.path + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', 'rb') as file:
-                    lx = pickle.load(file)
-                [train_x[name].append(lx[name]) for name in list(train_x)]
-                del lx
-                with open(train_y.path + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', 'rb') as file:
-                    ly = pickle.load(file)
-                [train_y[name].append(ly[name]) for name in list(train_y)]
-                del ly
-
-    isExist = os.path.exists(path + 'train/')
-    if not isExist:
-        os.makedirs(path + 'train/')
-
-
-    pickle.dump(C, open(path + "train/train_constants.pkl", "wb"))
-    pickle.dump(dict(train_x), open(path + "train/X_train.pkl", "wb"))
-    pickle.dump(dict(train_y), open(path + "train/Y_train.pkl", "wb"))
-
-    return 1
-
-
-def create_test_data(k1_test=C.K1_TEST, k2_test=C.K2_TEST):
-    for kx in k1_test:
-        for ky in k2_test:
-            generate_basis(kx, ky, 'test')
-
-    sol = {'e_x': [], 'hx_x': [], 'hy_x': []}
-    for k1 in k1_test:
-        for k2 in k2_test:
-            with open(path + 'base_functions/test/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl', 'rb') as file:
+        for p in list(base_function.base_pathes['train']):
+            with open(p, 'rb') as file:
                 l = pickle.load(file)
-            [sol[name].append(l[name]) for name in list(sol)]
+            [output[key].append(l[key]) for key in list(output)]
 
-    isExist = os.path.exists(path + 'test/')
-    if not isExist:
-        os.makedirs(path + 'test/')
+    print(output['e'][0:-2].shape)
+    x_train = {key: np.expand_dims(np.vstack(output[key][0:-2]), axis=-1) for key in list(output)}
+    y_train1 = {key: np.expand_dims(np.vstack(output[key][1:-1]), axis=-1) for key in list(output)}
+    y_train2 = {key: np.expand_dims(np.vstack(output[key][2:]), axis=-1) for key in list(output)}
+    x_train = list(x_train[key] for key in ['e', 'hx', 'hy'])
+    y_train = list(y_train1[key] for key in ['e', 'hx', 'hy']) + list(y_train2[key] for key in list(y_train2))
 
-    pickle.dump(C, open(path + "test/test_constants.pkl", "wb"))
-    pickle.dump(sol, open(path + "test/test_data.pkl", "wb"))
+    return x_train, y_train
+
+
+def generate_basis(name):
+    assert name in ['train', 'test']
+    if name == 'train':
+        kx = C.K1_TRAIN
+        ky = C.K2_TRAIN
+    else:
+        kx = C.K1_TEST
+        ky = C.K2_TEST
+
+    for k1 in kx:
+        for k2 in ky:
+            B = base_function(k1, k2, name)
+            t, x, y = np.meshgrid(np.linspace(0, C.T, C.TIME_STEPS), C.X1, C.X2, indexing='ij')
+            c = C.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
+
+            B.set('e', fE(t, x, y, k1, k2, c))
+
+            B.set('hx', fHX(t + C.DT / 2, x, y, k1, k2, c))
+
+            B.set('hy', fHY(t + C.DT / 2, x, y, k1, k2, c))
+            if k1 == k2:
+                B.set('energy', np.vstack([1.] * C.TIME_STEPS))
+            else:
+                B.set('energy', np.vstack([1 / 2] * C.TIME_STEPS))
+
+            B.save()
+
     return 1
 
 
-if __name__ == "__main__":
-    for kx in C.K1_TRAIN:
-        for ky in C.K2_TRAIN:
-            generate_basis(kx, ky, 'train')
+def create_test_data(options='lt', loss_nember=2):
+    output = {'e': [], 'hx': [], 'hy': []}
+    generate_basis('test')
+    for p in list(base_function.base_pathes['test']):
+        with open(p, 'rb') as file:
+            l = pickle.load(file)
+        [output[key].append(l[key]) for key in list(output)]
 
-    create_train_data(options="lt")
+    x_test = {key: np.expand_dims(np.vstack(output[key]), axis=-1) for key in list(output)}
+
+    return x_test
+create_train_data()
