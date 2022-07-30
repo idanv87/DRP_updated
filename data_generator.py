@@ -129,6 +129,6 @@ def create_test_data(options='lt', loss_nember=2):
 
     return 1
 
-
-create_train_data()
-create_test_data()
+if __name__== "__main__":
+  create_train_data()
+  create_test_data()
