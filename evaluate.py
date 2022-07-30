@@ -17,7 +17,7 @@ print('new test data created')
 with open(path + 'test/test_data.pkl', 'rb') as file:
     test_data = pickle.load(file)
 
-name = '1001_N=20'
+name = '1001_N=63'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -35,13 +35,13 @@ l_model = []
 l_fourth = []
 l_drp = []
 
-for i in range(len(test_data['ex'])):
+for i in range(len(test_data['e'])):
     data = {name: test_data[name][i] for name in list(test_data)}
 
-    l_model.append(loss_yee('model', 0, model1.trainable_weights[0], data))
+    #l_model.append(loss_yee('model', 0, model1.trainable_weights[0], data))
     l_yee.append(loss_yee('Yee', 0, 0, data))
     l_fourth.append(loss_yee('4order', 0., -1 / 24, data))
-    l_drp.append(loss_yee('DRP', 0., calculate_DRP(), data))
+    #l_drp.append(loss_yee('DRP', 0., calculate_DRP(), data))
 
 # pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
 # pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
@@ -50,8 +50,8 @@ for i in range(len(test_data['ex'])):
 
 plt.plot(l_yee, "b", label="Yee")
 plt.plot(l_fourth, "r", label="4th")
-plt.plot(l_model, "g", label="DL2", linestyle='dashed')
-plt.plot(l_drp, "-d", label="DRP")
+#plt.plot(l_model, "g", label="DL2", linestyle='dashed')
+#plt.plot(l_drp, "-d", label="DRP")
 plt.legend(loc="upper left")
 plt.show()
 

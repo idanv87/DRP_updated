@@ -11,18 +11,17 @@ class Constants:
     # PATH = '/home/ubuntu/files/'
 
     DTYPE = tf.dtypes.float64
-    NUM_OUTPUT=2
+    NUM_OUTPUT = 2
 
     N = 63
-    T = 0.01
+    T = 0.001
     TIME_STEPS = 40
-    CROSS_VAL=2
-    EPOCHS=20
-    BATCH_SIZE=32
+    CROSS_VAL = 2
+    EPOCHS = 20
+    BATCH_SIZE = 32
     K1_TRAIN = np.arange(1, 3, 1)
     K2_TRAIN = np.arange(1, 3, 1)
     TRAIN_NUM = 5
-
 
     assert N % 2 != 0
     assert (N) % 3 == 0
@@ -30,7 +29,6 @@ class Constants:
     PI = math.pi
     YMIN, YMAX = 0.0, 1.
     XMIN, XMAX = 0.0, 1.
-
 
     DT = T / (TIME_STEPS - 1)
 
@@ -46,14 +44,11 @@ class Constants:
 
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
-
-
-
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = np.arange(10, 21, 4)
-    K2_TEST = np.arange(10, 21, 4)
+    K1_TEST = np.arange(1, 5)
+    K2_TEST = np.arange(1,2)
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
@@ -105,4 +100,3 @@ class Constants:
 
     KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
     KDOWN = tf.reverse(KUP, [0])
-

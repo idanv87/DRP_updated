@@ -205,17 +205,22 @@ def pad_function(input):
 
 
 def loss_yee(name, beta, delta, test_data):
-    E1=np.expand_dims(test_data['ex'][0],axis=(0,-1))
-    Hx1=np.expand_dims(test_data['hx_x'][0],axis=(0,-1))
-    Hy1=np.expand_dims(test_data['hy_x'][0], axis=(0,-1))
+    E1=np.expand_dims(test_data['e'][0],axis=(0,-1))
+    Hx1=np.expand_dims(test_data['hx'][0], axis=(0,-1))
+    Hy1=np.expand_dims(test_data['hy'][0], axis=(0,-1))
+
+
+
     l = 0.
     for n in range(C.TIME_STEPS - 1):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        print(test_data['e'].shape)
+        print(q)
 
-        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['ex'][n+1])) + \
-             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx_x'][n+1])) + \
-             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy_x'][n+1]))
+        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['e'][n+1])) + \
+             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx'][n+1])) + \
+             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy'][n+1]))
 
     return l / (3 * (C.TIME_STEPS - 1))
 

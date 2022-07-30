@@ -120,11 +120,12 @@ def create_test_data(options='lt', loss_nember=2):
     for p in list(base_function.base_pathes['test']):
         with open(p, 'rb') as file:
             l = pickle.load(file)
-        [output[key].append(l[key]) for key in list(output)]
+        [output[key].append(l[key].copy()) for key in list(output)]
 
-    test_data = {key: np.expand_dims(np.vstack(output[key]), axis=-1) for key in list(output)}
 
-    pickle.dump(test_data, open(path + 'train/test_data.pkl', "wb"))
+
+    test_data = {key: output[key].copy() for key in list(output)}
+    pickle.dump(test_data, open(path + 'test/test_data.pkl', "wb"))
 
     return 1
 create_train_data()
