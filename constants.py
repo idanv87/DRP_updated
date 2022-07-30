@@ -14,7 +14,7 @@ class Constants:
     NUM_OUTPUT = 2
 
     N = 63
-    T = 0.001
+    T = 0.01
     TIME_STEPS = 40
     CROSS_VAL = 2
     EPOCHS = 20
@@ -47,7 +47,7 @@ class Constants:
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = np.arange(1, 5)
+    K1_TEST = np.arange(1, 4)
     K2_TEST = np.arange(1,2)
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)

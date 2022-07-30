@@ -215,8 +215,7 @@ def loss_yee(name, beta, delta, test_data):
     for n in range(C.TIME_STEPS - 1):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
-        print(test_data['e'].shape)
-        print(q)
+
 
         l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['e'][n+1])) + \
              tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx'][n+1])) + \
