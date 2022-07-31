@@ -9,6 +9,8 @@ from tensorflow import keras
 
 from constants import Constants
 from utils import DRP_LAYER, custom_loss, custom_loss3
+from drp import calculate_DRP
+
 path = Constants.PATH
 
 
@@ -123,6 +125,9 @@ for k in range(Constants.CROSS_VAL):
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
+model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+print(model.trainable_weights)
+print(calculate_DRP())
 
 # if __name__ == "__main__":
 #     start_time = time.time()
@@ -190,5 +195,5 @@ print("--- %s seconds ---" % (time.time() - start_time))
 #     epochs=10,
 #     batch_size=1
 # )
-# print(model.trainable_weights)
+#print(model.trainable_weights)
 #

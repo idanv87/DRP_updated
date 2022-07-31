@@ -16,10 +16,10 @@ class Constants:
     T = 0.01
     TIME_STEPS = 40
     CROSS_VAL = 1
-    EPOCHS = 3
+    EPOCHS = 100
     BATCH_SIZE = 64
-    K1_TRAIN = np.arange(10, 21, 1)
-    K2_TRAIN = np.arange(10, 21, 1)
+    K1_TRAIN = np.arange(1, 21, 1)
+    K2_TRAIN = np.arange(1, 21, 1)
     TRAIN_NUM = 10
 
     assert N % 2 != 0
@@ -46,8 +46,8 @@ class Constants:
     K1_VAL = [1., 2]
     K2_VAL = [1.]
 
-    K1_TEST = np.arange(1, 4)
-    K2_TEST = np.arange(1, 2)
+    K1_TEST = np.arange(2, 20,2)
+    K2_TEST = np.arange(2, 3)
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
