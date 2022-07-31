@@ -217,9 +217,9 @@ def loss_yee(name, beta, delta, test_data):
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
 
-        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['e'][n+1])) + \
-             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx'][n+1])) + \
-             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy'][n+1]))
+        l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n+1])) + \
+             tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n+1])) + \
+             tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n+1]))
 
     return l / (3 * (C.TIME_STEPS - 1))
 
@@ -243,7 +243,7 @@ def loss_model(model, test_data, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true - y_pred))
+    return tf.math.reduce_mean(abs(y_true - y_pred))/C.CFL
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 
@@ -258,7 +258,7 @@ class DRP_LAYER(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.pars1 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.1, trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars2 = tf.Variable(-0.01, trainable=True, dtype=C.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
 
     def call(self, input):
@@ -266,8 +266,8 @@ class DRP_LAYER(keras.layers.Layer):
         E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2)
         Hx_2, Hy_2 = faraday(E_2, Hx1, Hy1, self.pars1, self.pars2)
 
-        E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, self.pars2)
-        Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, self.pars2)
+        E_3 = amper(E2, Hx2, Hy2, self.pars1, self.pars2)
+        Hx_3, Hy_3 = faraday(E3, Hx2, Hy2, self.pars1, self.pars2)
 
         E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2)
         Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2)

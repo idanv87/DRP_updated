@@ -103,7 +103,7 @@ for k in range(Constants.CROSS_VAL):
     if k==0:
        model.save(saving_path + 'model.pkl')
 
-    # model.load_weights(path + 'mymodel_weights2.pkl').expect_partial()
+    #model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
     earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                             mode="min", patience=5,
