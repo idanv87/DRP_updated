@@ -90,11 +90,11 @@ def generate_basis(name):
     else:
         kx = C.K1_TEST
         ky = C.K2_TEST
-
+    t, x, y = np.meshgrid(np.linspace(0, C.T, C.TIME_STEPS), C.X1, C.X2, indexing='ij')
     for k1 in kx:
         for k2 in ky:
             B = base_function(k1, k2, name)
-            t, x, y = np.meshgrid(np.linspace(0, C.T, C.TIME_STEPS), C.X1, C.X2, indexing='ij')
+
             c = C.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
 
             B.set('e', fE(t, x, y, k1, k2, c))
