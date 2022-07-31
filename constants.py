@@ -18,8 +18,8 @@ class Constants:
     CROSS_VAL = 1
     EPOCHS = 100
     BATCH_SIZE = 64
-    K1_TRAIN = np.arange(1, 21, 1)
-    K2_TRAIN = np.arange(1, 21, 1)
+    K1_TRAIN = np.arange(1, 31, 1)
+    K2_TRAIN = np.arange(1, 31, 1)
     TRAIN_NUM = 10
 
     assert N % 2 != 0
