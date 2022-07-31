@@ -243,7 +243,7 @@ def loss_model(model, test_data, i):
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true - y_pred))/C.CFL
+    return tf.math.reduce_mean(abs(y_true - y_pred))
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 
