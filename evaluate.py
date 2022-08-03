@@ -16,7 +16,7 @@ create_test_data()
 with open(path + 'test/test_data.pkl', 'rb') as file:
     test_data = pickle.load(file)
 
-name = '1001_N=123'
+name = '1001_N=120'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -43,10 +43,10 @@ for i in range(len(test_data['e'])):
     l_drp.append(loss_yee('DRP', 0., calculate_DRP(), data))
 
 
-# pickle.dump(l_yee, open(path+"l_yee.pkl", "wb"))
-# pickle.dump(l_fourth, open(path+"l_fourth.pkl", "wb"))
-# pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
-# pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
+pickle.dump(l_yee, open(path+"figures/loss_yee.pkl", "wb"))
+pickle.dump(l_fourth, open(path+"figures/loss_fourth.pkl", "wb"))
+pickle.dump(l_model, open(path+"figures/loss_model.pkl", "wb"))
+pickle.dump(l_drp, open(path+"figures/loss_drp.pkl", "wb"))
 
 plt.plot(l_yee, "b", label="Yee")
 plt.plot(l_fourth, "r", label="4th")

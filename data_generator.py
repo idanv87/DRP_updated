@@ -13,7 +13,8 @@ from auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
 C = Constants()
 path = C.PATH
 
-folders = [path + 'train/', path + 'test/', path + 'base_functions/train/', path + 'base_functions/test/']
+folders = [path + 'train/', path + 'test/', path +
+           'base_functions/train/', path + 'base_functions/test/', path+'figures/']
 
 for folder in folders:
     if not os.path.exists(folder):
