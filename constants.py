@@ -12,20 +12,20 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 123
-    T = 0.001
-    TIME_STEPS = 10
+    N = 120
+    T = 0.01
+    TIME_STEPS = 100
     CROSS_VAL = 1
     EPOCHS = 300
     BATCH_SIZE = 64
-    K1_TRAIN = np.arange(2, 21, 1)
-    K2_TRAIN = np.arange(2, 21, 1)
+    K1_TRAIN = np.arange(1, 31, 1)
+    K2_TRAIN = np.arange(1, 31, 1)
     TRAIN_NUM = 14
-    K1_TEST = np.arange(2, 21,3)
-    K2_TEST = np.arange(2, 21,3)
+    K1_TEST = np.arange(30, 35,1)
+    K2_TEST = np.arange(30, 31,1)
 
-    assert N % 2 != 0
-    assert (N) % 3 == 0
+    #assert N % 2 != 0
+    #assert (N) % 3 == 0
 
     PI = math.pi
     YMIN, YMAX = 0.0, 1.

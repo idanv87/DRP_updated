@@ -38,7 +38,7 @@ for i in range(len(test_data['e'])):
     data = {name: test_data[name][i] for name in list(test_data)}
 
     l_model.append(loss_yee('model', 0, model1.trainable_weights[0], data))
-    #l_yee.append(loss_yee('Yee', 0, 0, data))
+    l_yee.append(loss_yee('Yee', 0, 0, data))
     l_fourth.append(loss_yee('4order', 0., -1/24, data))
     l_drp.append(loss_yee('DRP', 0., calculate_DRP(), data))
 
@@ -48,11 +48,11 @@ for i in range(len(test_data['e'])):
 # pickle.dump(l_model, open(path+"l_model.pkl", "wb"))
 # pickle.dump(l_drp, open(path+"l_drp.pkl", "wb"))
 
-#plt.plot(l_yee, "b", label="Yee")
-#plt.plot(l_fourth, "r", label="4th")
-#plt.plot(l_model, "g", label="DL2", linestyle='dashed')
-#plt.plot(l_drp, "-d", label="DRP")
-plt.plot([(l_drp[k]/l_model[k]) for k in range(len(l_drp))], "b", label="gpa")
+plt.plot(l_yee, "b", label="Yee")
+plt.plot(l_fourth, "r", label="4th")
+plt.plot(l_model, "g", label="DL2", linestyle='dashed')
+plt.plot(l_drp, "-d", label="DRP")
+#plt.plot([(l_drp[k]/l_model[k]) for k in range(len(l_drp))], "b", label="gpa")
 plt.legend(loc="upper left")
 plt.show()
 
