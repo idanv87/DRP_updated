@@ -14,7 +14,7 @@ C = Constants()
 path = C.PATH
 
 folders = [path + 'train/', path + 'test/', path +
-           'base_functions/train/', path + 'base_functions/test/', path+'figures/']
+           'base_functions/train/', path + 'base_functions/test/', path + 'figures/']
 
 for folder in folders:
     if not os.path.exists(folder):
@@ -50,21 +50,25 @@ class base_function:
 
 
 def create_lt(name):
-    output = {'e': 0, 'hx': 0, 'hy': 0, 'energy': 0}
+    output = {'e': 0., 'hx': 0., 'hy': 0., 'energy': 0.}
 
     for p in list(base_function.base_pathes[name]):
         a = np.random.rand(1)
+
         with open(p, 'rb') as file:
             l = pickle.load(file)
         for key in list(output):
-            output[key] += l[key]
+            output[key] +=  a*l[key]
+
+
     return output
 
 
-def create_train_data(options='lt', loss_nember=2):
+def create_train_data(gen_base, options ):
     sol = {'e': [], 'hx': [], 'hy': [], 'energy': []}
 
-    generate_basis('train')
+    if True:
+        generate_basis('train')
     if options == 'lt':
         for i in range(C.TRAIN_NUM):
             [sol[key].append(create_lt('train')[key].copy()) for key in list(sol)]
@@ -130,6 +134,7 @@ def create_test_data(options='lt', loss_nember=2):
 
     return 1
 
-if __name__== "__main__":
-  create_train_data()
 
+if __name__ == "__main__":
+    create_train_data(gen_base=True, options='nonlt')
+    

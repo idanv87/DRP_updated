@@ -13,13 +13,11 @@ from drp import calculate_DRP
 
 path = Constants.PATH
 
-
-
-
 # matplotlib.use("TkAgg")
 l = {"N": Constants.N, "CFL": Constants.CFL}
-model_details = {"name": '1001_N='+str(l['N']), "net_num": 1, "energy_loss": False, "div_loss": False, "div_preserve": True,
-                 "initial_": -0.125, "params": l, "options": 'lt', "number_oututs": 6}
+model_details = {"name": 'DL2i_N=' + str(l['N']), "net_num": 1, "energy_loss": False, "div_loss": False,
+                 "div_preserve": True,
+                 "params": l, "options": 'lt', "number_oututs": 6}
 name = model_details["name"]
 
 saving_path = path + 'Experiment_' + name + '_details/'
@@ -29,29 +27,17 @@ if not isExist:
 
 pickle.dump(model_details, open(saving_path + 'experiment_' + name + '_details' + '.pkl', "wb"))
 
-
 if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
     tf.keras.backend.set_floatx('float32')
 
-
-
 with open(path + 'train/input.pkl', 'rb') as file:
     net_input = pickle.load(file)
 with open(path + 'train/output.pkl', 'rb') as file:
-    net_output= pickle.load(file)
+    net_output = pickle.load(file)
 
-
-
-
-
-
-
-
-
-
-#div_y = tf.zeros([X['e_x'].shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
+# div_y = tf.zeros([X['e_x'].shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 
 start_time = time.time()
@@ -86,8 +72,9 @@ for k in range(Constants.CROSS_VAL):
 
     model = keras.Model(
         inputs=[E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input],
-        outputs=[E1_output, Hx1_output, Hy1_output, E2_output, Hx2_output, Hy2_output
-           # ,E3_output, Hx3_output, Hy3_output
+        outputs=[E1_output, Hx1_output, Hy1_output
+         #   ,E2_output, Hx2_output, Hy2_output
+         #        ,E3_output, Hx3_output, Hy3_output
                  ]
         # outputs = [E_output, Hx_output, Hy_output, energy_output]
     )
@@ -95,15 +82,15 @@ for k in range(Constants.CROSS_VAL):
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=1e-3),
         # loss=[custom_loss, custom_loss, custom_loss],
-        loss=[custom_loss, custom_loss, custom_loss,
-              custom_loss, custom_loss,custom_loss
-            #  ,custom_loss, custom_loss,custom_loss
+        loss=[custom_loss, custom_loss, custom_loss
+            #   ,custom_loss, custom_loss, custom_loss
+            #   ,custom_loss, custom_loss,custom_loss
               ]
     )
-    if k==0:
-       model.save(saving_path + 'model.pkl')
+    if k == 0:
+        model.save(saving_path + 'model.pkl')
 
-    #model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+    # model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
     earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                             mode="min", patience=5,
@@ -118,9 +105,11 @@ for k in range(Constants.CROSS_VAL):
         mode='min',
         save_best_only=True)
     # csv loger
+
+
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.0001)
     history = model.fit(
-        net_input, net_output[:-4],
+        net_input, net_output[:-7],
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],
         epochs=Constants.EPOCHS,
         batch_size=Constants.BATCH_SIZE,
@@ -129,8 +118,8 @@ for k in range(Constants.CROSS_VAL):
 print("--- %s seconds ---" % (time.time() - start_time))
 
 model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-print(model.trainable_weights)
-print(calculate_DRP())
+print(model.trainable_weights[0])
+#print(calculate_DRP())
 
 # if __name__ == "__main__":
 #     start_time = time.time()
@@ -198,5 +187,5 @@ print(calculate_DRP())
 #     epochs=10,
 #     batch_size=1
 # )
-#print(model.trainable_weights)
+# print(model.trainable_weights)
 #

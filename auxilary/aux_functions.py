@@ -1,12 +1,17 @@
 
 import numpy as np
+import tensorflow as tf
 
 from DRP_multiple_networks.constants import Constants
 C=Constants()
+def relative_norm(A,B):
+    #e=tf.reduce_mean(abs(A[5:-5, :5:-5]))
+
+    return tf.math.reduce_mean(abs(A-B))
 
 
 def fE(t, x,y,k1,k2, c):
-    return np.cos(c * t)*(np.sin(C.PI * k1 * x) * np.sin(C.PI * k2 * y) + \
+    return np.cos(c * t)*(np.sin(C.PI * k1 * x) * np.sin(C.PI * k2 * y) +
            np.sin(C.PI * k2 * x) * np.sin(C.PI * k1 * y))
 
 

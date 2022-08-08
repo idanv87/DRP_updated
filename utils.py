@@ -3,11 +3,9 @@ import tensorflow as tf
 from tensorflow import keras
 
 from constants import Constants
+from auxilary.aux_functions import relative_norm
 
-C=Constants()
-
-
-
+C = Constants()
 
 
 def fE(FE, m, T, c):
@@ -205,52 +203,90 @@ def pad_function(input):
 
 
 def loss_yee(name, beta, delta, test_data):
-    E1=np.expand_dims(test_data['e'][0],axis=(0,-1))
-    Hx1=np.expand_dims(test_data['hx'][0], axis=(0,-1))
-    Hy1=np.expand_dims(test_data['hy'][0], axis=(0,-1))
-
-
+    E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
+    Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
+    Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
 
     l = 0.
-    for n in range(C.TIME_STEPS - 1):
+    for n in range(C.TIME_STEPS - 3):
+        E1 = amper(E1, Hx1, Hy1, beta, delta)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+
+        # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
+        #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
+        #      tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1]))
+        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) + relative_norm(Hx1[0, :, :, 0],
+                                                                                  test_data['hx'][n + 1]) + \
+             relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1])
+
+    return l / (3 * (C.TIME_STEPS - 3))
+
+
+def loss_yee2(name, beta, delta, test_data):
+    E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
+    Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
+    Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
+    l = []
+    for n in range(C.TIME_STEPS - 3):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
 
-        l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n+1])) + \
-             tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n+1])) + \
-             tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n+1]))
+        # l.append(tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
+        #          tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
+        #          tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1])))
+        l.append(relative_norm(E1[0, :, :, 0], test_data['e'][n + 1])
+                 + relative_norm(Hx1[0, :, :, 0],test_data['hx'][n + 1]) +
+                 relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1]))
 
-    return l / (3 * (C.TIME_STEPS - 1))
+    return l
+
+def loss_yee3(name, beta, delta, test_data):
+    E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
+    Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
+    Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
+    l1 = []
+    le=[]
+    ld=[]
+    for n in range(C.TIME_STEPS - 3):
+        E1 = amper(E1, Hx1, Hy1, beta, delta)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        l1.append(0*relative_norm(E1[0, :, :, 0], test_data['e'][n + 1])
+                 + relative_norm(Hx1[0, :, :, 0],test_data['hx'][n + 1]) +
+                 relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1]))
+        inte = tf_simp(tf_simp(E1 ** 2, rank=4), rank=3)
+        inthx = tf_simp(tf_simp(Hx1 ** 2, rank=4), rank=3)
+        inthy = tf_simp(tf_simp(Hy1 ** 2, rank=4), rank=3)
+        le.append(tf.squeeze(inte+inthx+inthy-1/2))
+        y1 = tf.math.multiply(beta, Dy(Hy1, Constants.FILTER_BETA))
+        y2 = tf.math.multiply(delta, Dy(Hy1, Constants.FILTER_DELTA))
+        y3 = Dy(Hy1, Constants.FILTER_YEE)
+        dhydy=y1+y2+y3
+
+        x1 = tf.math.multiply(beta, Dx(Hx1, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
+        x2 = tf.math.multiply(delta, Dx(Hx1, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
+        x3 = Dx(Hx1, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
+        dhxdx=x1+x2+x3
+
+        div=(dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :])/Constants.DX
+        ld.append(tf.reduce_max(abs(div)))
+        # ld.append( tf.reduce_max(abs(tf.squeeze(tf_diff(Hy1[:, 1:-1, :, :], axis=2) + tf_diff(Hx1[:, :, 1:-1, :], axis=1)))))
 
 
-def loss_model(model, test_data, i):
-    E1 = np.expand_dims(test_data['ex'][i][0], axis=(0, -1))
-    Hx1 = np.expand_dims(test_data['hx_x'][i][0], axis=(0, -1))
-    Hy1 = np.expand_dims(test_data['hy_x'][i][0], axis=(0, -1))
-    l = 0.
-    for n in range(C.TIME_STEPS - 1):
-        output = model([E1, Hx1, Hy1])
-        E1 = output[0]
-        Hx1 = output[1]
-        Hy1 = output[2]
-
-        l += tf.reduce_max(abs(E1[0, :, :, 0] - test_data['ex'][i][n+1])) + \
-             tf.reduce_max(abs(Hx1[0, :, :, 0] - test_data['hx_x'][i][n+1])) + \
-             tf.reduce_max(abs(Hy1[0, :, :, 0] - test_data['hy_x'][i][n+1]))
-    return l / (3 * (C.TIME_STEPS - 1))
+    return l1, ld
 
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
+    #return tf.math.reduce_mean(abs(y_true[:, 5:-5, 3:-3, :] - y_pred[:, 3:-3, 3:-3, :])) / C.CFL
     return tf.math.reduce_mean(abs(y_true - y_pred))/C.CFL
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 
 def custom_loss3(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true - y_pred))/C.CFL
-    #return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7]))
+    return tf.math.reduce_mean(abs(y_true - y_pred)) / C.CFL
+    # return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7]))
 
 
 class DRP_LAYER(keras.layers.Layer):
@@ -258,16 +294,16 @@ class DRP_LAYER(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.pars1 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.01, trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars2 = tf.Variable(-0.2, trainable=True, dtype=C.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
 
     def call(self, input):
-        E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3= input
+        E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3 = input
         E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2)
         Hx_2, Hy_2 = faraday(E_2, Hx1, Hy1, self.pars1, self.pars2)
 
-        E_3 = amper(E2, Hx2, Hy2, self.pars1, self.pars2)
-        Hx_3, Hy_3 = faraday(E3, Hx2, Hy2, self.pars1, self.pars2)
+        E_3 = amper(E_2, Hx2, Hy2, self.pars1, self.pars2)
+        Hx_3, Hy_3 = faraday(E3, Hx_2, Hy_2, self.pars1, self.pars2)
 
         E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2)
         Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2)
