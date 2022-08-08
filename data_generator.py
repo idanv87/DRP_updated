@@ -137,4 +137,4 @@ def create_test_data(options='lt', loss_nember=2):
 
 if __name__ == "__main__":
     create_train_data(gen_base=True, options='nonlt')
-    
+

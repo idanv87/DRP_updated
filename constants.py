@@ -20,6 +20,10 @@ class Constants:
     BATCH_SIZE = 64
     K1_TRAIN = np.arange(1, 41, 1)
     K2_TRAIN = np.arange(1, 41, 1)
+
+    K1_VAL = np.arange(51, 60, 2)
+    K2_VAL = np.arange(51, 61, 2)
+
     TRAIN_NUM = 1
     K1_TEST = np.arange(61, 67,3)
     K2_TEST = np.arange( 51,52 ,3)
