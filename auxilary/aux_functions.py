@@ -57,3 +57,4 @@ def dim_red2(dic,m):
                 d[key][i] = d[key][i][m:]
 
     return list([np.expand_dims(np.vstack(d[key]),axis=-1) for key in ['e', 'hx', 'hy']])
+

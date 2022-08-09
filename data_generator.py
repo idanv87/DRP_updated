@@ -13,8 +13,9 @@ from auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
 C = Constants()
 path = C.PATH
 
-folders = [path + 'train/', path + 'test/', path +
-           'base_functions/train/', path + 'base_functions/test/', path + 'figures/']
+folders = [path + 'train/', path + 'test/', path + 'val/', path + 'base_functions/train/',
+           path + ' base_functions/val/',
+           path + 'base_functions/test/', path + 'figures/']
 
 for folder in folders:
     if not os.path.exists(folder):
@@ -49,29 +50,37 @@ class base_function:
                     open(self.path, "wb"))
 
 
-def create_lt(name):
+def create_lt(name, ind):
     output = {'e': 0., 'hx': 0., 'hy': 0., 'energy': 0.}
 
-    for p in list(base_function.base_pathes[name]):
-        a = np.random.rand(1)
+    if ind==0:
+        for p in list(base_function.base_pathes[name]):
 
-        with open(p, 'rb') as file:
-            l = pickle.load(file)
-        for key in list(output):
-            output[key] +=  a*l[key]
+            with open(p, 'rb') as file:
+                l = pickle.load(file)
+            for key in list(output):
+                output[key] += l[key]
+    else:
+        a=np.zeros(len(base_function.base_pathes[name]))
+        for i, p in enumerate(list(base_function.base_pathes[name])):
+            # a=np.random.rand(1)
+            with open(p, 'rb') as file:
+                l = pickle.load(file)
+            for key in list(output):
+
+                output[key] += a[i]*l[key]
 
 
     return output
 
 
-def create_train_data(gen_base, options ):
+def create_train_data(gen_base, options):
     sol = {'e': [], 'hx': [], 'hy': [], 'energy': []}
+    generate_basis('train')
 
-    if True:
-        generate_basis('train')
     if options == 'lt':
         for i in range(C.TRAIN_NUM):
-            [sol[key].append(create_lt('train')[key].copy()) for key in list(sol)]
+            [sol[key].append(create_lt('train', i)[key].copy()) for key in list(sol)]
     else:
         for p in list(base_function.base_pathes['train']):
             with open(p, 'rb') as file:
@@ -136,5 +145,4 @@ def create_test_data(options='lt', loss_nember=2):
 
 
 if __name__ == "__main__":
-    create_train_data(gen_base=True, options='nonlt')
-
+    create_train_data(gen_base=True, options='lt')

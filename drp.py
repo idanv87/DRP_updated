@@ -1,14 +1,18 @@
 import numpy as np
 import tensorflow as tf
 import scipy.optimize as scop
+from tensorflow import keras
 
-from constants import Constants
-from utils import loss_yee2, loss_yee
 
-k1, k2 = np.meshgrid(Constants.PI * Constants.K1_TRAIN, Constants.PI * Constants.K2_TRAIN, indexing='ij')
+from DRP_multiple_networks.constants import Constants
+from DRP_multiple_networks.utils import custom_loss, custom_loss3, loss_yee2, loss_yee3, loss_yee
 
+
+path = Constants.PATH
 
 def loss(a, *args):
+    k1, k2 = np.meshgrid(Constants.PI * Constants.K1_DRP, Constants.PI * Constants.K2_DRP, indexing='ij')
+
     h = Constants.DX
     k = np.sqrt(k1 ** 2 + k2 ** 2)
 
@@ -21,6 +25,8 @@ def loss(a, *args):
 
 
 def func(a, *args):
+    k1, k2 = np.meshgrid(Constants.PI * Constants.K1_DRP, Constants.PI * Constants.K2_DRP, indexing='ij')
+
     h = Constants.DX
     k = np.sqrt(k1 ** 2 + k2 ** 2)
 
@@ -29,7 +35,7 @@ def func(a, *args):
         (15 * a ** 2 - 6 * a) * (np.cos(k1 * h) + np.cos(k2 * h))
     omega = (2 / Constants.DT) * np.arcsin(Constants.CFL * np.sqrt((1 / 18) * (20 * a ** 2 - 4 * a + 2 - f)))
 
-    return tf.math.reduce_max(abs(omega / k - 1))
+    return tf.math.reduce_mean(abs(omega / k - 1))
     # return tf.math.reduce_mean((omega/k-1)**2)
 
 
@@ -46,6 +52,7 @@ def cons3(a, *args):
 
 
 def calculate_DRP():
+    k1, k2 = np.meshgrid(Constants.PI * Constants.K1_DRP, Constants.PI * Constants.K2_DRP, indexing='ij')
     opt = 100
     x=0.
     cons = [{'type': 'ineq', 'fun': cons1}, {'type': 'ineq', 'fun': cons2}]
@@ -59,7 +66,9 @@ def calculate_DRP():
             x = res['x']
             opt=res['fun']
 
-    print(x)
+
 
     return (1 - x) / 3
+
+
 

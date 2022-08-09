@@ -73,8 +73,8 @@ for k in range(Constants.CROSS_VAL):
     model = keras.Model(
         inputs=[E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input],
         outputs=[E1_output, Hx1_output, Hy1_output
-         #   ,E2_output, Hx2_output, Hy2_output
-         #        ,E3_output, Hx3_output, Hy3_output
+            ,E2_output, Hx2_output, Hy2_output
+                 ,E3_output, Hx3_output, Hy3_output
                  ]
         # outputs = [E_output, Hx_output, Hy_output, energy_output]
     )
@@ -83,8 +83,8 @@ for k in range(Constants.CROSS_VAL):
         optimizer=keras.optimizers.Adam(learning_rate=1e-3),
         # loss=[custom_loss, custom_loss, custom_loss],
         loss=[custom_loss, custom_loss, custom_loss
-            #   ,custom_loss, custom_loss, custom_loss
-            #   ,custom_loss, custom_loss,custom_loss
+               ,custom_loss, custom_loss, custom_loss
+               ,custom_loss, custom_loss,custom_loss
               ]
     )
     if k == 0:
@@ -109,7 +109,7 @@ for k in range(Constants.CROSS_VAL):
 
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.0001)
     history = model.fit(
-        net_input, net_output[:-7],
+        net_input, net_output[:-1],
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],
         epochs=Constants.EPOCHS,
         batch_size=Constants.BATCH_SIZE,

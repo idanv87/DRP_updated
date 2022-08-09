@@ -16,13 +16,13 @@ create_test_data()
 with open(path + 'test/test_data.pkl', 'rb') as file:
     test_data = pickle.load(file)
 
-name = 'DL2c_N=31'
+name = 'DL2i_N=51'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 model1.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
-name = 'DL2i_N=31'
+name = 'DL2i_N=51'
 saving_path = path + 'Experiment_' + name + '_details/'
 model2 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -77,6 +77,6 @@ plt.legend(loc="upper left")
 plt.title('Error over time')
 plt.show()
 # print(1-3*model1.trainable_weights[0])
-print(1-3*model2.trainable_weights[0])
+print(model2.trainable_weights[0])
 # print(1-3*calculate_DRP())
 print(calculate_DRP())

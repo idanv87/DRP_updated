@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-from constants import Constants
-from auxilary.aux_functions import relative_norm
+from DRP_multiple_networks.constants import Constants
+from DRP_multiple_networks.auxilary.aux_functions import relative_norm
 
 C = Constants()
 
@@ -215,8 +215,8 @@ def loss_yee(name, beta, delta, test_data):
         # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
         #      tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1]))
-        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) + relative_norm(Hx1[0, :, :, 0],
-                                                                                  test_data['hx'][n + 1]) + \
+        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) +\
+             relative_norm(Hx1[0, :, :, 0], test_data['hx'][n + 1]) + \
              relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1])
 
     return l / (3 * (C.TIME_STEPS - 3))
@@ -294,7 +294,7 @@ class DRP_LAYER(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.pars1 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.2, trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars2 = tf.Variable(-0.04, trainable=True, dtype=C.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
 
     def call(self, input):
@@ -302,8 +302,8 @@ class DRP_LAYER(keras.layers.Layer):
         E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2)
         Hx_2, Hy_2 = faraday(E_2, Hx1, Hy1, self.pars1, self.pars2)
 
-        E_3 = amper(E_2, Hx2, Hy2, self.pars1, self.pars2)
-        Hx_3, Hy_3 = faraday(E3, Hx_2, Hy_2, self.pars1, self.pars2)
+        E_3 = amper(E2, Hx_2, Hy_2, self.pars1, self.pars2)
+        Hx_3, Hy_3 = faraday(E_3, Hx2, Hy2, self.pars1, self.pars2)
 
         E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2)
         Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2)
