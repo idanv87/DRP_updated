@@ -5,9 +5,9 @@ import tracemalloc
 
 import numpy as np
 
-from constants import Constants
+from DRP_multiple_networks.constants import Constants
 
-from auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
+from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
 
 # save lists as csv file
 C = Constants()
@@ -62,12 +62,12 @@ def create_lt(name, ind):
                 output[key] += l[key]
     else:
         a=np.zeros(len(base_function.base_pathes[name]))
+        a[ind+15]=1
         for i, p in enumerate(list(base_function.base_pathes[name])):
             # a=np.random.rand(1)
             with open(p, 'rb') as file:
                 l = pickle.load(file)
             for key in list(output):
-
                 output[key] += a[i]*l[key]
 
 
@@ -145,4 +145,4 @@ def create_test_data(options='lt', loss_nember=2):
 
 
 if __name__ == "__main__":
-    create_train_data(gen_base=True, options='lt')
+    create_train_data(gen_base=True, options='nonlt')

@@ -8,6 +8,9 @@ from DRP_multiple_networks.auxilary.aux_functions import relative_norm
 C = Constants()
 
 
+
+
+
 def fE(FE, m, T, c):
     t = T + C.DT * m
     return np.cos(c * t) * FE
@@ -23,6 +26,18 @@ def fHY(FHY, m, T, c):
     t = T + m * C.DT / 2
     z = np.sin(c * t) * (1 / c) * FHY
     return z[:, :-1, 1:-1]
+
+
+def tf_trapz(y, axis=-2, dx=C.DX, rank=4):
+    nd = rank
+    slice1 = [slice(None)] * nd
+    slice2 = [slice(None)] * nd
+    slice3 = [slice(None)] * nd
+    slice1[axis] = slice(1, None)
+    slice2[axis] = slice(None, -1)
+    ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=axis)
+
+    return ret
 
 
 def tf_simp(y, axis=-2, dx=C.DX, rank=4):
@@ -209,8 +224,13 @@ def loss_yee(name, beta, delta, test_data):
 
     l = 0.
     for n in range(C.TIME_STEPS - 3):
-        E1 = amper(E1, Hx1, Hy1, beta, delta)
-        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        if name=='model2':
+            E1 = amper(E1, Hx1, Hy1, beta, delta[0])
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta[1])
+        else:
+            E1 = amper(E1, Hx1, Hy1, beta, delta)
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+
 
         # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
@@ -245,19 +265,34 @@ def loss_yee3(name, beta, delta, test_data):
     E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
     Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
-    l1 = []
+
+
     le=[]
-    ld=[]
-    for n in range(C.TIME_STEPS - 3):
+    lh=[]
+    energy=[]
+    divergence=[]
+    for n in range(Constants.TIME_STEPS - 3):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
-        l1.append(0*relative_norm(E1[0, :, :, 0], test_data['e'][n + 1])
-                 + relative_norm(Hx1[0, :, :, 0],test_data['hx'][n + 1]) +
+
+        # E1[0,1:Constants.N - 1, 1:Constants.N - 1,0] +=(Constants.DT / Constants.DX) * np.diff(Hy1[0,:,:,0], axis=0) - (Constants.DT / Constants.DX) * np.diff(Hx1[0,:,:,0], axis=1)
+        # Hx1[0,:,:,0] -= (Constants.DT / (Constants.DX)) * (np.diff(E1[0,1:-1, :,0], axis=1))
+        # Hy1[0,:,:,0] += (Constants.DT / (Constants.DX)) * (np.diff(E1[0,:, 1:-1,0], axis=0))
+
+
+
+        lh.append(relative_norm(Hx1[0, :, :, 0],test_data['hx'][n + 1]) +
                  relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1]))
-        inte = tf_simp(tf_simp(E1 ** 2, rank=4), rank=3)
-        inthx = tf_simp(tf_simp(Hx1 ** 2, rank=4), rank=3)
-        inthy = tf_simp(tf_simp(Hy1 ** 2, rank=4), rank=3)
-        le.append(tf.squeeze(inte+inthx+inthy-1/2))
+        le.append(relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]))
+
+        # inte = tf_simp(tf_simp(E1 ** 2, rank=4), rank=3)
+        # inthx = tf_simp(tf_simp(Hx1 ** 2, rank=4), rank=3)
+        # inthy = tf_simp(tf_simp(Hy1 ** 2, rank=4), rank=3)
+        inte = tf_trapz(tf_trapz(E1 ** 2, rank=4), rank=3)
+        inthx = tf_trapz(tf_trapz(Hx1 ** 2, rank=4), rank=3)
+        inthy = tf_trapz(tf_trapz(Hy1 ** 2, rank=4), rank=3)
+
+        energy.append(tf.squeeze(inte+inthx+inthy))
         y1 = tf.math.multiply(beta, Dy(Hy1, Constants.FILTER_BETA))
         y2 = tf.math.multiply(delta, Dy(Hy1, Constants.FILTER_DELTA))
         y3 = Dy(Hy1, Constants.FILTER_YEE)
@@ -269,11 +304,11 @@ def loss_yee3(name, beta, delta, test_data):
         dhxdx=x1+x2+x3
 
         div=(dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :])/Constants.DX
-        ld.append(tf.reduce_max(abs(div)))
+        divergence.append(tf.reduce_max(abs(div)))
         # ld.append( tf.reduce_max(abs(tf.squeeze(tf_diff(Hy1[:, 1:-1, :, :], axis=2) + tf_diff(Hx1[:, :, 1:-1, :], axis=1)))))
 
 
-    return l1, ld
+    return divergence, energy, le, lh
 
 
 def custom_loss(y_true, y_pred):
@@ -294,7 +329,7 @@ class DRP_LAYER(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.pars1 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.04, trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars2 = tf.Variable(-0.11, trainable=True, dtype=C.DTYPE, name='delta')
         self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
 
     def call(self, input):

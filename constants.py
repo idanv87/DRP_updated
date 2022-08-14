@@ -12,14 +12,14 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 31
+    N = 41
     T = 0.01
     TIME_STEPS = 26
     CROSS_VAL = 1
     EPOCHS = 600
-    BATCH_SIZE = 64
-    K1_TRAIN = np.arange(1, 91, 1)
-    K2_TRAIN = np.arange(1, 91, 1)
+    BATCH_SIZE = 128
+    K1_TRAIN = np.arange(1, 41, 9)
+    K2_TRAIN = np.arange(1, 41, 9)
 
     K1_DRP = np.arange(1, 41, 1)
     K2_DRP = np.arange(1, 41, 1)
@@ -27,9 +27,9 @@ class Constants:
     # K1_VAL = np.arange(1, 41, 5)
     # K2_VAL = np.arange(1, 41, 5)
 
-    TRAIN_NUM = 15
-    K1_TEST = np.arange(32, 41,3)
-    K2_TEST = np.arange(32,41 ,3)
+    TRAIN_NUM = 20
+    K1_TEST = np.arange(8, 45, 5)
+    K2_TEST = np.arange(21, 22, 1)
 
     #assert N % 2 != 0
     #assert (N) % 3 == 0
@@ -87,6 +87,8 @@ class Constants:
                                shape=[3, 4, 1, 1], dtype=DTYPE)
     FILTER_YEE = tf.constant([[0., 0, 0, 0.], [0, -1, 1, 0], [0., 0., 0., 0.]],
                              shape=[3, 4, 1, 1], dtype=DTYPE)
+
+
 
     PADUP = tf.constant([[0, N - 3], [0, 0], [0, 0], [0, 0]], shape=[4, 2])
     PADDOWN = tf.constant([[N - 3, 0], [0, 0], [0, 0], [0, 0]], shape=[4, 2])
