@@ -1,5 +1,6 @@
 import math
 
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 from dataclasses import dataclass
@@ -12,17 +13,17 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 41
+    N = 31
     T = 0.01
     TIME_STEPS = 26
     CROSS_VAL = 1
     EPOCHS = 600
     BATCH_SIZE = 128
-    K1_TRAIN = np.arange(1, 41, 9)
-    K2_TRAIN = np.arange(1, 41, 9)
+    K1_TRAIN = np.arange(1, 61,2)
+    K2_TRAIN = np.arange(1, 61,2)
 
-    K1_DRP = np.arange(1, 41, 1)
-    K2_DRP = np.arange(1, 41, 1)
+    K1_DRP = np.arange(15, 31, 1)
+    K2_DRP = np.arange(15, 31, 1)
 
     # K1_VAL = np.arange(1, 41, 5)
     # K2_VAL = np.arange(1, 41, 5)
@@ -50,6 +51,8 @@ class Constants:
     X1 = np.linspace(0., XMAX, N)
     X2 = np.linspace(0., XMAX, N)
 
+    # plt.plot(np.cos(5*math.pi*X1))
+    # plt.show()
     X, Y = np.meshgrid(X1, X2, indexing='ij')
 
     K1_VAL = [1., 2]

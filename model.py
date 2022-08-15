@@ -60,19 +60,19 @@ for k in range(Constants.CROSS_VAL):
     layer1 = DRP_LAYER()
     layer2 = DRP_LAYER()
     output1 = layer1([E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input])
-    output2 = layer2([E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input])
+    # output2 = layer1([E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input])
 
     E1_output = output1[0]
-    Hx1_output = output2[1]
-    Hy1_output = output2[2]
+    Hx1_output = output1[1]
+    Hy1_output = output1[2]
 
     E2_output = output1[3]
-    Hx2_output = output2[4]
-    Hy2_output = output2[5]
+    Hx2_output = output1[4]
+    Hy2_output = output1[5]
 
     E3_output = output1[6]
-    Hx3_output = output2[7]
-    Hy3_output = output2[8]
+    Hx3_output = output1[7]
+    Hy3_output = output1[8]
 
     # div_output=output[6]
     # energy_output = output[6]

@@ -18,11 +18,13 @@ from DRP_multiple_networks.drp import calculate_DRP
 path = Constants.PATH
 
 
-name = 'DL2i_N='+str(Constants.N)
+# name = 'DL2i_N='+str(Constants.N)
+name = 'DL3i_N='+str(Constants.N)
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                      custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 model1.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+
 
 
 
@@ -57,13 +59,13 @@ plt.xlabel(r'${ \frac{hk_x}{\pi} }$', fontsize=12)
 plt.ylabel(r'${ \frac{hk_y}{\pi} }$', rotation=0, fontsize=12, labelpad=14)
 plt.suptitle("Dispersion relation minimizers", size=12, y=0.98)
 
-plt.xticks([Constants.K1_DRP[20]*Constants.DX,
-           Constants.K1_DRP[-1]*Constants.DX, Constants.K1_TRAIN[-1]*Constants.DX],
-[str(Constants.K1_DRP[20]*Constants.DX),r'${ k_{\max}}$',str("{:.1f}".format(Constants.K1_TRAIN[-1]*Constants.DX))])
+#plt.xticks([Constants.K1_DRP[20]*Constants.DX,
+#           Constants.K1_DRP[-1]*Constants.DX, Constants.K1_TRAIN[-1]*Constants.DX],
+#[str(Constants.K1_DRP[20]*Constants.DX),r'${ k_{\max}}$',str("{:.1f}".format(Constants.K1_TRAIN[-1]*Constants.DX))])
 
-plt.yticks([Constants.K1_DRP[20]*Constants.DX,
-           Constants.K1_DRP[-1]*Constants.DX, Constants.K1_TRAIN[-1]*Constants.DX],
-[str(Constants.K1_DRP[20]*Constants.DX),r'${ k_{\max}}$',str("{:.1f}".format(Constants.K1_TRAIN[-1]*Constants.DX))])
+#plt.yticks([Constants.K1_DRP[20]*Constants.DX,
+#           Constants.K1_DRP[-1]*Constants.DX, Constants.K1_TRAIN[-1]*Constants.DX],
+#[str(Constants.K1_DRP[20]*Constants.DX),r'${ k_{\max}}$',str("{:.1f}".format(Constants.K1_TRAIN[-1]*Constants.DX))])
 
 # Adding grid to plot
 # plt.savefig('/Users/idanversano/documents/papers/drp/figures/phase_41.eps', format='eps',
