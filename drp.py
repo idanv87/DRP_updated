@@ -7,8 +7,15 @@ from tensorflow import keras
 from DRP_multiple_networks.constants import Constants
 from DRP_multiple_networks.utils import custom_loss, custom_loss3, loss_yee2, loss_yee3, loss_yee
 
+"""
+This file calculate the optimal coefficient for the drp loss (discrete version) over the selected modes
+given in the file constants.k_drp
+"""
+
 
 path = Constants.PATH
+
+
 
 def loss(a, *args):
     k1, k2 = np.meshgrid(Constants.PI * Constants.K1_DRP, Constants.PI * Constants.K2_DRP, indexing='ij')
@@ -21,7 +28,7 @@ def loss(a, *args):
         (15 * a ** 2 - 6 * a) * (np.cos(k1 * h) + np.cos(k2 * h))
     omega = (2 / Constants.DT) * np.arcsin(Constants.CFL * np.sqrt((1 / 18) * (20 * a ** 2 - 4 * a + 2 - f)))
 
-    return tf.math.reduce_max(abs(omega / k - 1))
+    return tf.math.reduce_sum(abs(omega / k - 1))
 
 
 def func(a, *args):

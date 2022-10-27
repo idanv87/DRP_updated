@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -8,7 +10,39 @@ from DRP_multiple_networks.auxilary.aux_functions import relative_norm
 C = Constants()
 
 
+def fd_solver(beta, delta, test_data):
+    """"
+    this function solve the equation for a given test data.
+    and save the energy at each step
+    """
+    E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
+    Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
+    Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
+    energy = []
+    for n in range(C.TIME_STEPS - 3):
+        E1 = amper(E1, Hx1, Hy1, beta, delta)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        energy.append((tf.reduce_sum(E1 ** 2) + tf.reduce_sum(Hx1 ** 2) + tf.reduce_sum(Hy1 ** 2)) * C.DX * C.DX)
+    return energy
 
+
+def drp_loss(a):
+    """"
+    this function is the loss function of the drp_function given by an integral from pi/2
+    to pi over the dispersion relation minus 1 (see tex file).
+    """
+    X = tf.cast(tf.linspace(math.pi / 2, math.pi, 200), tf.dtypes.float64)
+    x, y = tf.meshgrid(X, X, indexing='ij')
+
+    f = ((1 - a) ** 2) * (tf.cos(3 * x) + tf.cos(3 * y)) + \
+        (6 * a - 6 * a ** 2) * (tf.cos(2 * x) + tf.cos(2 * y)) + \
+        (15 * a ** 2 - 6 * a) * (tf.cos(x) + tf.cos(y))
+    omega_over_k = (2 / (Constants.CFL * tf.sqrt(x ** 2 + y ** 2))) * tf.asin(
+        Constants.CFL * tf.sqrt((1 / 18) * (20 * a ** 2 - 4 * a + 2 - f)))
+
+    ret = tf_trapz(tf_trapz(abs(omega_over_k - 1), axis=-1, dx=X[1] - X[0], rank=2), axis=-1, dx=X[1] - X[0], rank=1)
+
+    return ret
 
 
 def fE(FE, m, T, c):
@@ -29,10 +63,12 @@ def fHY(FHY, m, T, c):
 
 
 def tf_trapz(y, axis=-2, dx=C.DX, rank=4):
+    """"
+    This is the trapz rule for tensors
+    """
     nd = rank
     slice1 = [slice(None)] * nd
     slice2 = [slice(None)] * nd
-    slice3 = [slice(None)] * nd
     slice1[axis] = slice(1, None)
     slice2[axis] = slice(None, -1)
     ret = tf.math.reduce_sum(dx * (y[tuple(slice1)] + y[tuple(slice2)]) / 2.0, axis=axis)
@@ -41,6 +77,9 @@ def tf_trapz(y, axis=-2, dx=C.DX, rank=4):
 
 
 def tf_simp(y, axis=-2, dx=C.DX, rank=4):
+    """"
+    This is simpson rule for tensors
+    """
     nd = rank
     slice1 = [slice(None)] * nd
     slice2 = [slice(None)] * nd
@@ -58,6 +97,9 @@ def tf_simp(y, axis=-2, dx=C.DX, rank=4):
 
 
 def complete(H, kernelleft, kernelright, kernelup, kerneldown):
+    """
+    this function recieves Hx or Hy and complete its values in the missing point according the chosen kernels.
+    """
     rowup = tf.nn.conv2d(H, kernelup, strides=1, padding='VALID')
     rowdown = tf.nn.conv2d(H, kerneldown, strides=1, padding='VALID')
     a = tf.concat([rowup, H, rowdown], axis=1)
@@ -67,6 +109,9 @@ def complete(H, kernelleft, kernelright, kernelup, kerneldown):
 
 
 def tf_diff(y, axis, rank=4):
+    """"
+    this is the same a np.diff, but for tensors
+    """
     nd = rank
     slice1 = [slice(None)] * nd
     slice2 = [slice(None)] * nd
@@ -77,6 +122,10 @@ def tf_diff(y, axis, rank=4):
 
 
 def tf_simp3(y, axis=-2, dx=C.DX, rank=4):
+    """"
+    simpson rule of higher order
+    """
+
     assert y.shape[axis] % 2 != 0
     nd = rank
     slice1 = [slice(None)] * nd
@@ -89,6 +138,9 @@ def tf_simp3(y, axis=-2, dx=C.DX, rank=4):
 
 
 def tf_simp4(y, axis=-2, dx=C.DX, rank=4):
+    """"
+    simpson rule of higher order
+    """
     assert (y.shape[axis] - 1) % 3 == 0
     nd = rank
     slice1 = [slice(None)] * nd
@@ -218,24 +270,29 @@ def pad_function(input):
 
 
 def loss_yee(name, beta, delta, test_data):
+    """'
+    this function recieve analytic solution, solve the equation and compare it to analytical solution
+    at each time step.
+    The output is the average error
+    """
+
     E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
     Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
 
     l = 0.
     for n in range(C.TIME_STEPS - 3):
-        if name=='model2':
+        if name == 'model2':
             E1 = amper(E1, Hx1, Hy1, beta, delta[0])
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta[1])
         else:
             E1 = amper(E1, Hx1, Hy1, beta, delta)
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
-
         # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
         #      tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1]))
-        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) +\
+        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) + \
              relative_norm(Hx1[0, :, :, 0], test_data['hx'][n + 1]) + \
              relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1])
 
@@ -243,6 +300,9 @@ def loss_yee(name, beta, delta, test_data):
 
 
 def loss_yee2(name, beta, delta, test_data):
+    """
+    another version of the function loss_yee
+    """
     E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
     Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
@@ -251,26 +311,29 @@ def loss_yee2(name, beta, delta, test_data):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
 
-
         # l.append(tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #          tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
         #          tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1])))
         l.append(relative_norm(E1[0, :, :, 0], test_data['e'][n + 1])
-                 + relative_norm(Hx1[0, :, :, 0],test_data['hx'][n + 1]) +
+                 + relative_norm(Hx1[0, :, :, 0], test_data['hx'][n + 1]) +
                  relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1]))
 
     return l
 
+
 def loss_yee3(name, beta, delta, test_data):
+    """
+    another version of the function loss_yee
+    """
+
     E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
     Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
 
-
-    le=[]
-    lh=[]
-    energy=[]
-    divergence=[]
+    le = []
+    lh = []
+    energy = []
+    divergence = []
     for n in range(Constants.TIME_STEPS - 3):
         E1 = amper(E1, Hx1, Hy1, beta, delta)
         Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
@@ -279,10 +342,8 @@ def loss_yee3(name, beta, delta, test_data):
         # Hx1[0,:,:,0] -= (Constants.DT / (Constants.DX)) * (np.diff(E1[0,1:-1, :,0], axis=1))
         # Hy1[0,:,:,0] += (Constants.DT / (Constants.DX)) * (np.diff(E1[0,:, 1:-1,0], axis=0))
 
-
-
-        lh.append(relative_norm(Hx1[0, :, :, 0],test_data['hx'][n + 1]) +
-                 relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1]))
+        lh.append(relative_norm(Hx1[0, :, :, 0], test_data['hx'][n + 1]) +
+                  relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1]))
         le.append(relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]))
 
         # inte = tf_simp(tf_simp(E1 ** 2, rank=4), rank=3)
@@ -292,36 +353,39 @@ def loss_yee3(name, beta, delta, test_data):
         inthx = tf_trapz(tf_trapz(Hx1 ** 2, rank=4), rank=3)
         inthy = tf_trapz(tf_trapz(Hy1 ** 2, rank=4), rank=3)
 
-        energy.append(tf.squeeze(inte+inthx+inthy))
+        energy.append(tf.squeeze(inte + inthx + inthy))
         y1 = tf.math.multiply(beta, Dy(Hy1, Constants.FILTER_BETA))
         y2 = tf.math.multiply(delta, Dy(Hy1, Constants.FILTER_DELTA))
         y3 = Dy(Hy1, Constants.FILTER_YEE)
-        dhydy=y1+y2+y3
+        dhydy = y1 + y2 + y3
 
         x1 = tf.math.multiply(beta, Dx(Hx1, tf.transpose(Constants.FILTER_BETA, perm=[1, 0, 2, 3])))
         x2 = tf.math.multiply(delta, Dx(Hx1, tf.transpose(Constants.FILTER_DELTA, perm=[1, 0, 2, 3])))
         x3 = Dx(Hx1, tf.transpose(Constants.FILTER_YEE, perm=[1, 0, 2, 3]))
-        dhxdx=x1+x2+x3
+        dhxdx = x1 + x2 + x3
 
-        div=(dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :])/Constants.DX
+        div = (dhydy[:, 1:-1, :, :] + dhxdx[:, :, 1:-1, :]) / Constants.DX
         divergence.append(tf.reduce_max(abs(div)))
         # ld.append( tf.reduce_max(abs(tf.squeeze(tf_diff(Hy1[:, 1:-1, :, :], axis=2) + tf_diff(Hx1[:, :, 1:-1, :], axis=1)))))
-
 
     return divergence, energy, le, lh
 
 
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    #return tf.math.reduce_mean(abs(y_true[:, 5:-5, 3:-3, :] - y_pred[:, 3:-3, 3:-3, :])) / C.CFL
-    return tf.math.reduce_mean(abs(y_true - y_pred))/C.CFL
+    # return tf.math.reduce_mean(abs(y_true[:, 5:-5, 3:-3, :] - y_pred[:, 3:-3, 3:-3, :])) / C.CFL
+    return tf.math.reduce_mean(abs(y_true - y_pred)) / C.CFL
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 
 def custom_loss3(y_true, y_pred):
     assert y_true.shape == y_pred.shape
-    return tf.math.reduce_mean(abs(y_true - y_pred)) / C.CFL
+    return abs(y_pred - y_true)
     # return tf.math.reduce_mean(abs(y_true[7:-7, 7:-7] - y_pred[7:-7, 7:-7]))
+
+
+def custom_loss_drp(y_true, y_pred):
+    return abs(y_pred)
 
 
 class DRP_LAYER(keras.layers.Layer):
@@ -367,5 +431,11 @@ class DRP_LAYER(keras.layers.Layer):
 
         # divergence = (tf_diff(Hy_n[:, 1:-1, :, :], axis=2) + tf_diff(Hx_n[:, :, 1:-1, :], axis=1))
         # divergence=dEdx-dEdy
+        # d = tf_simp3(tf_simp3(E1 ** 2, rank=4), rank=3) * 0 + drp_loss(self.pars2)
 
-        return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
+        d = drp_loss(self.pars2)
+
+        return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4, d
+
+# if __name__ == "__main__":
+#     print(drp_loss(-1/24))

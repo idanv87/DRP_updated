@@ -6,19 +6,21 @@ from tensorflow import keras
 import matplotlib.pyplot as plt
 
 from constants import Constants
-from utils import custom_loss, custom_loss3, loss_yee2, loss_yee3, loss_yee
+from utils import custom_loss, custom_loss3, loss_yee2, loss_yee3, loss_yee, fd_solver
 from data_generator import create_test_data
 from drp import calculate_DRP
+from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
 
 path = Constants.PATH
 
 create_test_data()
+
 with open(path + 'test/test_data.pkl', 'rb') as file:
     test_data = pickle.load(file)
 
+data = {name: test_data[name][0] for name in list(test_data)}
 
-
-name = 'DL2i_N=41'
+name = 'DL2i_N=31'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -31,23 +33,32 @@ model2 = keras.models.load_model(saving_path + 'model.pkl',
 
 model2.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
-
-
 l_yee = []
-l_model = []
+l_model1 = []
 l_fourth = []
 l_drp = []
-l_model2=[]
+l_model2 = []
 
-print(model1.trainable_weights)
 for i in range(len(test_data['e'])):
     data = {name: test_data[name][i] for name in list(test_data)}
+
+    # aux = fd_solver(0., 0., data)
+    # aux4 = fd_solver(0., -1 / 24, data)
+    # aux_drp = fd_solver(0., calculate_DRP(), data)
+    # plt.plot(aux)
+    # plt.plot(aux4, 'r', label="4")
+    # # plt.plot(aux_drp, 'g', label="drp")
+    # plt.legend()
+    # plt.show()
+
     l_fourth.append(loss_yee('4order', 0., -1 / 24, data))
-    l_model.append(loss_yee('model', 0, model1.trainable_weights[0], data))
-    l_model2.append(loss_yee('model2', 0, model2.trainable_weights, data))
-    l_yee.append(loss_yee('Yee', 0, 0, data))
-    l_drp.append(loss_yee('DRP', 0., calculate_DRP(), data))
+    # l_model.append(loss_yee('model', 0, model1.trainable_weights[0], data))
+    #l_model1.append(loss_yee('model', 0, model1.trainable_weights, data))
+    # l_yee.append(loss_yee('Yee', 0, 0, data))
+    l_drp.append(loss_yee('DRP', 0., calculate_DRP2(), data))
     print(l_drp)
+    print(l_model1)
+    print(l_fourth)
 
     # lt_model=loss_yee2('model', 0, model1.trainable_weights[0], data)
     # lt_model2 = loss_yee2('model', 0, model2.trainable_weights[0], data)
@@ -55,7 +66,6 @@ for i in range(len(test_data['e'])):
     # lt_fourth=loss_yee2('4order', 0., -1/24, data)
     # #lt_fourth2 = loss_yee2('4order', 0., -0.04468, data)
     # lt_drp=loss_yee2('DRP', 0., calculate_DRP(), data)
-
 
 # pickle.dump(l_yee, open(path+"figures/loss_yee.pkl", "wb"))
 # pickle.dump(l_fourth, open(path+"figures/loss_fourth.pkl", "wb"))
@@ -70,9 +80,9 @@ for i in range(len(test_data['e'])):
 # pickle.dump(lt_drp, open(path+"figures/loss_time_drp.pkl", "wb"))
 
 plt.plot(l_drp, '-r', label="drp")
-plt.plot(l_model2, 'b', label='model2')
-plt.plot(l_model, 'g', label='model1')
-#plt.plot(lt_fourth2, 'r', label='other model')
+plt.plot(l_model1, 'b', label='model1')
+plt.plot(l_fourth, 'g', label='fourth')
+# plt.plot(lt_fourth2, 'r', label='other model')
 # plt.plot(lt_fourth2, 'b', label='H error')
 # plt.plot(np.array(lt_fourthe)*20, 'g', label='divergence')
 # # plt.plot([(l_model[k]/l_model2[k]) for k in range(len(l_model))], "b", label="gpa")
@@ -83,4 +93,4 @@ plt.show()
 # print(1-3*model1.trainable_weights[0])
 # print(model2.trainable_weights[0])
 # print(1-3*calculate_DRP())
-print(calculate_DRP())
+# print(calculate_DRP())

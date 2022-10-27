@@ -6,6 +6,8 @@ import numpy as np
 from dataclasses import dataclass
 
 
+
+
 @dataclass(frozen=True)
 class Constants:
     PATH = '/Users/idanversano/documents/pycharm/files/'
@@ -14,32 +16,32 @@ class Constants:
     DTYPE = tf.dtypes.float64
 
     N = 31
-    T = 0.01
-    TIME_STEPS = 26
+    T = 0.001
+    TIME_STEPS = 50
     CROSS_VAL = 1
     EPOCHS = 600
     BATCH_SIZE = 128
-    K1_TRAIN = np.arange(1, 61,2)
-    K2_TRAIN = np.arange(1, 61,2)
+    K1_TRAIN = np.arange(5, 40, 2)
+    K2_TRAIN = np.arange(5, 40, 2)
 
-    K1_DRP = np.arange(15, 31, 1)
-    K2_DRP = np.arange(15, 31, 1)
+    K1_DRP = np.arange(15, 41, 1)
+    K2_DRP = np.arange(15, 41, 1)
 
     # K1_VAL = np.arange(1, 41, 5)
     # K2_VAL = np.arange(1, 41, 5)
 
     TRAIN_NUM = 20
-    K1_TEST = np.arange(8, 45, 5)
-    K2_TEST = np.arange(21, 22, 1)
+    K1_TEST = np.arange(10, 11, 1)
+    K2_TEST = np.arange(10, 11, 1)
 
-    #assert N % 2 != 0
-    #assert (N) % 3 == 0
+    # assert N % 2 != 0
+    # assert (N) % 3 == 0
 
     PI = math.pi
     YMIN, YMAX = 0.0, 1.
     XMIN, XMAX = 0.0, 1.
 
-    DT = T / (TIME_STEPS-1 )
+    DT = T / (TIME_STEPS - 1)
 
     LX = XMAX - XMIN
     LY = YMAX - YMIN
@@ -57,8 +59,6 @@ class Constants:
 
     K1_VAL = [1., 2]
     K2_VAL = [1.]
-
-
 
     TEST_NUM = len(K1_TEST) * len(K2_TEST)
 
@@ -91,8 +91,6 @@ class Constants:
     FILTER_YEE = tf.constant([[0., 0, 0, 0.], [0, -1, 1, 0], [0., 0., 0., 0.]],
                              shape=[3, 4, 1, 1], dtype=DTYPE)
 
-
-
     PADUP = tf.constant([[0, N - 3], [0, 0], [0, 0], [0, 0]], shape=[4, 2])
     PADDOWN = tf.constant([[N - 3, 0], [0, 0], [0, 0], [0, 0]], shape=[4, 2])
     FOURTH_UP = tf.pad(
@@ -112,3 +110,4 @@ class Constants:
 
     KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
     KDOWN = tf.reverse(KUP, [0])
+

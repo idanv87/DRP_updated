@@ -6,10 +6,12 @@ import tracemalloc
 import numpy as np
 
 from DRP_multiple_networks.constants import Constants
-
 from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
 
-# save lists as csv file
+"""
+This file is used to gennerate data for training and for evaluation
+"""
+
 C = Constants()
 path = C.PATH
 
@@ -23,6 +25,11 @@ for folder in folders:
 
 
 class base_function:
+    """
+    an instance of  base_function is an analytic solution (e,hx,hy) to maxwell equations.
+    each solution has energy.
+    each solution can be used either for train or either for test
+     """
     base_pathes = {'train': [], 'test': []}
 
     def __init__(self, k1, k2, train_or_test):
@@ -34,14 +41,14 @@ class base_function:
         self.valueFHY = None
         self.valueENERGY = None
 
-    def set(self, type, F):
-        if type == 'e':
+    def set(self, typ, F):
+        if typ == 'e':
             self.valueFE = F
-        if type == 'hx':
+        if typ == 'hx':
             self.valueFHX = F
-        if type == 'hy':
+        if typ == 'hy':
             self.valueFHY = F
-        if type == 'energy':
+        if typ == 'energy':
             self.valueENERGY = F
 
     def save(self):
@@ -51,9 +58,12 @@ class base_function:
 
 
 def create_lt(name, ind):
+    """
+    please ignore that class for now
+    """
     output = {'e': 0., 'hx': 0., 'hy': 0., 'energy': 0.}
 
-    if ind==0:
+    if ind == 0:
         for p in list(base_function.base_pathes[name]):
 
             with open(p, 'rb') as file:
@@ -61,20 +71,30 @@ def create_lt(name, ind):
             for key in list(output):
                 output[key] += l[key]
     else:
-        a=np.zeros(len(base_function.base_pathes[name]))
-        a[ind+15]=1
+        a = np.zeros(len(base_function.base_pathes[name]))
+        a[ind + 15] = 1
         for i, p in enumerate(list(base_function.base_pathes[name])):
             # a=np.random.rand(1)
             with open(p, 'rb') as file:
                 l = pickle.load(file)
             for key in list(output):
-                output[key] += a[i]*l[key]
-
+                output[key] += a[i] * l[key]
 
     return output
 
 
 def create_train_data(gen_base, options):
+    """
+    let f=(e,hx,hy).
+    this function creates 2 lists   of  inputs (fn,fn+1,fn+2) and outputs (fn+1,fn+2,fn+3)
+     for the network and save them in 2 different files (so list of 9 elements each
+     each element contains the number of base functions times the time steps-3
+     ).
+    the data can be generated according options: either by a single base function or either as a random
+     linear transformation (options=lt) of base functions
+
+    """
+
     sol = {'e': [], 'hx': [], 'hy': [], 'energy': []}
     generate_basis('train')
 
@@ -97,6 +117,9 @@ def create_train_data(gen_base, options):
 
 
 def generate_basis(name):
+    """
+    This function generate the base functions and their energy given by the modes in the file constants.k_train
+    """
     assert name in ['train', 'test']
     if name == 'train':
         kx = C.K1_TRAIN
@@ -127,6 +150,12 @@ def generate_basis(name):
 
 
 def create_test_data(options='lt', loss_nember=2):
+    """
+    test_data[e] is a list and each element is a base function of rank 3-(t,x,y)
+    for test.
+    it can be l_t if one wants.
+    """
+
     L1 = []
     L2 = []
     L3 = []
@@ -139,6 +168,12 @@ def create_test_data(options='lt', loss_nember=2):
         L3.append(l['hy'])
 
     test_data = {'e': L1, 'hx': L2, 'hy': L3}
+    if options == 'lt':
+        test_data['e'] = [sum(test_data['e'])]
+        test_data['hx'] = [sum(test_data['hx'])]
+        test_data['hy'] = [sum(test_data['hy'])]
+
+
     pickle.dump(test_data, open(path + 'test/test_data.pkl', "wb"))
 
     return 1
