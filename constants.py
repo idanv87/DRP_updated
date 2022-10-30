@@ -15,24 +15,25 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 31
-    T = 0.001
-    TIME_STEPS = 50
+    N = 21
+    K_TEST=17
+    T = 0.01
+    TIME_STEPS = 41
     CROSS_VAL = 1
     EPOCHS = 600
     BATCH_SIZE = 128
-    K1_TRAIN = np.arange(5, 40, 2)
-    K2_TRAIN = np.arange(5, 40, 2)
+    K1_TRAIN = np.arange(10, 19, 2)
+    K2_TRAIN = np.arange(10, 19, 2)
 
-    K1_DRP = np.arange(15, 41, 1)
-    K2_DRP = np.arange(15, 41, 1)
+    K1_DRP = np.arange(5,15, 1)  # should be N
+    K2_DRP = np.arange(5,15, 1)
 
     # K1_VAL = np.arange(1, 41, 5)
     # K2_VAL = np.arange(1, 41, 5)
 
     TRAIN_NUM = 20
-    K1_TEST = np.arange(10, 11, 1)
-    K2_TEST = np.arange(10, 11, 1)
+    K1_TEST = np.arange(K_TEST, K_TEST+1, 1)
+    K2_TEST = np.arange(K_TEST, K_TEST+1, 1)
 
     # assert N % 2 != 0
     # assert (N) % 3 == 0
@@ -87,6 +88,8 @@ class Constants:
     FILTER_BETA = tf.constant([[0., -1, 1, 0.], [0, 2, -2, 0], [0., -1, 1, 0.]],
                               shape=[3, 4, 1, 1], dtype=DTYPE)
     FILTER_DELTA = tf.constant([[0., 0, 0, 0.], [-1, 3, -3, 1], [0., 0., 0., 0.]],
+                               shape=[3, 4, 1, 1], dtype=DTYPE)
+    FILTER_GAMMA = tf.constant([[-1, 0, 0, 1], [0., 6, -6, 0.], [-1, 0., 0., 1]],
                                shape=[3, 4, 1, 1], dtype=DTYPE)
     FILTER_YEE = tf.constant([[0., 0, 0, 0.], [0, -1, 1, 0], [0., 0., 0., 0.]],
                              shape=[3, 4, 1, 1], dtype=DTYPE)

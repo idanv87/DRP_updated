@@ -7,8 +7,6 @@ from scipy.integrate import simps
 from tensorflow import keras
 
 from DRP_multiple_networks.constants import Constants
-from DRP_multiple_networks.utils import custom_loss, custom_loss3, loss_yee2, loss_yee3, loss_yee
-from DRP_multiple_networks.drp import calculate_DRP
 
 """
 This file calculate the optimal coefficient for the drp loss (continuous version) from pi/2 to pi
@@ -18,7 +16,7 @@ path = Constants.PATH
 
 
 def func(a, *args):
-    X = np.linspace(math.pi / 2, math.pi, 200)
+    X = np.linspace(math.pi / 2, math.pi, 400)
     x, y = np.meshgrid(X, X, indexing='ij')
 
     f = ((1 - a) ** 2) * (np.cos(3 * x) + np.cos(3 * y)) + \
@@ -33,7 +31,7 @@ def func(a, *args):
 
 def calculate_DRP2():
     opt = 100
-    x = 0.
+    x = -1/24
     for i in range(4):
         init = np.random.rand(1)
 
@@ -46,5 +44,4 @@ def calculate_DRP2():
     return (1 - x) / 3
 
 
-if __name__ == "__main__":
-    print(func(0.))
+

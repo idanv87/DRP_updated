@@ -6,11 +6,41 @@ from tensorflow import keras
 
 from DRP_multiple_networks.constants import Constants
 from DRP_multiple_networks.auxilary.aux_functions import relative_norm
+from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
 
 C = Constants()
 
+def loss_yee(name, beta, delta,gamma, test_data):
+    """'
+    this function recieve analytic solution, solve the equation and compare it to analytical solution
+    at each time step.
+    The output is the average error
+    """
 
-def fd_solver(beta, delta, test_data):
+    E1 = np.expand_dims(test_data['e'][0], axis=(0, -1))
+    Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
+    Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
+
+    l = 0.
+    for n in range(C.TIME_STEPS - 3):
+        if name == 'model2':
+            E1 = amper(E1, Hx1, Hy1, beta, delta[0], gamma)
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta[1], gamma)
+        else:
+            E1 = amper(E1, Hx1, Hy1, beta, delta, gamma)
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta, gamma)
+
+        # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
+        #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
+        #      tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1]))
+        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) + \
+             relative_norm(Hx1[0, :, :, 0], test_data['hx'][n + 1]) + \
+             relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1])
+
+    return l / (3 * (C.TIME_STEPS - 3))
+
+
+def fd_solver(beta, delta,gamma, test_data):
     """"
     this function solve the equation for a given test data.
     and save the energy at each step
@@ -20,8 +50,8 @@ def fd_solver(beta, delta, test_data):
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
     energy = []
     for n in range(C.TIME_STEPS - 3):
-        E1 = amper(E1, Hx1, Hy1, beta, delta)
-        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        E1 = amper(E1, Hx1, Hy1, beta, delta, gamma)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta, gamma)
         energy.append((tf.reduce_sum(E1 ** 2) + tf.reduce_sum(Hx1 ** 2) + tf.reduce_sum(Hy1 ** 2)) * C.DX * C.DX)
     return energy
 
@@ -173,7 +203,7 @@ def tf_simp4(y, axis=-2, dx=C.DX, rank=4):
     return ret
 
 
-def amper(E, Hx, Hy, beta, delta):
+def amper(E, Hx, Hy, beta, delta, gamma):
     pad1 = pad_function([2, 2, 2, 2])
     pad5 = pad_function([C.N - 2, 1, 2, 2])
     pad6 = pad_function([2, 2, 1, C.N - 2])
@@ -183,8 +213,9 @@ def amper(E, Hx, Hy, beta, delta):
     x1 = tf.math.multiply(beta, Dx(Hy, tf.transpose(C.FILTER_BETA, perm=[1, 0, 2, 3])))
     x2 = tf.math.multiply(delta, Dx(Hy, tf.transpose(C.FILTER_DELTA, perm=[1, 0, 2, 3])))
     x3 = Dx(Hy, tf.transpose(C.FILTER_YEE, perm=[1, 0, 2, 3]))
+    x4=tf.math.multiply(gamma, Dx(Hy, tf.transpose(C.FILTER_GAMMA, perm=[1, 0, 2, 3])))
 
-    s1 = tf.pad(x1 + x2 + x3, pad1) + \
+    s1 = tf.pad(x1 + x2 + x3 + x4, pad1) + \
          tf.pad(Dx(Hy, tf.transpose(C.KERNEL_FORWARD, perm=[1, 0, 2, 3])), C.PADY_FORWARD) + \
          tf.pad(Dx(Hy, tf.transpose(C.KERNEL_BACKWARD, perm=[1, 0, 2, 3])), C.PADY_BACWARD) + \
          tf.pad(Dx(Hy, tf.transpose(C.FOURTH_UP, perm=[1, 0, 2, 3])), pad6) + \
@@ -193,8 +224,9 @@ def amper(E, Hx, Hy, beta, delta):
     x1 = tf.math.multiply(beta, Dy(Hx, C.FILTER_BETA))
     x2 = tf.math.multiply(delta, Dy(Hx, C.FILTER_DELTA))
     x3 = Dy(Hx, C.FILTER_YEE)
+    x4 = tf.math.multiply(gamma, Dy(Hx, C.FILTER_GAMMA))
 
-    s2 = tf.pad(x1 + x2 + x3, pad1) + \
+    s2 = tf.pad(x1 + x2 + x3+ x4, pad1) + \
          tf.pad(Dy(Hx, C.KERNEL_FORWARD), C.PADX_FORWARD) + \
          tf.pad(Dy(Hx, C.KERNEL_BACKWARD), C.PADX_BACWARD) + \
          tf.pad(Dy(Hx, C.FOURTH_UP), pad4) + \
@@ -202,23 +234,25 @@ def amper(E, Hx, Hy, beta, delta):
     return E + (C.CFL) * (s1 - s2)
 
 
-def faraday(E, Hx, Hy, beta, delta):
+def faraday(E, Hx, Hy, beta, delta, gamma):
     pad2 = pad_function([0, 0, 1, 1])
     pad3 = pad_function([1, 1, 0, 0])
 
     x1 = tf.math.multiply(beta, Dy(E, C.FILTER_BETA))
     x2 = tf.math.multiply(delta, Dy(E, C.FILTER_DELTA))
     x3 = Dy(E, C.FILTER_YEE)
+    x4= tf.math.multiply(gamma, Dy(E, C.FILTER_GAMMA))
 
-    s3 = tf.pad(x1 + x2 + x3, pad2) + \
+    s3 = tf.pad(x1 + x2 + x3+x4, pad2) + \
          tf.pad(Dy(E, C.KERNEL_E_FORWARD), C.PADEX_FORWARD)[:, 1:-1, :, :] + \
          tf.pad(Dy(E, C.KERNEL_E_BACKWARD), C.PADEX_BACKWARD)[:, 1:-1, :, :]
 
     x1 = tf.math.multiply(beta, Dx(E, tf.transpose(C.FILTER_BETA, perm=[1, 0, 2, 3])))
     x2 = tf.math.multiply(delta, Dx(E, tf.transpose(C.FILTER_DELTA, perm=[1, 0, 2, 3])))
     x3 = Dx(E, tf.transpose(C.FILTER_YEE, perm=[1, 0, 2, 3]))
+    x4=  tf.math.multiply(gamma, Dx(E, tf.transpose(C.FILTER_GAMMA, perm=[1, 0, 2, 3])))
 
-    s4 = tf.pad(x1 + x2 + x3, pad3) + \
+    s4 = tf.pad(x1 + x2 + x3+x4, pad3) + \
          tf.pad(Dx(E, tf.transpose(C.KERNEL_E_FORWARD, perm=[1, 0, 2, 3])),
                 C.PADEY_FORWARD)[:, :, 1:-1, :] + \
          tf.pad(Dx(E, tf.transpose(C.KERNEL_E_BACKWARD, perm=[1, 0, 2, 3])),
@@ -269,7 +303,7 @@ def pad_function(input):
     return tf.constant([[0, 0], [input[0], input[1]], [input[2], input[3]], [0, 0]], shape=[4, 2])
 
 
-def loss_yee(name, beta, delta, test_data):
+def loss_yee(name, beta, delta, gamma, test_data):
     """'
     this function recieve analytic solution, solve the equation and compare it to analytical solution
     at each time step.
@@ -286,8 +320,8 @@ def loss_yee(name, beta, delta, test_data):
             E1 = amper(E1, Hx1, Hy1, beta, delta[0])
             Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta[1])
         else:
-            E1 = amper(E1, Hx1, Hy1, beta, delta)
-            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+            E1 = amper(E1, Hx1, Hy1, beta, delta, gamma)
+            Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta, gamma)
 
         # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
@@ -299,7 +333,7 @@ def loss_yee(name, beta, delta, test_data):
     return l / (3 * (C.TIME_STEPS - 3))
 
 
-def loss_yee2(name, beta, delta, test_data):
+def loss_yee2(name, beta, delta,gamma, test_data):
     """
     another version of the function loss_yee
     """
@@ -308,8 +342,8 @@ def loss_yee2(name, beta, delta, test_data):
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
     l = []
     for n in range(C.TIME_STEPS - 3):
-        E1 = amper(E1, Hx1, Hy1, beta, delta)
-        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        E1 = amper(E1, Hx1, Hy1, beta, delta, gamma)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta, gamma)
 
         # l.append(tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #          tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
@@ -321,7 +355,7 @@ def loss_yee2(name, beta, delta, test_data):
     return l
 
 
-def loss_yee3(name, beta, delta, test_data):
+def loss_yee3(name, beta, delta, gamma, test_data):
     """
     another version of the function loss_yee
     """
@@ -335,8 +369,8 @@ def loss_yee3(name, beta, delta, test_data):
     energy = []
     divergence = []
     for n in range(Constants.TIME_STEPS - 3):
-        E1 = amper(E1, Hx1, Hy1, beta, delta)
-        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta)
+        E1 = amper(E1, Hx1, Hy1, beta, delta, gamma)
+        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta, gamma)
 
         # E1[0,1:Constants.N - 1, 1:Constants.N - 1,0] +=(Constants.DT / Constants.DX) * np.diff(Hy1[0,:,:,0], axis=0) - (Constants.DT / Constants.DX) * np.diff(Hx1[0,:,:,0], axis=1)
         # Hx1[0,:,:,0] -= (Constants.DT / (Constants.DX)) * (np.diff(E1[0,1:-1, :,0], axis=1))
@@ -392,20 +426,21 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.16, trainable=True, dtype=C.DTYPE, name='delta')
-        self.pars3 = tf.Variable(0., trainable=False, dtype=C.DTYPE, name='zero')
+        self.pars1 = tf.Variable(0, trainable=True, dtype=C.DTYPE, name='beta')
+        self.pars2 = tf.Variable(-0.01, trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars3 = tf.Variable(0, trainable=True, dtype=C.DTYPE, name='gamma')
 
     def call(self, input):
         E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3 = input
-        E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2)
-        Hx_2, Hy_2 = faraday(E_2, Hx1, Hy1, self.pars1, self.pars2)
 
-        E_3 = amper(E2, Hx_2, Hy_2, self.pars1, self.pars2)
-        Hx_3, Hy_3 = faraday(E_3, Hx2, Hy2, self.pars1, self.pars2)
+        E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
+        Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
 
-        E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2)
-        Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2)
+        E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, self.pars2, self.pars3)
+        Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, self.pars2, self.pars3)
+
+        E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
+        Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
 
         # hx = complete(Hx_n, C.KLEFT, C.KRIGHT, C.KUP, C.KDOWN)
 
@@ -433,9 +468,9 @@ class DRP_LAYER(keras.layers.Layer):
         # divergence=dEdx-dEdy
         # d = tf_simp3(tf_simp3(E1 ** 2, rank=4), rank=3) * 0 + drp_loss(self.pars2)
 
-        d = drp_loss(self.pars2)
+        # d = drp_loss(self.pars2)
 
-        return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4, d
+        return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
 
 # if __name__ == "__main__":
 #     print(drp_loss(-1/24))

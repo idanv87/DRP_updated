@@ -5,7 +5,6 @@ from tensorflow import keras
 
 
 from DRP_multiple_networks.constants import Constants
-from DRP_multiple_networks.utils import custom_loss, custom_loss3, loss_yee2, loss_yee3, loss_yee
 
 """
 This file calculate the optimal coefficient for the drp loss (discrete version) over the selected modes

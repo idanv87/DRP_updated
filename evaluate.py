@@ -20,21 +20,24 @@ with open(path + 'test/test_data.pkl', 'rb') as file:
 
 data = {name: test_data[name][0] for name in list(test_data)}
 
-name = 'DL2i_N=31'
+name = 'test_model1'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 model1.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+# print(model1.trainable_weights[1])
 
-name = 'DL3i_N=41'
-saving_path = path + 'Experiment_' + name + '_details/'
-model2 = keras.models.load_model(saving_path + 'model.pkl',
-                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 
-model2.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+#
+# name = 'DL3i_N=41'
+# saving_path = path + 'Experiment_' + name + '_details/'
+# model2 = keras.models.load_model(saving_path + 'model.pkl',
+#                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
+#
+# model2.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
 l_yee = []
-l_model1 = []
+l_model = []
 l_fourth = []
 l_drp = []
 l_model2 = []
@@ -50,14 +53,22 @@ for i in range(len(test_data['e'])):
     # # plt.plot(aux_drp, 'g', label="drp")
     # plt.legend()
     # plt.show()
+    var=calculate_DRP2()
 
-    l_fourth.append(loss_yee('4order', 0., -1 / 24, data))
-    # l_model.append(loss_yee('model', 0, model1.trainable_weights[0], data))
-    #l_model1.append(loss_yee('model', 0, model1.trainable_weights, data))
+    l_fourth.append(loss_yee('4order', 0., -1 / 24,0., data))
+    l_model.append(loss_yee('model', model1.trainable_weights[0], model1.trainable_weights[1],model1.trainable_weights[2], data))
     # l_yee.append(loss_yee('Yee', 0, 0, data))
-    l_drp.append(loss_yee('DRP', 0., calculate_DRP2(), data))
+    l_drp.append(loss_yee('DRP', 0., var, 0, data))
+    # print(np.log(l_drp))
+    #
+    #
+    # l2_tot=[-19.50439923,-19.76743022,-19.999877]
+    # #l_tot=np.array([-21.93620312,-23.78711441, -25.07347991, -26.05638995, -26.85038231, -27.51571427, -28.08792702, -28.58969093])
+    # #dx_tot=np.log([1/20,1/30,1/40,1/50, 1/60, 1/70, 1/80, 1/90])
+    # dx_tot=np.log([ 1/70, 1/80, 1/90])
+    # print(np.divide(np.diff(l2_tot), np.diff(dx_tot)))
+    print(l_model)
     print(l_drp)
-    print(l_model1)
     print(l_fourth)
 
     # lt_model=loss_yee2('model', 0, model1.trainable_weights[0], data)
@@ -78,7 +89,7 @@ for i in range(len(test_data['e'])):
 # pickle.dump(lt_model, open(path+"figures/loss_time_model1.pkl", "wb"))
 # #pickle.dump(lt_model2, open(path+"figures/loss_time_model2.pkl", "wb"))
 # pickle.dump(lt_drp, open(path+"figures/loss_time_drp.pkl", "wb"))
-
+print(q)
 plt.plot(l_drp, '-r', label="drp")
 plt.plot(l_model1, 'b', label='model1')
 plt.plot(l_fourth, 'g', label='fourth')
