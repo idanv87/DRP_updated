@@ -24,17 +24,27 @@ def loss_yee(name, beta, delta, gamma, test_data):
     Hx1 = np.expand_dims(test_data['hx'][0], axis=(0, -1))
     Hy1 = np.expand_dims(test_data['hy'][0], axis=(0, -1))
 
+    E2 = np.expand_dims(test_data['e'][1], axis=(0, -1))
+    Hx2 = np.expand_dims(test_data['hx'][1], axis=(0, -1))
+    Hy2 = np.expand_dims(test_data['hy'][1], axis=(0, -1))
+
     l = 0.
     for n in range(Constants.TIME_STEPS - 3):
-        E1 = amper(E1, Hx1, Hy1, beta, delta, gamma)
-        Hx1, Hy1 = faraday(E1, Hx1, Hy1, beta, delta, gamma)
+        E = amper(E1, Hx2, Hy2, beta, delta, gamma)
+        Hx, Hy = faraday(E2, Hx1, Hy1, beta, delta, gamma)
 
         # l += tf.reduce_mean(abs(E1[0, :, :, 0] - test_data['e'][n + 1])) + \
         #      tf.reduce_mean(abs(Hx1[0, :, :, 0] - test_data['hx'][n + 1])) + \
         #      tf.reduce_mean(abs(Hy1[0, :, :, 0] - test_data['hy'][n + 1]))
-        l += relative_norm(E1[0, :, :, 0], test_data['e'][n + 1]) + \
-             relative_norm(Hx1[0, :, :, 0], test_data['hx'][n + 1]) + \
-             relative_norm(Hy1[0, :, :, 0], test_data['hy'][n + 1])
+        l += relative_norm(E[0, :, :, 0], test_data['e'][n + 2]) + \
+             relative_norm(Hx[0, :, :, 0], test_data['hx'][n + 2]) + \
+             relative_norm(Hy[0, :, :, 0], test_data['hy'][n + 2])
+        E1=tf.identity(E2)
+        E2=tf.identity(E)
+        Hx1=tf.identity(Hx2)
+        Hx2=tf.identity(Hx)
+        Hy1=tf.identity(Hy2)
+        Hy2=tf.identity(Hy)
 
     return l / (3 * (Constants.TIME_STEPS - 3))
 
@@ -73,22 +83,6 @@ def drp_loss(a):
 
     return ret
 
-
-def fE(FE, m, T, c):
-    t = T + C.DT * m
-    return np.cos(c * t) * FE
-
-
-def fHX(FHX, m, T, c):
-    t = T + m * C.DT / 2
-    z = np.sin(c * t) * (1 / c) * FHX
-    return z[:, 1:-1, :-1]
-
-
-def fHY(FHY, m, T, c):
-    t = T + m * C.DT / 2
-    z = np.sin(c * t) * (1 / c) * FHY
-    return z[:, :-1, 1:-1]
 
 
 def tf_trapz(y, axis=-2, dx=C.DX, rank=4):
@@ -383,14 +377,14 @@ class DRP_LAYER(keras.layers.Layer):
     def call(self, input):
         E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3 = input
 
-        E_2 = amper(E1, Hx1, Hy1, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        E_2 = amper(E1, Hx2, Hy2, self.pars1, self.pars2, self.pars3)
+        Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
 
-        E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-
-        E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1,(16*self.pars1-1)/24, -self.pars1/3)
+        # E_3 = amper(E2, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        # Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        #
+        # E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        # Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1,(16*self.pars1-1)/24, -self.pars1/3)
 
         # E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
         # Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
@@ -429,7 +423,8 @@ class DRP_LAYER(keras.layers.Layer):
 
         # d = drp_loss(self.pars2)
 
-        return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
+        return E_2, Hx_2, Hy_2
+            # , E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
 
 # if __name__ == "__main__":
 #     print(drp_loss(-1/24))

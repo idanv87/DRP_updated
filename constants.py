@@ -13,9 +13,9 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N =161
-    K_TEST = 152
-    T = 0.01
+    N =41
+    K_TEST = 1
+    T = 0.001
     TIME_STEPS = (N - 1) * 2 + 1
     #TIME_STEPS = 41
     CROSS_VAL = 1
@@ -48,7 +48,7 @@ class Constants:
     DX = LX / (N - 1)
     DY = LY / (N - 1)
 
-    CFL = DT / DX
+    CFL = (2*DT) / DX
 
     X1 = np.linspace(0., XMAX, N)
     X2 = np.linspace(0., XMAX, N)

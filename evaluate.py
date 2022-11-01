@@ -67,11 +67,13 @@ for i in range(len(test_data['e'])):
     # var=calculate_DRP2()
     var=-0.09165107
 
-    # l_fourth.append(loss_yee('4order', 0., -1 / 24,0., data))
+    l_fourth.append(loss_yee('4order', 0., -1 / 24, 0., data))
+    l_yee.append(loss_yee('2order', 0., 0., 0., data))
+
     # l_modeldl1.append(loss_yee('dl1', 0., model2.trainable_weights[0],0., data))
-    l_model.append(loss_yee('dl3', model1.trainable_weights[0], model1.trainable_weights[1],model1.trainable_weights[2], data))
+    # l_model.append(loss_yee('dl3', model1.trainable_weights[0], model1.trainable_weights[1],model1.trainable_weights[2], data))
     # l_drp.append(loss_yee('DRP', 0., var, 0, data))
-    l_modeldl4.append(loss_yee('dl4', model3.trainable_weights[0],(16*model3.trainable_weights[0]-1)/24 , -model3.trainable_weights[0]/3, data))
+    # l_modeldl4.append(loss_yee('dl4', model3.trainable_weights[0],(16*model3.trainable_weights[0]-1)/24 , -model3.trainable_weights[0]/3, data))
 
     # print(np.log(l_drp))
     #
@@ -81,11 +83,12 @@ for i in range(len(test_data['e'])):
     # #dx_tot=np.log([1/20,1/30,1/40,1/50, 1/60, 1/70, 1/80, 1/90])
     # dx_tot=np.log([ 1/70, 1/80, 1/90])
     # print(np.divide(np.diff(l2_tot), np.diff(dx_tot)))
-    print(l_modeldl4)
-    print(l_modeldl1)
-    print(l_model)
+    # print(l_modeldl4)
+    # print(l_modeldl1)
+    # print(l_model)
     print(l_fourth)
-    print(l_drp)
+    print(l_yee)
+    # print(l_drp)
 
     # lt_model=loss_yee2('model', 0, model1.trainable_weights[0], data)
     # lt_model2 = loss_yee2('model', 0, model2.trainable_weights[0], data)

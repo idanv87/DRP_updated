@@ -109,7 +109,7 @@ def create_train_data(gen_base, options):
             [sol[key].append(l[key].copy()) for key in list(sol)]
 
     net_input = dim_red2(sol, 0) + dim_red2(sol, 1) + dim_red2(sol, 2)
-    net_output = dim_red2(sol, 1) + dim_red2(sol, 2) + dim_red1(sol, 3)
+    net_output = dim_red2(sol, 2) + dim_red1(sol, 3)
 
     pickle.dump(net_input, open(path + 'train/input.pkl', "wb"))
     pickle.dump(net_output, open(path + 'train/output.pkl', "wb"))
@@ -137,9 +137,9 @@ def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_
 
             B.set('e', fE(t, x, y, k1, k2, c))
 
-            B.set('hx', fHX(t + dt / 2, x, y, k1, k2, c, h))
+            B.set('hx', fHX(t , x, y, k1, k2, c, h))
 
-            B.set('hy', fHY(t + dt / 2, x, y, k1, k2, c, h))
+            B.set('hy', fHY(t , x, y, k1, k2, c, h))
             if k1 == k2:
                 B.set('energy', np.vstack([1.] * time_steps))
             else:
