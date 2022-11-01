@@ -13,6 +13,7 @@ This file is used to gennerate data for training and for evaluation
 """
 
 C = Constants()
+
 path = C.PATH
 
 folders = [path + 'train/', path + 'test/', path + 'val/', path + 'base_functions/train/',
@@ -116,7 +117,7 @@ def create_train_data(gen_base, options):
     return 1
 
 
-def generate_basis(name):
+def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS, X1=Constants.X1, X2=Constants.X2):
     """
     This function generate the base functions and their energy given by the modes in the file constants.k_train
     """
@@ -127,7 +128,7 @@ def generate_basis(name):
     else:
         kx = C.K1_TEST
         ky = C.K2_TEST
-    t, x, y = np.meshgrid(np.linspace(0, C.T, C.TIME_STEPS), C.X1, C.X2, indexing='ij')
+    t, x, y = np.meshgrid(np.linspace(0, t_f, time_steps), X1, X2, indexing='ij')
     for k1 in kx:
         for k2 in ky:
             B = base_function(k1, k2, name)
@@ -136,20 +137,20 @@ def generate_basis(name):
 
             B.set('e', fE(t, x, y, k1, k2, c))
 
-            B.set('hx', fHX(t + C.DT / 2, x, y, k1, k2, c))
+            B.set('hx', fHX(t + dt / 2, x, y, k1, k2, c, h))
 
-            B.set('hy', fHY(t + C.DT / 2, x, y, k1, k2, c))
+            B.set('hy', fHY(t + dt / 2, x, y, k1, k2, c, h))
             if k1 == k2:
-                B.set('energy', np.vstack([1.] * C.TIME_STEPS))
+                B.set('energy', np.vstack([1.] * time_steps))
             else:
-                B.set('energy', np.vstack([1 / 2] * C.TIME_STEPS))
+                B.set('energy', np.vstack([1 / 2] * time_steps))
 
             B.save()
 
     return 1
 
 
-def create_test_data(options='lt', loss_nember=2):
+def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS, X1=Constants.X1, X2=Constants.X2):
     """
     test_data[e] is a list and each element is a base function of rank 3-(t,x,y)
     for test.
@@ -159,7 +160,7 @@ def create_test_data(options='lt', loss_nember=2):
     L1 = []
     L2 = []
     L3 = []
-    generate_basis('test')
+    generate_basis('test', h,dt, t_f, time_steps, X1, X2)
     for p in list(base_function.base_pathes['test']):
         with open(p, 'rb') as file:
             l = pickle.load(file)

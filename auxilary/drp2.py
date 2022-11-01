@@ -16,7 +16,7 @@ path = Constants.PATH
 
 
 def func(a, *args):
-    X = np.linspace(math.pi / 2, math.pi, 400)
+    X = np.linspace(math.pi / 2, math.pi, 800)
     x, y = np.meshgrid(X, X, indexing='ij')
 
     f = ((1 - a) ** 2) * (np.cos(3 * x) + np.cos(3 * y)) + \

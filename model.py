@@ -18,7 +18,7 @@ path = Constants.PATH
 
 # matplotlib.use("TkAgg")
 l = {"N": Constants.N, "CFL": Constants.CFL}
-model_details = {"name": 'test_model1', "net_num": 1, "energy_loss": False, "div_loss": False,
+model_details = {"name": 'dl4', "net_num": 1, "energy_loss": False, "div_loss": False,
                  "div_preserve": True,
                  "params": l, "options": 'lt', "number_outputs": 6}
 name = model_details["name"]
@@ -127,7 +127,7 @@ for k in range(Constants.CROSS_VAL):
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],
         epochs=Constants.EPOCHS,
         batch_size=Constants.BATCH_SIZE,
-        shuffle=True, validation_split=0.3, verbose=2)
+        shuffle=True, validation_split=0.2, verbose=2)
 plt.plot(history.history['loss'], 'red')
 plt.plot(history.history['val_loss'])
 plt.show()

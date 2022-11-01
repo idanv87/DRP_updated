@@ -6,8 +6,6 @@ import numpy as np
 from dataclasses import dataclass
 
 
-
-
 @dataclass(frozen=True)
 class Constants:
     PATH = '/Users/idanversano/documents/pycharm/files/'
@@ -15,25 +13,26 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N = 21
-    K_TEST=17
+    N =161
+    K_TEST = 152
     T = 0.01
-    TIME_STEPS = 41
+    TIME_STEPS = (N - 1) * 2 + 1
+    #TIME_STEPS = 41
     CROSS_VAL = 1
     EPOCHS = 600
     BATCH_SIZE = 128
     K1_TRAIN = np.arange(10, 19, 2)
     K2_TRAIN = np.arange(10, 19, 2)
 
-    K1_DRP = np.arange(5,15, 1)  # should be N
-    K2_DRP = np.arange(5,15, 1)
+    K1_DRP = np.arange(5, 15, 1)  # should be N
+    K2_DRP = np.arange(5, 15, 1)
 
     # K1_VAL = np.arange(1, 41, 5)
     # K2_VAL = np.arange(1, 41, 5)
 
     TRAIN_NUM = 20
-    K1_TEST = np.arange(K_TEST, K_TEST+1, 1)
-    K2_TEST = np.arange(K_TEST, K_TEST+1, 1)
+    K1_TEST = np.arange(K_TEST, K_TEST + 1, 1)
+    K2_TEST = np.arange(K_TEST, K_TEST + 1, 1)
 
     # assert N % 2 != 0
     # assert (N) % 3 == 0
@@ -113,4 +112,5 @@ class Constants:
 
     KUP = np.reshape(B, [B.shape[0], 1, 1, 1])
     KDOWN = tf.reverse(KUP, [0])
+
 
