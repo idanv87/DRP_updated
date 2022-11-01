@@ -13,7 +13,7 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N =160
+    N =161
     K_TEST = 152
     T = 0.01
     TIME_STEPS = (N - 1) * 2 + 1
