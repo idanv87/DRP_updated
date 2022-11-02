@@ -6,7 +6,7 @@ from tensorflow import keras
 
 from DRP_multiple_networks.constants import Constants
 from DRP_multiple_networks.auxilary.aux_functions import relative_norm
-from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
+from DRP_multiple_networks.auxilary.drp2 import func
 
 C = Constants()
 
@@ -370,18 +370,22 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0, trainable=True, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.01, trainable=False, dtype=C.DTYPE, name='delta')
+        self.pars1 = tf.Variable(0, trainable=False, dtype=C.DTYPE, name='beta')
+        self.pars2 = tf.Variable(0, trainable=True, dtype=C.DTYPE, name='delta')
         self.pars3 = tf.Variable(0, trainable=False, dtype=C.DTYPE, name='gamma')
 
+
     def call(self, input):
+
         E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3 = input
 
-        E_2 = amper(E1, Hx2, Hy2, self.pars1, self.pars2, self.pars3)
-        Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
+        E_3 = amper(E1, Hx2, Hy2, self.pars1, self.pars2, self.pars3)
+        Hx_3, Hy_3 = faraday(E2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
 
-        # E_3 = amper(E2, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        # Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        E_4 = amper(E2, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
+        Hx_4, Hy_4 = faraday(E_3, Hx2, Hy2, self.pars1, self.pars2, self.pars3)
+
+
         #
         # E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
         # Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1,(16*self.pars1-1)/24, -self.pars1/3)
@@ -422,8 +426,9 @@ class DRP_LAYER(keras.layers.Layer):
         # d = tf_simp3(tf_simp3(E1 ** 2, rank=4), rank=3) * 0 + drp_loss(self.pars2)
 
         # d = drp_loss(self.pars2)
+        # print(func(np(self.pars2)))
 
-        return E_2, Hx_2, Hy_2
+        return E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
             # , E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
 
 # if __name__ == "__main__":

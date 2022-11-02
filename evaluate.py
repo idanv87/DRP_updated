@@ -10,7 +10,7 @@ from constants import Constants
 from utils import custom_loss, custom_loss3, loss_yee
 from data_generator import create_test_data
 from drp import calculate_DRP
-from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
+from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2, func
 
 path = Constants.PATH
 
@@ -21,7 +21,7 @@ with open(path + 'test/test_data.pkl', 'rb') as file:
 
 data = {name: test_data[name][0] for name in list(test_data)}
 
-name = 'test_model1'
+name = 'dl1'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -30,22 +30,28 @@ model1.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl')
 
 
 #
-name = 'dl1'
+name = 'non_st'
 saving_path = path + 'Experiment_' + name + '_details/'
 model2 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 
 model2.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
-name = 'dl4'
+name = 'non_st'
 saving_path = path + 'Experiment_' + name + '_details/'
 model3 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 
 model3.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
-
-
+print(model3.trainable_weights)
+print(q)
+print(func(1-3*model2.trainable_weights[0]))
+print(q)
+# print((1-3*model2.trainable_weights[0]))
+# print(1-3*calculate_DRP2())
+# print(Constants.CFL)
+# print(q)
 l_yee = []
 l_model = []
 l_fourth = []
@@ -67,7 +73,7 @@ for i in range(len(test_data['e'])):
     # var=calculate_DRP2()
     var=-0.09165107
 
-    l_fourth.append(loss_yee('4order', 0., -1 / 24, 0., data))
+    l_fourth.append(loss_yee('4order', 0., model2.trainable_weights[0], 0., data))
     l_yee.append(loss_yee('2order', 0., 0., 0., data))
 
     # l_modeldl1.append(loss_yee('dl1', 0., model2.trainable_weights[0],0., data))

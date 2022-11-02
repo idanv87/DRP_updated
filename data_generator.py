@@ -108,6 +108,7 @@ def create_train_data(gen_base, options):
                 l = pickle.load(file)
             [sol[key].append(l[key].copy()) for key in list(sol)]
 
+    # s['e'] is a list of all test functions.
     net_input = dim_red2(sol, 0) + dim_red2(sol, 1) + dim_red2(sol, 2)
     net_output = dim_red2(sol, 2) + dim_red1(sol, 3)
 

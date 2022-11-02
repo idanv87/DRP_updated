@@ -28,7 +28,14 @@ def func(a, *args):
 
     return simps([simps(zz_x, X) for zz_x in z], X)
 
+def cons1(a, *args):
+    return 1 - (1 / 18) * (Constants.CFL ** 2) * np.maximum(8 * ((a + 0.5) ** 2), 64 * ((a - 0.25) ** 2))
 
+
+def cons2(a, *args):
+    return (1 / 18) * (Constants.CFL ** 2) * np.maximum(8 * ((a + 0.5) ** 2), 64 * ((a - 0.25) ** 2))
+
+cons = [{'type': 'ineq', 'fun': cons1}, {'type': 'ineq', 'fun': cons2}]
 def calculate_DRP2():
     opt = 100
     x = -1/24
@@ -36,11 +43,14 @@ def calculate_DRP2():
         init = np.random.rand(1)
 
         res = scop.minimize(func, init, args=(), method='SLSQP', bounds=scop.Bounds(0, 20),
+                            constraints=cons,
                             options=dict(disp=False, iprint=2, ftol=1e-18))
         if res['fun'] < opt:
             x = res['x']
             opt = res['fun']
 
+    print(cons1(x))
+    print(x)
     return (1 - x) / 3
 
 

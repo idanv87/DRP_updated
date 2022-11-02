@@ -18,7 +18,7 @@ path = Constants.PATH
 
 # matplotlib.use("TkAgg")
 l = {"N": Constants.N, "CFL": Constants.CFL}
-model_details = {"name": 'non_stag', "net_num": 1, "energy_loss": False, "div_loss": False,
+model_details = {"name": 'non_st', "net_num": 1, "energy_loss": False, "div_loss": False,
                  "div_preserve": True,
                  "params": l, "options": 'lt', "number_outputs": 6}
 name = model_details["name"]
@@ -64,9 +64,9 @@ for k in range(Constants.CROSS_VAL):
     Hx1_output = output1[1]
     Hy1_output = output1[2]
 
-    # E2_output = output1[3]
-    # Hx2_output = output1[4]
-    # Hy2_output = output1[5]
+    E2_output = output1[3]
+    Hx2_output = output1[4]
+    Hy2_output = output1[5]
     #
     # E3_output = output1[6]
     # Hx3_output = output1[7]
@@ -82,7 +82,7 @@ for k in range(Constants.CROSS_VAL):
     model = keras.Model(
         inputs=[E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input],
         outputs=[E1_output, Hx1_output, Hy1_output
-            # , E2_output, Hx2_output, Hy2_output
+            , E2_output, Hx2_output, Hy2_output
             # , E3_output, Hx3_output, Hy3_output
             # , drp_output
                  ]
@@ -93,7 +93,7 @@ for k in range(Constants.CROSS_VAL):
         optimizer=keras.optimizers.Adam(),
         # loss=[custom_loss, custom_loss, custom_loss],
         loss=[custom_loss, custom_loss, custom_loss
-            # , custom_loss, custom_loss, custom_loss
+            , custom_loss, custom_loss, custom_loss
             # , custom_loss, custom_loss, custom_loss
             # , custom_loss_drp
               ]
@@ -118,15 +118,16 @@ for k in range(Constants.CROSS_VAL):
     # csv loger
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=10, min_lr=1e-9)
     l = np.squeeze(net_output[-1] * 0)
-
     history = model.fit(
-        net_input, net_output[:-4]
+        net_input, net_output[:-1]
                    # + [l]
         ,
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],
         epochs=Constants.EPOCHS,
         batch_size=Constants.BATCH_SIZE,
         shuffle=True, validation_split=0.2, verbose=2)
+
+
 plt.plot(history.history['loss'], 'red')
 plt.plot(history.history['val_loss'])
 plt.show()
@@ -134,6 +135,7 @@ plt.show()
 print("--- %s seconds ---" % (time.time() - start_time))
 
 model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+
 print(model.trainable_weights)
 print(q)
 # print(calculate_DRP())
