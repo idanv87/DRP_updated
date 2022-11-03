@@ -18,10 +18,13 @@ import matplotlib.pyplot as plt
 # # # x=tf.constant([[1,2],[1,2]])
 # # # print(relative_norm(x,x ))
 # # # print(tf.math.pow(x,2))
-# # x=np.linspace(0,1,21)
-# # plt.scatter(x,np.cos(math.pi*x*20))
+k=15
+y=np.linspace(0,1,210)
+x=np.linspace(0,1,21)
+plt.scatter(x,np.cos((math.pi*x*k)))
+plt.plot(y,np.cos((math.pi*y*k)))
 # # x=np.linspace(0,1,82)
 # # plt.plot(x,np.cos(math.pi*x*20))
-# # plt.show()
+plt.show()
 # #
 # # print(Constants.CFL)

@@ -13,16 +13,19 @@ class Constants:
 
     DTYPE = tf.dtypes.float64
 
-    N =161
-    K_TEST = 152
-    T = 0.01
-    TIME_STEPS = (N - 1) * 2 + 1
+    N =41
+    K_TEST = 37
+    T = 1
+    TIME_STEPS = (N - 1) * 4 + 1
     #TIME_STEPS = 41
     CROSS_VAL = 1
     EPOCHS = 600
     BATCH_SIZE = 128
-    K1_TRAIN = np.arange(10, 19, 2)
-    K2_TRAIN = np.arange(10, 19, 2)
+    # K1_TRAIN = np.arange(10, 19, 1)
+    # K2_TRAIN = np.arange(10, 19, 1)
+
+    K1_TRAIN = np.array([11, 13, 17, 19])
+    K2_TRAIN = np.array([11, 13, 17, 19])
 
     K1_DRP = np.arange(5, 15, 1)  # should be N
     K2_DRP = np.arange(5, 15, 1)

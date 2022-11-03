@@ -10,7 +10,7 @@ from constants import Constants
 from utils import custom_loss, custom_loss3, loss_yee
 from data_generator import create_test_data
 from drp import calculate_DRP
-from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
+from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2, func
 
 path = Constants.PATH
 
@@ -21,7 +21,7 @@ with open(path + 'test/test_data.pkl', 'rb') as file:
 
 data = {name: test_data[name][0] for name in list(test_data)}
 
-name = 'test_model1'
+name = 'dl23'
 saving_path = path + 'Experiment_' + name + '_details/'
 model1 = keras.models.load_model(saving_path + 'model.pkl',
                                  custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
@@ -44,7 +44,19 @@ model3 = keras.models.load_model(saving_path + 'model.pkl',
 
 model3.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
+name = 'dl23_zar'
+saving_path = path + 'Experiment_' + name + '_details/'
+model4 = keras.models.load_model(saving_path + 'model.pkl',
+                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
 
+model4.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+
+name = 'dl23_normal'
+saving_path = path + 'Experiment_' + name + '_details/'
+model5 = keras.models.load_model(saving_path + 'model.pkl',
+                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
+
+model5.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
 l_yee = []
 l_model = []
@@ -64,14 +76,18 @@ for i in range(len(test_data['e'])):
     # # plt.plot(aux_drp, 'g', label="drp")
     # plt.legend()
     # plt.show()
-    # var=calculate_DRP2()
-    var=-0.09165107
+
+    var=-0.08035661
 
     # l_fourth.append(loss_yee('4order', 0., -1 / 24,0., data))
-    # l_modeldl1.append(loss_yee('dl1', 0., model2.trainable_weights[0],0., data))
-    l_model.append(loss_yee('dl3', model1.trainable_weights[0], model1.trainable_weights[1],model1.trainable_weights[2], data))
-    # l_drp.append(loss_yee('DRP', 0., var, 0, data))
-    l_modeldl4.append(loss_yee('dl4', model3.trainable_weights[0],(16*model3.trainable_weights[0]-1)/24 , -model3.trainable_weights[0]/3, data))
+    # l_modeldl1.append(loss_yee('dl21', 0., model2.trainable_weights[0],0., data))
+    # l_model.append(loss_yee('dl23', model1.trainable_weights[0], model1.trainable_weights[1],model1.trainable_weights[2], data))
+    l_modeldl4.append(loss_yee('dl23_zar', model4.trainable_weights[0], model4.trainable_weights[1],model4.trainable_weights[2], data))
+
+    l_modeldl1.append(loss_yee('dl23_normal', model5.trainable_weights[0], model5.trainable_weights[1],model5.trainable_weights[2], data))
+
+    l_drp.append(loss_yee('DRP', 0., var, 0, data))
+    # l_modeldl4.append(loss_yee('dl41', model3.trainable_weights[0],(16*model3.trainable_weights[0]-1)/24 , -model3.trainable_weights[0]/3, data))
 
     # print(np.log(l_drp))
     #
@@ -83,8 +99,8 @@ for i in range(len(test_data['e'])):
     # print(np.divide(np.diff(l2_tot), np.diff(dx_tot)))
     print(l_modeldl4)
     print(l_modeldl1)
-    print(l_model)
-    print(l_fourth)
+    # print(l_model)
+    # print(l_fourth)
     print(l_drp)
 
     # lt_model=loss_yee2('model', 0, model1.trainable_weights[0], data)

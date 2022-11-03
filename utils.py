@@ -376,30 +376,30 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0, trainable=True, dtype=C.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.01, trainable=False, dtype=C.DTYPE, name='delta')
-        self.pars3 = tf.Variable(0, trainable=False, dtype=C.DTYPE, name='gamma')
+        self.pars1 = tf.Variable(0., trainable=True, dtype=C.DTYPE, name='beta')
+        self.pars2 = tf.Variable(0., trainable=True, dtype=C.DTYPE, name='delta')
+        self.pars3 = tf.Variable(0., trainable=True, dtype=C.DTYPE, name='gamma')
 
     def call(self, input):
         E1, Hx1, Hy1, E2, Hx2, Hy2, E3, Hx3, Hy3 = input
 
-        E_2 = amper(E1, Hx1, Hy1, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-
-        E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-
-        E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
-        Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1,(16*self.pars1-1)/24, -self.pars1/3)
-
-        # E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
-        # Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
+        # E_2 = amper(E1, Hx1, Hy1, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        # Hx_2, Hy_2 = faraday(E2, Hx1, Hy1, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
         #
-        # E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, self.pars2, self.pars3)
-        # Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, self.pars2, self.pars3)
+        # E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        # Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
         #
-        # E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
-        # Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
+        # E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, (16*self.pars1-1)/24, -self.pars1/3)
+        # Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1,(16*self.pars1-1)/24, -self.pars1/3)
+
+        E_2 = amper(E1, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
+        Hx_2, Hy_2 = faraday(E_2, Hx1, Hy1, self.pars1, self.pars2, self.pars3)
+
+        E_3 = amper(E_2, Hx_2, Hy_2, self.pars1, self.pars2, self.pars3)
+        Hx_3, Hy_3 = faraday(E_3, Hx_2, Hy_2, self.pars1, self.pars2, self.pars3)
+
+        E_4 = amper(E_3, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
+        Hx_4, Hy_4 = faraday(E_4, Hx_3, Hy_3, self.pars1, self.pars2, self.pars3)
 
         # hx = complete(Hx_n, C.KLEFT, C.KRIGHT, C.KUP, C.KDOWN)
 
