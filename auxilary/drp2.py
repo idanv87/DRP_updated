@@ -16,7 +16,7 @@ path = Constants.PATH
 
 
 def func(a, *args):
-    X = np.linspace(math.pi / 2, math.pi, 800)
+    X = np.linspace(math.pi / 2, math.pi, 900)
     x, y = np.meshgrid(X, X, indexing='ij')
 
     f = ((1 - a) ** 2) * (np.cos(3 * x) + np.cos(3 * y)) + \
@@ -27,6 +27,8 @@ def func(a, *args):
     z = abs(omega_over_k - 1)
 
     return simps([simps(zz_x, X) for zz_x in z], X)
+
+
 
 
 def calculate_DRP2():

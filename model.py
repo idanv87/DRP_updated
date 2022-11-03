@@ -18,7 +18,7 @@ path = Constants.PATH
 
 # matplotlib.use("TkAgg")
 l = {"N": Constants.N, "CFL": Constants.CFL}
-model_details = {"name": 'dl23_zar', "net_num": 1, "energy_loss": False, "div_loss": False,
+model_details = {"name": 'dl21', "net_num": 1, "energy_loss": False, "div_loss": False,
                  "div_preserve": True,
                  "params": l, "options": 'lt', "number_outputs": 6}
 name = model_details["name"]

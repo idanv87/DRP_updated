@@ -53,3 +53,14 @@ def dim_red2(dic, m):
                 d[key][i] = d[key][i][m:]
 
     return list([np.expand_dims(np.vstack(d[key]), axis=-1) for key in ['e', 'hx', 'hy']])
+
+
+def loss_drp(h, dt, k1, k2, a):
+        k = np.sqrt(k1 ** 2 + k2 ** 2)
+
+        f = ((1 - a) ** 2) * (np.cos(3 * k1 * h) + np.cos(3 * k2 * h)) + \
+            (6 * a - 6 * a ** 2) * (np.cos(2 * k1 * h) + np.cos(2 * k2 * h)) + \
+            (15 * a ** 2 - 6 * a) * (np.cos(k1 * h) + np.cos(k2 * h))
+        omega = (2 / dt) * np.arcsin((dt / h) * np.sqrt((1 / 18) * (20 * a ** 2 - 4 * a + 2 - f)))
+
+        return abs(omega / k - 1)
