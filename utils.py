@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
+from scipy.linalg import polar
 
 from DRP_multiple_networks.constants import model_constants
 from DRP_multiple_networks.auxilary.aux_functions import relative_norm
@@ -89,6 +90,10 @@ def loss_yee(name, beta, delta, gamma, test_data, C):
         #    plt.plot(test_data['e'][n + 1][:,10])
         #    plt.show()
         # print(q)
+
+        # error+=np.mean(abs(polar(E[0, :, :, 0])[0]-polar(test_data['e'][n + 1])[0])**2)
+
+        #
         error += relative_norm(E[0, :, :, 0], test_data['e'][n + 1]) + \
                  relative_norm(Hx[0, :, :, 0], test_data['hx'][n + 1]) + \
                  relative_norm(Hy[0, :, :, 0], test_data['hy'][n + 1])

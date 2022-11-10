@@ -19,8 +19,10 @@ from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY
 
 path = Constants.PATH
 
-var=calculate_DRP2()
 
+
+# var=calculate_DRP2()
+var=0
 
 models = {'Yee(2,0)': [0,0.,0], 'Yee(4,0)': [0,-1 / 24,0], 'drp(2,1)': [0,var,0], 'dl(2,1)': [], 'dl(2,3)_all': [], 'dl(2,3)': [],
           'dl(4,1)': [], 'model_test': []}
@@ -31,31 +33,37 @@ for name in ['dl(2,1)', 'dl(2,3)', 'dl(4,1)', 'dl(2,3)_all', 'model_test']:
                                     custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
     model.load_weights(
         saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-    if name=='dl(4,1)':
-        models[name]=[model.trainable_weights[0], (16 * model.trainable_weights[0] - 1) / 24,
-                         -model.trainable_weights[0] / 3]
+    if name=='dl(2,1)':
+        # models[name]=[model.trainable_weights[0], (16 * model.trainable_weights[0] - 1) / 24,
+                         # -model.trainable_weights[0] / 3]
+        models[name]=[0., model.trainable_weights[0],0]
+
     else:
        models[name] = model.trainable_weights
 
 
 
 
-def dr_calculator(names, save_figure=False):
+def dr_calculator(names, save=(False,'False')):
     X = np.linspace(0.5 * math.pi, math.pi, model_constants.N * 50)
     x, y = np.meshgrid(X, X, indexing='ij')
+    fig, ax1 = plt.subplots(1, sharex=False, sharey=False)
+
     for name in names:
         assert name in list(models)
-        plt.plot(X / math.pi, loss_drp_extended(model_constants, X, X, models[name][0], models[name][1],
+        ax1.plot(X / math.pi, loss_drp_extended(model_constants, X, X, models[name][0], models[name][1],
                                                     models[name][2]), label=name)
 
     plt.legend(loc="upper left")
     plt.xlabel(r'$\frac{k}{\pi}$')
     plt.ylabel('dispersion error')
-    plt.show()
 
-    if save_figure:
-        plt.savefig(Constants.FIGURES_PATH + 'dr_loss.eps', format='eps',
+
+    if save[0]:
+        print(' saved as:dispersion_figure' + str(save[1]) + '.eps')
+        plt.savefig(Constants.FIGURES_PATH + 'dispersion_figure'+save[1]+'.eps', format='eps',
                     bbox_inches='tight')
+        plt.show()
     return 1
 
 
@@ -76,7 +84,7 @@ def error_print(names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2
                 assert name in list(models)
 
                 # fig.suptitle('Aligning x-axis using sharex')
-                ax1.plot( [loss[name][i] / loss[name][i - 1] for i in range(len(n)-1)], label=name)
+                ax1.plot( [loss[name][i] / loss[name][i - 1] for i in np.arange(1,len(n),1)], label=name)
                 ax2.plot( range(len(k1_test)), loss[name], label=name)
                 ax1.set_xticks([], [])
                 ax2.set_xticks(range(len(k1_test)), range(len(k1_test)))
@@ -95,7 +103,7 @@ def error_print(names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2
      plt.savefig(Constants.FIGURES_PATH+'errors_figure'+save[1]+'.eps', format='eps',
                     bbox_inches='tight')
 
-    plt.show()
+     plt.show()
 
 
 # loop starts here
@@ -118,18 +126,22 @@ def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
 
     pickle.dump(loss, open(path + "figures/losses.pkl", "wb"))
 
-
-n = [21, 21, 22]
-t = [0.001, 0.001, 0.001]
-x = [1, 1, 1, 1, 1,1]
-time_steps = [31,21,31]
-k1_test = [[18],[18],[5]]
-k2_test= [[18],[18],[5]]
-names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)']
-error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=False, save=('True','fig0000'))
+#####################################
+######################################
+n = [21, 41,81]
+x=[1,1,1]
+t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5)]
+time_steps = [21, 21,21]
+k1_test = [[18], [36],[72]]
+k2_test = [[18], [36],[72]]
+names=[ 'Yee(4,0)', 'dl(2,1)']
+# dr_calculator(names, save=('True','fig0000'))
+# print(q)
+error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('True','fig0000'))
 # solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 print(q)
-###########################
+######################################################
+######################################################
 
 
 # n = [ 21, 21,21,21]
@@ -155,6 +167,8 @@ t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2
 x = [1, 1, 1, 1, 1]
 time_steps = [21, 21, 21, 21, 21]
 k_test = [18, 36, 72, 144, 288]
+names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)']
+error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=False, save=('True','fig0000'))
 solve_equation(n, x, t, time_steps, k_test)
 solve_equation(n, x, t, time_steps, k_test)
 # error_calculator(quotient=0, k_test=k_test)
