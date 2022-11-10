@@ -79,6 +79,7 @@ def error_print(names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2
                 ax1.plot( [loss[name][i] / loss[name][i - 1] for i in range(len(n)-1)], label=name)
                 ax2.plot( range(len(k1_test)), loss[name], label=name)
                 ax1.set_xticks([], [])
+                ax2.set_xticks(range(len(k1_test)), range(len(k1_test)))
                 ax1.set( ylabel='Rate')
                 ax1.set_title('Error rates')
                 ax2.set_title('Error values')
@@ -125,7 +126,7 @@ time_steps = [31,21,31]
 k1_test = [[18],[18],[5]]
 k2_test= [[18],[18],[5]]
 names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)']
-error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('True','fig0000'))
+error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=False, save=('True','fig0000'))
 # solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 print(q)
 ###########################
