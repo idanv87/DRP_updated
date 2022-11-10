@@ -128,13 +128,13 @@ def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
 
 #####################################
 ######################################
-n = [21, 41,81]
-x=[1,1,1]
-t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5)]
-time_steps = [21, 21,21]
-k1_test = [[18], [36],[72]]
-k2_test = [[18], [36],[72]]
-names=[ 'Yee(4,0)', 'dl(2,1)']
+n = [41]*2
+x=[1]*2
+t = [2 / (36 * 2 ** 0.5)]*2
+time_steps = [21]*2
+k1_test = [[36]]*2
+k2_test = [[36]]*2
+names=[ 'Yee(4,0)', 'dl(2,1)', 'dl(2,3)']
 # dr_calculator(names, save=('True','fig0000'))
 # print(q)
 error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('True','fig0000'))
@@ -168,7 +168,7 @@ x = [1, 1, 1, 1, 1]
 time_steps = [21, 21, 21, 21, 21]
 k_test = [18, 36, 72, 144, 288]
 names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)']
-error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=False, save=('True','fig0000'))
+error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('False','fig0000'))
 solve_equation(n, x, t, time_steps, k_test)
 solve_equation(n, x, t, time_steps, k_test)
 # error_calculator(quotient=0, k_test=k_test)
