@@ -21,8 +21,8 @@ path = Constants.PATH
 
 
 
-# var=calculate_DRP2()
-var=0
+var=calculate_DRP2()
+
 
 models = {'Yee(2,0)': [0,0.,0], 'Yee(4,0)': [0,-1 / 24,0], 'drp(2,1)': [0,var,0], 'dl(2,1)': [], 'dl(2,3)_all': [], 'dl(2,3)': [],
           'dl(4,1)': [], 'model_test': []}
@@ -34,11 +34,11 @@ for name in ['dl(2,1)', 'dl(2,3)', 'dl(4,1)', 'dl(2,3)_all', 'model_test']:
     model.load_weights(
         saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
     if name=='dl(2,1)':
-        # models[name]=[model.trainable_weights[0], (16 * model.trainable_weights[0] - 1) / 24,
-                         # -model.trainable_weights[0] / 3]
         models[name]=[0., model.trainable_weights[0],0]
-
-    else:
+    if name ==('dl(4,1)'):
+        models[name]=[model.trainable_weights[0], (16 * model.trainable_weights[0] - 1) / 24,
+                         -model.trainable_weights[0] / 3]
+    if name not in ['dl(2,1)','dl(4,1)']:
        models[name] = model.trainable_weights
 
 
@@ -128,13 +128,15 @@ def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
 
 #####################################
 ######################################
-n = [41]*2
-x=[1]*2
-t = [2 / (36 * 2 ** 0.5)]*2
-time_steps = [21]*2
-k1_test = [[36]]*2
-k2_test = [[36]]*2
-names=[ 'Yee(4,0)', 'dl(2,1)', 'dl(2,3)']
+n = [21, 41, 81, 161, 321]
+t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2 ** 0.5), 2 / (288 * 2 ** 0.5)]
+x = [1, 1, 1, 1, 1]
+time_steps = [21, 21, 21, 21, 21]
+k1_test = [[18], [36], [72], [144], [288]]
+k2_test = [[18], [36], [72], [144], [288]]
+
+names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)', 'dl(2,1)', 'drp(2,1)']
+
 # dr_calculator(names, save=('True','fig0000'))
 # print(q)
 error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('True','fig0000'))

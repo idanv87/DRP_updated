@@ -78,6 +78,8 @@ def loss_yee(name, beta, delta, gamma, test_data, C, norm='l2'):
     The output is the average error in some norm
     """
 
+    assert norm in ['l2', 'polar']
+
     E = np.expand_dims(test_data['e'][0], axis=(0, -1))
     Hx = np.expand_dims(test_data['hx'][0], axis=(0, -1))
     Hy = np.expand_dims(test_data['hy'][0], axis=(0, -1))
