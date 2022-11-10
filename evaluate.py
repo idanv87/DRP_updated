@@ -139,7 +139,7 @@ names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)', 'dl(2,1)', 'drp(2,1)']
 
 # dr_calculator(names, save=('True','fig0000'))
 # print(q)
-error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('True','fig0000'))
+error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('False','fig0000'))
 # solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 print(q)
 ######################################################

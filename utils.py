@@ -71,7 +71,7 @@ class DRP_LAYER(keras.layers.Layer):
         return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
 
 
-def loss_yee(name, beta, delta, gamma, test_data, C, norm='l2'):
+def loss_yee(name, beta, delta, gamma, test_data, C, norm='polar'):
     """'
     this function recieve analytic solution, solve the equation and compare it to analytical solution
     at each time step.
@@ -93,14 +93,10 @@ def loss_yee(name, beta, delta, gamma, test_data, C, norm='l2'):
         #    plt.show()
         # print(q)
 
-        error+=np.mean(abs(polar(E[0, :, :, 0])[0]-polar(test_data['e'][n + 1])[0])**2)+ \
-               np.mean(abs(polar(Hx[0, :, :, 0])[0] - polar(test_data['hx'][n + 1])[0]) ** 2)+ \
-               np.mean(abs(polar(Hy[0, :, :, 0])[0] - polar(test_data['hy'][n + 1])[0]) ** 2)
-
-        if norm=='l2':
+        if norm == 'l2':
             error += relative_norm(E[0, :, :, 0], test_data['e'][n + 1]) + \
-                 relative_norm(Hx[0, :, :, 0], test_data['hx'][n + 1]) + \
-                 relative_norm(Hy[0, :, :, 0], test_data['hy'][n + 1])
+                     relative_norm(Hx[0, :, :, 0], test_data['hx'][n + 1]) + \
+                     relative_norm(Hy[0, :, :, 0], test_data['hy'][n + 1])
         else:
             error += np.mean(abs(polar(E[0, :, :, 0])[0] - polar(test_data['e'][n + 1])[0]) ** 2) + \
                      np.mean(abs(polar(Hx[0, :, :, 0])[0] - polar(test_data['hx'][n + 1])[0]) ** 2) + \
