@@ -28,7 +28,7 @@ with open(path + 'train/output.pkl', 'rb') as file:
 
 # matplotlib.use("TkAgg")
 l = {"N": model_constants.N, "CFL": model_constants.CFL}
-model_details = {"name": 'test_model', "net_num": 1, "energy_loss": False, "div_loss": False,
+model_details = {"name": 'model_test', "net_num": 1, "energy_loss": False, "div_loss": False,
                  "div_preserve": True,
                  "params": l, "options": 'lt', "number_outputs": 6}
 

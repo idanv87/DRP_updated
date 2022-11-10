@@ -179,7 +179,7 @@ def pad_function(input):
 def custom_loss(y_true, y_pred):
     assert y_true.shape == y_pred.shape
     # return tf.math.reduce_mean(abs(y_true[:, 5:-5, 3:-3, :] - y_pred[:, 3:-3, 3:-3, :])) / C.CFL
-    return tf.math.reduce_mean(abs((y_true - y_pred) ** 2)) / model_constants.CFL
+    return tf.math.reduce_mean(abs((y_true - y_pred) )) / model_constants.CFL
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 

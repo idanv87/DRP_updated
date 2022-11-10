@@ -22,8 +22,8 @@ class Constants:
     # K1_TRAIN = np.arange(11,20, 1)
     # K2_TRAIN = np.arange(11, 20, 1)
     #
-    K1_TRAIN = np.array([11, 13, 15, 17, 19])
-    K2_TRAIN = np.array([11, 13, 15, 17, 19])
+    K1_TRAIN = np.array([11,13,17,19])
+    K2_TRAIN = np.array([11,13,17,19])
 
     K1_DRP = np.arange(11, 20, 1)  # should be N
     K2_DRP = np.arange(11, 20, 1)
