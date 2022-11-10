@@ -4,14 +4,14 @@ import scipy.optimize as scop
 from tensorflow import keras
 
 
-from DRP_multiple_networks.constants import Constants
+from DRP_multiple_networks.constants import model_constants
 
 """
 This file calculate the optimal coefficient for the drp loss (discrete version) over the selected modes
 given in the file constants.k_drp
 """
 
-
+Constants=model_constants
 path = Constants.PATH
 
 
@@ -27,7 +27,7 @@ def loss(a, *args):
         (15 * a ** 2 - 6 * a) * (np.cos(k1 * h) + np.cos(k2 * h))
     omega = (2 / Constants.DT) * np.arcsin(Constants.CFL * np.sqrt((1 / 18) * (20 * a ** 2 - 4 * a + 2 - f)))
 
-    return tf.math.reduce_sum(abs(omega / k - 1))
+    return tf.math.reduce_mean(abs(omega / k - 1))
 
 
 def func(a, *args):
@@ -41,7 +41,8 @@ def func(a, *args):
         (15 * a ** 2 - 6 * a) * (np.cos(k1 * h) + np.cos(k2 * h))
     omega = (2 / Constants.DT) * np.arcsin(Constants.CFL * np.sqrt((1 / 18) * (20 * a ** 2 - 4 * a + 2 - f)))
 
-    return tf.math.reduce_mean(abs(omega / k - 1))
+    # return tf.math.reduce_mean(abs(omega / k - 1))
+    return tf.reduce_mean(abs((omega-k)**2))
     # return tf.math.reduce_mean((omega/k-1)**2)
 
 

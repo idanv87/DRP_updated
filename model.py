@@ -9,52 +9,57 @@ from tensorflow import keras
 from tensorflow.python.keras.layers import Lambda
 import matplotlib.pyplot as plt
 
-from constants import Constants
-from utils import DRP_LAYER, custom_loss, custom_loss_drp ,custom_loss3, drp_loss
+from DRP_multiple_networks.constants import model_constants, Constants
+from DRP_multiple_networks.data_generator import create_train_data
+from utils import DRP_LAYER, custom_loss, custom_loss_drp, custom_loss3
 from drp import calculate_DRP
 from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
 
-path = Constants.PATH
+path = model_constants.PATH
+
+create_train_data(model_constants)
+'''
+load train data:
+'''
+with open(path + 'train/input.pkl', 'rb') as file:
+    net_input = pickle.load(file)
+with open(path + 'train/output.pkl', 'rb') as file:
+    net_output = pickle.load(file)
 
 # matplotlib.use("TkAgg")
-l = {"N": Constants.N, "CFL": Constants.CFL}
-model_details = {"name": 'dl21', "net_num": 1, "energy_loss": False, "div_loss": False,
+l = {"N": model_constants.N, "CFL": model_constants.CFL}
+model_details = {"name": 'test_model', "net_num": 1, "energy_loss": False, "div_loss": False,
                  "div_preserve": True,
                  "params": l, "options": 'lt', "number_outputs": 6}
-name = model_details["name"]
 
+name = model_details["name"]
 saving_path = path + 'Experiment_' + name + '_details/'
 
 isExist = os.path.exists(saving_path)
 if not isExist:
     os.makedirs(saving_path)
 
-pickle.dump(model_details, open(saving_path + 'experiment_' + name + '_details' + '.pkl', "wb"))
+# pickle.dump(model_details, open(saving_path + 'experiment_' + name + '_details' + '.pkl', "wb"))
 
 if Constants.DTYPE == tf.dtypes.float64:
     tf.keras.backend.set_floatx('float64')
 else:
     tf.keras.backend.set_floatx('float32')
 
-with open(path + 'train/input.pkl', 'rb') as file:
-    net_input = pickle.load(file)
-with open(path + 'train/output.pkl', 'rb') as file:
-    net_output = pickle.load(file)
-
 # div_y = tf.zeros([X['e_x'].shape[0], Constants.N - 3, Constants.N - 3, 1], dtype=Constants.DTYPE)
 
 
 start_time = time.time()
 for k in range(Constants.CROSS_VAL):
-    E1_input = keras.Input(shape=(Constants.N, Constants.N, 1))
-    Hx1_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1))
-    Hy1_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1))
-    E2_input = keras.Input(shape=(Constants.N, Constants.N, 1))
-    Hx2_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1))
-    Hy2_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1))
-    E3_input = keras.Input(shape=(Constants.N, Constants.N, 1))
-    Hx3_input = keras.Input(shape=(Constants.N - 2, Constants.N - 1, 1))
-    Hy3_input = keras.Input(shape=(Constants.N - 1, Constants.N - 2, 1))
+    E1_input = keras.Input(shape=(model_constants.N, model_constants.N, 1))
+    Hx1_input = keras.Input(shape=(model_constants.N - 2, model_constants.N - 1, 1))
+    Hy1_input = keras.Input(shape=(model_constants.N - 1, model_constants.N - 2, 1))
+    E2_input = keras.Input(shape=(model_constants.N, model_constants.N, 1))
+    Hx2_input = keras.Input(shape=(model_constants.N - 2, model_constants.N - 1, 1))
+    Hy2_input = keras.Input(shape=(model_constants.N - 1, model_constants.N - 2, 1))
+    E3_input = keras.Input(shape=(model_constants.N, model_constants.N, 1))
+    Hx3_input = keras.Input(shape=(model_constants.N - 2, model_constants.N - 1, 1))
+    Hy3_input = keras.Input(shape=(model_constants.N - 1, model_constants.N - 2, 1))
 
     layer1 = DRP_LAYER()
 
@@ -72,7 +77,7 @@ for k in range(Constants.CROSS_VAL):
     Hx3_output = output1[7]
     Hy3_output = output1[8]
 
-    #drp_output = output1[9]
+    # drp_output = output1[9]
 
     # print(Lambda(drp_output)
 
@@ -83,8 +88,8 @@ for k in range(Constants.CROSS_VAL):
         inputs=[E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input],
         outputs=[E1_output, Hx1_output, Hy1_output
             , E2_output, Hx2_output, Hy2_output
-            # , E3_output, Hx3_output, Hy3_output
-            # , drp_output
+            , E3_output, Hx3_output, Hy3_output
+                 # , drp_output
                  ]
         # outputs = [E_output, Hx_output, Hy_output, energy_output]
     )
@@ -94,14 +99,12 @@ for k in range(Constants.CROSS_VAL):
         # loss=[custom_loss, custom_loss, custom_loss],
         loss=[custom_loss, custom_loss, custom_loss
             , custom_loss, custom_loss, custom_loss
-            # , custom_loss, custom_loss, custom_loss
-            # , custom_loss_drp
+            , custom_loss, custom_loss, custom_loss
+              # , custom_loss_drp
               ]
     )
 
-    model.save(saving_path + 'model.pkl')
-
-    # model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+    # model.save(saving_path + 'model.pkl')
 
     earlystopping = callbacks.EarlyStopping(monitor="val_loss",
                                             mode="min", patience=10,
@@ -119,24 +122,30 @@ for k in range(Constants.CROSS_VAL):
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=10, min_lr=1e-9)
     l = np.squeeze(net_output[-1] * 0)
 
-
     history = model.fit(
-        net_input, net_output[:-4]
-                   # + [l]
+        net_input, net_output[:-1]
+        # + [l]
         ,
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],
         epochs=Constants.EPOCHS,
         batch_size=Constants.BATCH_SIZE,
         shuffle=True, validation_split=0.2, verbose=2)
-plt.plot(history.history['loss'], 'red')
-plt.plot(history.history['val_loss'])
+plt.plot(history.history['loss'], "r", label="Loss")
+plt.plot(history.history['val_loss'], "b", label="Validation")
+plt.xlabel('epoch')
+plt.ylabel('error')
+plt.legend(loc="upper left")
+
 plt.show()
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
 model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 print(model.trainable_weights)
-print(q)
+'''
+ignore everything below
+'''
+
 # print(calculate_DRP())
 
 # if __name__ == "__main__":

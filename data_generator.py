@@ -6,15 +6,14 @@ import tracemalloc
 import numpy as np
 
 from DRP_multiple_networks.constants import Constants
+# from DRP_multiple_networks.tests import train_constants, test_constants
 from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
 
 """
 This file is used to gennerate data for training and for evaluation
 """
 
-C = Constants()
-
-path = C.PATH
+path = Constants.PATH
 
 folders = [path + 'train/', path + 'test/', path + 'val/', path + 'base_functions/train/',
            path + ' base_functions/val/',
@@ -23,6 +22,39 @@ folders = [path + 'train/', path + 'test/', path + 'val/', path + 'base_function
 for folder in folders:
     if not os.path.exists(folder):
         os.makedirs(folder)
+
+
+class base_function_test:
+    """
+    an instance of  base_function is an analytic solution (e,hx,hy) to maxwell equations.
+    each solution has energy.
+    each solution can be used either for train or either for test
+     """
+
+    def __init__(self, k1, k2, train_or_test):
+        self.base_pathes = {'train': [], 'test': []}
+        assert train_or_test in list(base_function.base_pathes)
+        self.path = path + 'base_functions/' + train_or_test + '/' + 'kx=' + str(k1) + 'ky=' + str(k2) + '_.pkl'
+        self.base_pathes[train_or_test].append(self.path)
+        self.valueFE = None
+        self.valueFHX = None
+        self.valueFHY = None
+        self.valueENERGY = None
+
+    def set(self, typ, F):
+        if typ == 'e':
+            self.valueFE = F
+        if typ == 'hx':
+            self.valueFHX = F
+        if typ == 'hy':
+            self.valueFHY = F
+        if typ == 'energy':
+            self.valueENERGY = F
+
+    def save(self):
+        assert [self.valueFE, self.valueFHX, self.valueFHY, self.valueENERGY] not in [None]
+        pickle.dump({'e': self.valueFE, 'hx': self.valueFHX, 'hy': self.valueFHY, 'energy': self.valueENERGY},
+                    open(self.path, "wb"))
 
 
 class base_function:
@@ -84,7 +116,7 @@ def create_lt(name, ind):
     return output
 
 
-def create_train_data(gen_base, options):
+def create_train_data(c, options='non_lt'):
     """
     let f=(e,hx,hy).
     this function creates 2 lists   of  inputs (fn,fn+1,fn+2) and outputs (fn+1,fn+2,fn+3)
@@ -97,10 +129,10 @@ def create_train_data(gen_base, options):
     """
 
     sol = {'e': [], 'hx': [], 'hy': [], 'energy': []}
-    generate_basis('train')
+    generate_basis('train', c)
 
     if options == 'lt':
-        for i in range(C.TRAIN_NUM):
+        for i in range(c.TRAIN_NUM):
             [sol[key].append(create_lt('train', i)[key].copy()) for key in list(sol)]
     else:
         for p in list(base_function.base_pathes['train']):
@@ -117,40 +149,43 @@ def create_train_data(gen_base, options):
     return 1
 
 
-def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS, X1=Constants.X1, X2=Constants.X2):
+def generate_basis(name, c):
     """
     This function generate the base functions and their energy given by the modes in the file constants.k_train
     """
-    assert name in ['train', 'test']
-    if name == 'train':
-        kx = C.K1_TRAIN
-        ky = C.K2_TRAIN
+    if name == 'test':
+        kx = c.K1_TEST
+        ky = c.K2_TEST
     else:
-        kx = C.K1_TEST
-        ky = C.K2_TEST
-    t, x, y = np.meshgrid(np.linspace(0, t_f, time_steps), X1, X2, indexing='ij')
+        kx = c.K1_TRAIN
+        ky = c.K2_TRAIN
+    t, x, y = np.meshgrid(np.linspace(0, c.T, c.TIME_STEPS), c.X1, c.X2, indexing='ij')
+
     for k1 in kx:
         for k2 in ky:
-            B = base_function(k1, k2, name)
-
-            c = C.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
-
-            B.set('e', fE(t, x, y, k1, k2, c))
-
-            B.set('hx', fHX(t + dt / 2, x, y, k1, k2, c, h))
-
-            B.set('hy', fHY(t + dt / 2, x, y, k1, k2, c, h))
-            if k1 == k2:
-                B.set('energy', np.vstack([1.] * time_steps))
+            if name == 'test':
+                B = base_function_test(k1, k2, name)
             else:
-                B.set('energy', np.vstack([1 / 2] * time_steps))
+                B = base_function(k1, k2, name)
+
+            omega = Constants.PI * (np.sqrt(k1 ** 2 + k2 ** 2))
+
+            B.set('e', fE(t, x, y, k1, k2, omega))
+
+            B.set('hx', fHX(t + c.DT / 2, x, y, k1, k2, omega, c.DX))
+
+            B.set('hy', fHY(t + c.DT / 2, x, y, k1, k2, omega, c.DX))
+            if k1 == k2:
+                B.set('energy', np.vstack([1.] * c.TIME_STEPS))
+            else:
+                B.set('energy', np.vstack([1 / 2] * c.TIME_STEPS))
 
             B.save()
 
-    return 1
+    return B
 
 
-def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS, X1=Constants.X1, X2=Constants.X2):
+def create_test_data(c, options='lt'):
     """
     test_data[e] is a list and each element is a base function of rank 3-(t,x,y)
     for test.
@@ -160,8 +195,8 @@ def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constant
     L1 = []
     L2 = []
     L3 = []
-    generate_basis('test', h,dt, t_f, time_steps, X1, X2)
-    for p in list(base_function.base_pathes['test']):
+    B = generate_basis('test', c)
+    for p in list(B.base_pathes['test']):
         with open(p, 'rb') as file:
             l = pickle.load(file)
         L1.append(l['e'])
@@ -174,11 +209,9 @@ def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constant
         test_data['hx'] = [sum(test_data['hx'])]
         test_data['hy'] = [sum(test_data['hy'])]
 
-
     pickle.dump(test_data, open(path + 'test/test_data.pkl', "wb"))
 
     return 1
 
-
-if __name__ == "__main__":
-    create_train_data(gen_base=True, options='nonlt')
+# if __name__ == "__main__":
+#     create_train_data(test_constants)

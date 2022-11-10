@@ -1,152 +1,239 @@
-import pickle
-import tracemalloc
-
 import numpy as np
+import math
+import pickle
+
+import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import matplotlib.patches as mpatches
+from pylab import *
 
-from constants import Constants
-
+from DRP_multiple_networks.drp import calculate_DRP
+from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2, func
+from DRP_multiple_networks.constants import Constants, model_constants
+from DRP_multiple_networks.data_generator import create_test_data
+from DRP_multiple_networks.auxilary.aux_functions import loss_drp, loss_drp_extended
 from utils import custom_loss, custom_loss3, loss_yee
-from data_generator import create_test_data
-from drp import calculate_DRP
-from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
-from DRP_multiple_networks.auxilary.aux_functions import loss_drp
+from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY
 
 path = Constants.PATH
 
-create_test_data()
-
-with open(path + 'test/test_data.pkl', 'rb') as file:
-    test_data = pickle.load(file)
-
-data = {name: test_data[name][0] for name in list(test_data)}
-
-name = 'dl23'
-saving_path = path + 'Experiment_' + name + '_details/'
-model1 = keras.models.load_model(saving_path + 'model.pkl',
-                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
-model1.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()#print(model1.trainable_weights)
+var=calculate_DRP2()
 
 
+models = {'Yee(2,0)': [0,0.,0], 'Yee(4,0)': [0,-1 / 24,0], 'drp(2,1)': [0,var,0], 'dl(2,1)': [], 'dl(2,3)_all': [], 'dl(2,3)': [],
+          'dl(4,1)': [], 'model_test': []}
 
-#
-name = 'dl21'
-saving_path = path + 'Experiment_' + name + '_details/'
-model2 = keras.models.load_model(saving_path + 'model.pkl',
-                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
-
-model2.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-
-name = 'dl4'
-saving_path = path + 'Experiment_' + name + '_details/'
-model3 = keras.models.load_model(saving_path + 'model.pkl',
-                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
-
-model3.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-
-name = 'dl23_zar'
-saving_path = path + 'Experiment_' + name + '_details/'
-model4 = keras.models.load_model(saving_path + 'model.pkl',
-                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
-
-model4.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-
-name = 'dl23_normal'
-saving_path = path + 'Experiment_' + name + '_details/'
-model5 = keras.models.load_model(saving_path + 'model.pkl',
-                                 custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
-
-model5.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-
-l_yee = []
-l_model = []
-l_fourth = []
-l_drp = []
-l_modeldl1 = []
-l_modeldl4=[]
-
-for i in range(len(test_data['e'])):
-    data = {name: test_data[name][i] for name in list(test_data)}
-
-    # aux = fd_solver(0., 0., data)
-    # aux4 = fd_solver(0., -1 / 24, data)
-    # aux_drp = fd_solver(0., calculate_DRP(), data)
-    # plt.plot(aux)
-    # plt.plot(aux4, 'r', label="4")
-    # # plt.plot(aux_drp, 'g', label="drp")
-    # plt.legend()
-    # plt.show()
-
-    var=-0.07166257
-    var=calculate_DRP2()
-
-
-
-    # l_fourth.append(loss_yee('4order', 0., -1 / 24,0., data))
-    # l_modeldl1.append(loss_yee('dl21', 0., model2.trainable_weights[0],0., data))
-    # # l_model.append(loss_yee('dl23', model1.trainable_weights[0], model1.trainable_weights[1],model1.trainable_weights[2], data))
-    # # l_modeldl4.append(loss_yee('dl23_zar', model4.trainable_weights[0], model4.trainable_weights[1],model4.trainable_weights[2], data))
-    #
-    # # l_modeldl1.append(loss_yee('dl23_normal', model5.trainable_weights[0], model5.trainable_weights[1],model5.trainable_weights[2], data))
-    #
-    # l_drp.append(loss_yee('DRP', 0., var, 0, data))
-
-    print(loss_drp(Constants.DX, Constants.DT,Constants.K_TEST, Constants.K_TEST,1-3*var))
-    print(loss_drp(Constants.DX, Constants.DT,Constants.K_TEST, Constants.K_TEST,1-3*model2.trainable_weights[0]))
-
-    # l_modeldl4.append(loss_yee('dl41', model3.trainable_weights[0],(16*model3.trainable_weights[0]-1)/24 , -model3.trainable_weights[0]/3, data))
-
-    # print(np.log(l_drp))
-    #
-    #
-    # l2_tot=[-19.50439923,-19.76743022,-19.999877]
-    # #l_tot=np.array([-21.93620312,-23.78711441, -25.07347991, -26.05638995, -26.85038231, -27.51571427, -28.08792702, -28.58969093])
-    # #dx_tot=np.log([1/20,1/30,1/40,1/50, 1/60, 1/70, 1/80, 1/90])
-    # dx_tot=np.log([ 1/70, 1/80, 1/90])
-    # print(np.divide(np.diff(l2_tot), np.diff(dx_tot)))
-    # print(l_modeldl4)
-    # print(l_modeldl1)
-    # # print(l_model)
-    # # print(l_fourth)
-    # print(l_drp)
-
-    # print(loss_drp(Constants.DX, Constants.DT, Constants.K_TEST, Constants.K_TEST))
+for name in ['dl(2,1)', 'dl(2,3)', 'dl(4,1)', 'dl(2,3)_all', 'model_test']:
+    saving_path = path + 'Experiment_' + name + '_details/'
+    model = keras.models.load_model(saving_path + 'model.pkl',
+                                    custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
+    model.load_weights(
+        saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+    if name=='dl(4,1)':
+        models[name]=[model.trainable_weights[0], (16 * model.trainable_weights[0] - 1) / 24,
+                         -model.trainable_weights[0] / 3]
+    else:
+       models[name] = model.trainable_weights
 
 
 
 
-    # lt_model=loss_yee2('model', 0, model1.trainable_weights[0], data)
-    # lt_model2 = loss_yee2('model', 0, model2.trainable_weights[0], data)
-    # lt_yee=loss_yee2('Yee', 0, 0, data)
-    # lt_fourth=loss_yee2('4order', 0., -1/24, data)
-    # #lt_fourth2 = loss_yee2('4order', 0., -0.04468, data)
-    # lt_drp=loss_yee2('DRP', 0., calculate_DRP(), data)
+def dr_calculator(names, save_figure=False):
+    X = np.linspace(0.5 * math.pi, math.pi, model_constants.N * 50)
+    x, y = np.meshgrid(X, X, indexing='ij')
+    for name in names:
+        assert name in list(models)
+        plt.plot(X / math.pi, loss_drp_extended(model_constants, X, X, models[name][0], models[name][1],
+                                                    models[name][2]), label=name)
 
-# pickle.dump(l_yee, open(path+"figures/loss_yee.pkl", "wb"))
-# pickle.dump(l_fourth, open(path+"figures/loss_fourth.pkl", "wb"))
-# pickle.dump(l_model, open(path+"figures/loss_model1.pkl", "wb"))
-# #pickle.dump(l_model2, open(path+"figures/loss_model2.pkl", "wb"))
-# pickle.dump(l_drp, open(path+"figures/loss_drp.pkl", "wb"))
-#
-# pickle.dump(lt_yee, open(path+"figures/loss_time_yee.pkl", "wb"))
-# pickle.dump(lt_fourth, open(path+"figures/loss_time_fourth.pkl", "wb"))
-# pickle.dump(lt_model, open(path+"figures/loss_time_model1.pkl", "wb"))
-# #pickle.dump(lt_model2, open(path+"figures/loss_time_model2.pkl", "wb"))
-# pickle.dump(lt_drp, open(path+"figures/loss_time_drp.pkl", "wb"))
+    plt.legend(loc="upper left")
+    plt.xlabel(r'$\frac{k}{\pi}$')
+    plt.ylabel('dispersion error')
+    plt.show()
+
+    if save_figure:
+        plt.savefig(Constants.FIGURES_PATH + 'dr_loss.eps', format='eps',
+                    bbox_inches='tight')
+    return 1
+
+
+def error_print(names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2_test=None, solve=True, save=('False','False')):
+    '''
+    This function recieve model names to evaluate over
+    test data
+    '''
+
+    if solve:
+        solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
+
+    with open(path + "figures/losses.pkl", 'rb') as file:
+        loss = pickle.load(file)
+    fig, (ax1, ax2) = plt.subplots(2, sharex=False, sharey=False)
+    for name in list(loss):
+            if name in names:
+                assert name in list(models)
+
+                # fig.suptitle('Aligning x-axis using sharex')
+                ax1.plot( [loss[name][i] / loss[name][i - 1] for i in range(len(n)-1)], label=name)
+                ax2.plot( range(len(k1_test)), loss[name], label=name)
+                ax1.set_xticks([], [])
+                ax1.set( ylabel='Rate')
+                ax1.set_title('Error rates')
+                ax2.set_title('Error values')
+
+
+
+    plt.legend(loc="upper left")
+    plt.xlabel(r'$k_{test}/k_0$')
+    plt.ylabel(r'${ \mathrm{Error} }$')  #
+
+    if save[0]:
+     print(' saved as:errors_figure'+str(save[1])+'.eps')
+     plt.savefig(Constants.FIGURES_PATH+'errors_figure'+save[1]+'.eps', format='eps',
+                    bbox_inches='tight')
+
+    plt.show()
+
+
+# loop starts here
+def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
+    loss = dict((key, []) for key in list(names))
+
+    for i in range(len(n)):
+        test_constants = Constants(n[i], x[i], t[i], time_steps[i], k1_test[i], k2_test[i])
+        create_test_data(test_constants)
+        with open(path + 'test/test_data.pkl', 'rb') as file:
+            test_data = pickle.load(file)
+
+        data = {name: test_data[name][0] for name in list(test_data)}
+        assert len(test_data['e'])==1
+
+        data = {name: test_data[name][0] for name in list(test_data)}
+        for name in list(loss):
+            print('solve for model:  '+str(name))
+            loss[name].append(loss_yee(name, models[name][0], models[name][1], models[name][2], data, test_constants))
+
+    pickle.dump(loss, open(path + "figures/losses.pkl", "wb"))
+
+
+n = [21, 21, 22]
+t = [0.001, 0.001, 0.001]
+x = [1, 1, 1, 1, 1,1]
+time_steps = [31,21,31]
+k1_test = [[18],[18],[5]]
+k2_test= [[18],[18],[5]]
+names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)']
+error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('True','fig0000'))
+# solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 print(q)
-plt.plot(l_drp, '-r', label="drp")
-plt.plot(l_model1, 'b', label='model1')
-plt.plot(l_fourth, 'g', label='fourth')
-# plt.plot(lt_fourth2, 'r', label='other model')
-# plt.plot(lt_fourth2, 'b', label='H error')
-# plt.plot(np.array(lt_fourthe)*20, 'g', label='divergence')
-# # plt.plot([(l_model[k]/l_model2[k]) for k in range(len(l_model))], "b", label="gpa")
-plt.legend(loc="upper left")
+###########################
 
-plt.title('Error over time')
-plt.show()
-# print(1-3*model1.trainable_weights[0])
-# print(model2.trainable_weights[0])
-# print(1-3*calculate_DRP())
-# print(calculate_DRP())
+
+# n = [ 21, 21,21,21]
+# x = [1, 1,1,1]
+# time_steps = [41, 81, 161,321]
+# t = [ 2 / (9 * 2 ** 0.5), 4 / (9 * 2 ** 0.5), 8/ (9 * 2 ** 0.5), 16/ (9 * 2 ** 0.5)]
+#
+# k_test = [16 , 16,16,16]
+# solve_equation(n, x, t, time_steps, k_test)
+# error_calculator(quotient=0, k_test=k_test)
+# k_test = [18 , 18,18,18]
+# solve_equation(n, x, t, time_steps, k_test)
+# # error_calculator(quotient=0, k_test=k_test)
+# error_calculator(quotient=1, k_test=k_test)
+#
+# print(q)
+###################
+# figure eror quotient :
+# dr_calculator()
+# print(q)
+n = [21, 41, 81, 161, 321]
+t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2 ** 0.5), 2 / (288 * 2 ** 0.5)]
+x = [1, 1, 1, 1, 1]
+time_steps = [21, 21, 21, 21, 21]
+k_test = [18, 36, 72, 144, 288]
+solve_equation(n, x, t, time_steps, k_test)
+solve_equation(n, x, t, time_steps, k_test)
+# error_calculator(quotient=0, k_test=k_test)
+# error_calculator(quotient=1, k_test=k_test)
+print(q)
+#################################
+
+
+####################################
+# figure eror quotient2 :
+# var=-0.09053062
+# n = [21, 41, 81, 161, 321]
+# t = [2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5) ]
+# x = [1, 1, 1, 1, 1]
+# time_steps = [21, 41, 81, 161, 321]
+# k_test = [18, 36, 72, 144, 288]
+#
+# solve_equation(n, x, t, time_steps, k_test)
+# error_calculator(quotient=0, k_test=k_test)
+# error_calculator(quotient=1, k_test=k_test)
+
+#######################################
+# figure eror figure 3 :
+# var=-0.09053188
+# n = [21, 81,81,81]*40
+# t = [2 / (5 * 2 ** 0.5)]*40
+# x = [1]*40
+# time_steps = [21, 145,145,145]
+# k_test = np.arange(20,40,1)
+# # dr_calculator(n,x,t,time_steps,k_test)
+# #
+# solve_equation(n, x, t, time_steps, k_test)
+# error_calculator(quotient=0, k_test=k_test)
+# print(q)
+#######################################
+# print(q)
+#
+# k=23*2**0.5
+# y=np.linspace(0,2/184/2**0.5,210)
+# x=np.linspace(0,2/184/2**0.5,81)
+# plt.scatter(x,np.cos((math.pi*x*k)))
+# plt.plot(y,np.cos((math.pi*y*k)))
+# plt.show()
+# n = [161]*80
+# t = [1 / (20 * 2 ** 0.5)] * 80
+# time_steps = n
+# k_test = np.arange(80,160,1)
+# dr_calculator(n,t,time_steps,k_test)
+
+
+#
+# from drp import calculate_DRP
+# from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
+# from DRP_multiple_networks.auxilary.aux_functions import relative_norm
+
+# #
+# import matplotlib.pyplot as plt
+# # from DRP_multiple_networks import constants
+#
+#
+# # x=calculate_DRP()
+# # y=calculate_DRP2()
+# # print(x)
+# # print(y)
+# # # print(Constants.CFL)
+# # # # x=tf.constant([[1,2],[1,2]])
+# # # # print(relative_norm(x,x ))
+# # # # print(tf.math.pow(x,2))
+# # X=np.arange(10, 19, 1)**2
+# # Y=np.arange(1,20,1)**2
+# # Z=Y
+# # for x in X:
+# #     for y in X:
+# #         print(np.sqrt(x+y))
+# #
+# #
+# # print(q)
+
+# # # x=np.linspace(0,1,82)
+# # # plt.plot(x,np.cos(math.pi*x*20))
+# plt.show()
+# # #
+# # # print(Constants.CFL)
