@@ -20,6 +20,7 @@ def func(a, *args):
 
     X = np.linspace(math.pi / 2, math.pi, model_constants.N*50)
     x, y = np.meshgrid(X, X, indexing='ij')
+    y=x
 
     f = ((1 - a) ** 2) * (np.cos(3 * x) + np.cos(3 * y)) + \
         (6 * a - 6 * a ** 2) * (np.cos(2 * x) + np.cos(2 * y)) + \
@@ -50,3 +51,37 @@ def calculate_DRP2():
 
 
 
+def func_extended( pars, *args):
+    par1, par2, par3 = pars
+
+
+    Constants = model_constants
+    X = np.linspace(math.pi / 2, math.pi, model_constants.N*50)
+    x, y = np.meshgrid(X, X, indexing='ij')
+
+    f=2*np.cos(y/2)*(par1*np.sin(x/2)+par3*(np.sin(3*x/2)))+par2*np.sin(3*x/2)+(1-2*par1-3*par2-6*par3)*np.sin(x/2)
+    g= 2*np.cos(x/2)*(par1*np.sin(y/2)+par3*(np.sin(3*y/2)))+par2*np.sin(3*y/2)+(1-2*par1-3*par2-6*par3)*np.sin(y/2)
+    omega_over_k=(2 / (Constants.CFL * np.sqrt(x ** 2 + y ** 2)))*np.arcsin(model_constants.CFL*np.sqrt(f**2+g**2))
+    z=abs((omega_over_k - 1)**2)
+    return simps([simps(zz_x, X) for zz_x in z], X)
+
+
+
+def calculate_DRP2_extended():
+    Constants=model_constants
+    opt = 100
+    x = (0,0,0)
+    for i in range(1):
+        init = x
+
+        res = scop.minimize(func_extended, init, args=(Constants), method='SLSQP',
+                            options=dict(disp=False, iprint=2, ftol=1e-18))
+        if res['fun'] < opt:
+            x = res['x']
+            opt = res['fun']
+
+    return x
+
+if __name__ == "__main__":
+   x1=calculate_DRP2_extended()
+   print(x1)

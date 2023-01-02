@@ -18,12 +18,12 @@ class Constants:
 
     CROSS_VAL = 1
     EPOCHS = 600
-    BATCH_SIZE = 128
-    # K1_TRAIN = np.arange(11,20, 1)
-    # K2_TRAIN = np.arange(11, 20, 1)
+    BATCH_SIZE =8
+    # K1_TRAIN = np.arange(17,20, 1)
+    # K2_TRAIN = np.arange(17, 19, 1)
     #
-    K1_TRAIN = np.array([11,13,17,19])
-    K2_TRAIN = np.array([11,13,17,19])
+    K1_TRAIN = np.array([1,17])
+    K2_TRAIN = np.array([1,17])
 
     K1_DRP = np.arange(11, 20, 1)  # should be N
     K2_DRP = np.arange(11, 20, 1)
@@ -114,4 +114,5 @@ class Constants:
         self.KDOWN = tf.reverse(self.KUP, [0])
 
 
-model_constants = Constants(21, 1, 2 / (5 * 2 ** 0.5), 73, 1., 1.)
+model_constants = Constants(17, 1, 1,
+                            33, 1., 1.)

@@ -28,7 +28,7 @@ with open(path + 'train/output.pkl', 'rb') as file:
 
 # matplotlib.use("TkAgg")
 l = {"N": model_constants.N, "CFL": model_constants.CFL}
-model_details = {"name": 'model_test', "net_num": 1, "energy_loss": False, "div_loss": False,
+model_details = {"name": 'dl(2,3)_all', "net_num": 1, "energy_loss": False, "div_loss": False,
                  "div_preserve": True,
                  "params": l, "options": 'lt', "number_outputs": 6}
 
@@ -88,7 +88,7 @@ for k in range(Constants.CROSS_VAL):
         inputs=[E1_input, Hx1_input, Hy1_input, E2_input, Hx2_input, Hy2_input, E3_input, Hx3_input, Hy3_input],
         outputs=[E1_output, Hx1_output, Hy1_output
             , E2_output, Hx2_output, Hy2_output
-            , E3_output, Hx3_output, Hy3_output
+            # , E3_output, Hx3_output, Hy3_output
                  # , drp_output
                  ]
         # outputs = [E_output, Hx_output, Hy_output, energy_output]
@@ -99,15 +99,15 @@ for k in range(Constants.CROSS_VAL):
         # loss=[custom_loss, custom_loss, custom_loss],
         loss=[custom_loss, custom_loss, custom_loss
             , custom_loss, custom_loss, custom_loss
-            , custom_loss, custom_loss, custom_loss
+            # , custom_loss, custom_loss, custom_loss
               # , custom_loss_drp
               ]
     )
 
-    # model.save(saving_path + 'model.pkl')
+    model.save(saving_path + 'model.pkl')
 
     earlystopping = callbacks.EarlyStopping(monitor="val_loss",
-                                            mode="min", patience=10,
+                                            mode="min", patience=20,
                                             restore_best_weights=False)
 
     checkpoint_filepath = saving_path + 'model_weights_val_number_' + str(k) + '.pkl'
@@ -119,11 +119,11 @@ for k in range(Constants.CROSS_VAL):
         mode='min',
         save_best_only=True)
     # csv loger
-    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=10, min_lr=1e-9)
+    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=20, min_lr=1e-9)
     l = np.squeeze(net_output[-1] * 0)
 
     history = model.fit(
-        net_input, net_output[:-1]
+        net_input, net_output[:-4]
         # + [l]
         ,
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],

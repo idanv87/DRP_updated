@@ -6,6 +6,11 @@ from DRP_multiple_networks.constants import Constants, model_constants
 
 
 
+def frob_norm(A,B):
+    return tf.math.sqrt(tf.reduce_sum((A-B)**2))
+
+def max_norm(A,B):
+    return tf.reduce_max(tf.abs(A-B))
 
 def relative_norm(A, B, p=2):
 

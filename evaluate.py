@@ -22,30 +22,38 @@ path = Constants.PATH
 
 
 # var=calculate_DRP2()
-var=-0.09153268
+# print(var)
+# print(q)
+# var=-0.09153268
+# var=-0.08874854
+var2=[0,  -1/24, 0]
+# var2=[-0.47707667,  0.2893196,  -0.08318479]
 
-models = {'Yee(2,0)': [0,0.,0], 'Yee(4,0)': [0,-1 / 24,0], 'drp(2,1)': [0,var,0], 'dl(2,1)': [], 'dl(2,3)_all': [], 'dl(2,3)': [],
+models = {'Yee(2,0)': [0,0.,0], 'Yee(4,0)': [0,-1 / 24,0], 'drp(2,3)': var2, 'dl(2,1)': [],'dl(2,1)_all': [], 'dl(2,3)_all': [], 'dl(2,3)': [],
           'dl(4,1)': [], 'model_test': []}
 
-for name in ['dl(2,1)', 'dl(2,3)', 'dl(4,1)', 'dl(2,3)_all', 'model_test']:
+for name in ['dl(2,1)','dl(2,1)_all', 'dl(2,3)', 'dl(4,1)', 'dl(2,3)_all', 'model_test']:
     saving_path = path + 'Experiment_' + name + '_details/'
     model = keras.models.load_model(saving_path + 'model.pkl',
                                     custom_objects={'custom_loss': custom_loss, 'custom_loss3': custom_loss3})
     model.load_weights(
         saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
-    if name=='dl(2,1)':
+    if name in ['dl(2,1)', 'dl(2,1)_all']:
         models[name]=[0., model.trainable_weights[0],0]
     if name =='dl(4,1)':
         models[name]=[model.trainable_weights[0], (16 * model.trainable_weights[0] - 1) / 24,
                          -model.trainable_weights[0] / 3]
-    if name not in ['dl(2,1)','dl(4,1)']:
+    if name not in ['dl(2,1)','dl(4,1)','dl(2,1)_all']:
        models[name] = model.trainable_weights
+       # if name=='dl(2,3)':
+       #     print(model.trainable_weights)
+       #     print(q)
 
 
 
 
 def dr_calculator(names, save=(False,'False')):
-    X = np.linspace(0.5 * math.pi, math.pi, model_constants.N * 50)
+    X = np.linspace( 0.5*math.pi, 1*math.pi, model_constants.N * 50)
     x, y = np.meshgrid(X, X, indexing='ij')
     fig, ax1 = plt.subplots(1, sharex=False, sharey=False)
 
@@ -55,37 +63,41 @@ def dr_calculator(names, save=(False,'False')):
                                                     models[name][2]), label=name)
 
     plt.legend(loc="upper left")
-    plt.xlabel(r'$\frac{k}{\pi}$')
-    plt.ylabel('dispersion error')
+    plt.xlabel(r'$\frac{kh}{\pi}$')
+    plt.ylabel('dispersion relation')
 
 
-    if save[0]:
+    if save[0]==True:
         print(' saved as:dispersion_figure' + str(save[1]) + '.eps')
         plt.savefig(Constants.FIGURES_PATH + 'dispersion_figure'+save[1]+'.eps', format='eps',
                     bbox_inches='tight')
-        plt.show()
+    plt.show()
     return 1
 
 
-def error_print(names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2_test=None, solve=True, save=('False','False')):
+def error_print(type, names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2_test=None, solve=True, save=('False','False')):
     '''
     This function recieve model names to evaluate over
     test data
     '''
 
-    if solve:
+    if solve==True:
         solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 
     with open(path + "figures/losses.pkl", 'rb') as file:
         loss = pickle.load(file)
     fig, (ax1, ax2) = plt.subplots(2, sharex=False, sharey=False)
+
     for name in list(loss):
             if name in names:
+
+
                 assert name in list(models)
 
                 # fig.suptitle('Aligning x-axis using sharex')
                 ax1.plot( [loss[name][i] / loss[name][i - 1] for i in np.arange(1,len(n),1)], label=name)
                 ax2.plot( range(len(k1_test)), loss[name], label=name)
+                print(loss[name])
                 ax1.set_xticks([], [])
                 ax2.set_xticks(range(len(k1_test)), range(len(k1_test)))
                 ax1.set( ylabel='Rate')
@@ -95,15 +107,19 @@ def error_print(names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2
 
 
     plt.legend(loc="upper left")
-    plt.xlabel(r'$k_{test}/k_0$')
-    plt.ylabel(r'${ \mathrm{Error} }$')  #
+    if type=='k':
+        plt.xlabel(r'$k_{test}/k_0$')
+        plt.ylabel(r'${ \mathrm{Error} }$')
+    if type=='time':
+        plt.xlabel(r'$\mathrm{time}$')
+        plt.ylabel(r'${ \mathrm{Error} }$')
 
-    if save[0]:
-     print(' saved as:errors_figure'+str(save[1])+'.eps')
-     plt.savefig(Constants.FIGURES_PATH+'errors_figure'+save[1]+'.eps', format='eps',
+    if save[0]==True:
+        print(' saved as:errors_figure'+str(save[1])+'.eps')
+        plt.savefig(Constants.FIGURES_PATH+'errors_figure'+save[1]+'.eps', format='eps',
                     bbox_inches='tight')
 
-     plt.show()
+    plt.show()
 
 
 # loop starts here
@@ -128,25 +144,45 @@ def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
 
 #####################################
 ######################################
+# n = [21, 41, 81, 161]
+# t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2 ** 0.5)]
+# x = [1, 1, 1, 1]
+# time_steps = [21, 21, 21, 21]
+# k1_test = [[22], [44], [88], [176]]
+# k2_test = k1_test
+#
 # n = [21, 41, 81, 161, 321]
 # t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2 ** 0.5), 2 / (288 * 2 ** 0.5)]
 # x = [1, 1, 1, 1, 1]
 # time_steps = [21, 21, 21, 21, 21]
 # k1_test = [[18], [36], [72], [144], [288]]
-# k2_test = [[18], [36], [72], [144], [288]]
+# k2_test=k1_test
 
-n = [21, 21,21]
-x=[1]*3
-t = [2 / (18 * 2 ** 0.5), 4 / (18 * 2 ** 0.5), 8 / (18 * 2 ** 0.5)]
-time_steps = [21,41,81]
-k1_test = [[18],[18], [18]]
-k2_test = k1_test
+# n = [21, 41, 81, 161, 321]
+# t = [2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5), 2 / (18 * 2 ** 0.5) ]
+# x = [1, 1, 1, 1, 1]
+# time_steps = [21, 41, 81, 161, 321]
+# k1_test = [[18], [36], [72], [144], [288]]
+# k2_test=k1_test
+# n = [31 ]*6
+# x=[1]*6
+# t = [2 / (18 * 2 ** 0.5), 4 / (18 * 2 ** 0.5), 8 / (18 * 2 ** 0.5), 16 / (18 * 2 ** 0.5), 32 / (18 * 2 ** 0.5), 64 / (18 * 2 ** 0.5)]
+# time_steps = [31,61,121,241, 481, 961]
+# k1_test = [[43]]*6
+# k2_test = k1_test
 
-names=['model_test', 'drp(2,1)']
+n = [17,33,65,129,257]
+x=[1]*5
+t = [1]*5
+time_steps = [33,65,129,257,513]
+k1_test = [[2]]*5
+k2_test = [[1]]*5
 
-dr_calculator(names, save=('True','fig0000'))
-print(q)
-error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('False','fig0000'))
+names=['dl(2,3)_all']
+#
+# dr_calculator(names, save=(True,'fig0001'))
+# print(q)
+error_print('time',names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=(False,'fig36'))
 # solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 print(q)
 ######################################################
@@ -171,11 +207,13 @@ print(q)
 # figure eror quotient :
 # dr_calculator()
 # print(q)
-n = [21, 41, 81, 161, 321]
-t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2 ** 0.5), 2 / (288 * 2 ** 0.5)]
-x = [1, 1, 1, 1, 1]
-time_steps = [21, 21, 21, 21, 21]
-k_test = [18, 36, 72, 144, 288]
+# n = [21, 41, 81, 161, 321]
+# t = [2 / (18 * 2 ** 0.5), 2 / (36 * 2 ** 0.5), 2 / (72 * 2 ** 0.5), 2 / (144 * 2 ** 0.5), 2 / (288 * 2 ** 0.5)]
+# x = [1, 1, 1, 1, 1]
+# time_steps = [21, 21, 21, 21, 21]
+# k_test = [18, 36, 72, 144, 288]
+
+
 names=['dl(2,3)', 'Yee(4,0)', 'dl(4,1)']
 error_print(names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=('False','fig0000'))
 solve_equation(n, x, t, time_steps, k_test)

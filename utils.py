@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.linalg import polar
 
 from DRP_multiple_networks.constants import model_constants
-from DRP_multiple_networks.auxilary.aux_functions import relative_norm
+from DRP_multiple_networks.auxilary.aux_functions import relative_norm, frob_norm
 from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
 
 
@@ -15,9 +15,9 @@ class DRP_LAYER(keras.layers.Layer):
 
     def __init__(self):
         super().__init__()
-        self.pars1 = tf.Variable(0., trainable=True, dtype=model_constants.DTYPE, name='beta')
-        self.pars2 = tf.Variable(-0.09, trainable=True, dtype=model_constants.DTYPE, name='delta')
-        self.pars3 = tf.Variable(0., trainable=True, dtype=model_constants.DTYPE, name='gamma')
+        self.pars1 = tf.Variable(0, trainable=True, dtype=model_constants.DTYPE, name='beta')
+        self.pars2 = tf.Variable(-1/24, trainable=True, dtype=model_constants.DTYPE, name='delta')
+        self.pars3 = tf.Variable(0, trainable=True, dtype=model_constants.DTYPE, name='gamma')
 
     def call(self, input):
         E1_true, Hx1_true, Hy1_true, E2_true, Hx2_true, Hy2_true, E3_true, Hx3_true, Hy3_true = input
@@ -71,7 +71,7 @@ class DRP_LAYER(keras.layers.Layer):
         return E_2, Hx_2, Hy_2, E_3, Hx_3, Hy_3, E_4, Hx_4, Hy_4
 
 
-def loss_yee(name, beta, delta, gamma, test_data, C, norm='polar'):
+def loss_yee(name, beta, delta, gamma, test_data, C, norm='l2'):
     """'
     this function recieve analytic solution, solve the equation and compare it to analytical solution
     at each time step.
@@ -85,7 +85,8 @@ def loss_yee(name, beta, delta, gamma, test_data, C, norm='polar'):
     Hy = np.expand_dims(test_data['hy'][0], axis=(0, -1))
 
     error = 0.
-    for n in range(C.TIME_STEPS - 1):
+    for n in np.arange(0,C.TIME_STEPS-1,1):
+    # for n in range(C.TIME_STEPS - 1):
         E = amper(E, Hx, Hy, beta, delta, gamma, C)
         Hx, Hy = faraday(E, Hx, Hy, beta, delta, gamma, C)
         #    plt.plot(E1[0,:,10,0],'-')
@@ -94,15 +95,52 @@ def loss_yee(name, beta, delta, gamma, test_data, C, norm='polar'):
         # print(q)
 
         if norm == 'l2':
-            error += relative_norm(E[0, :, :, 0], test_data['e'][n + 1]) + \
-                     relative_norm(Hx[0, :, :, 0], test_data['hx'][n + 1]) + \
-                     relative_norm(Hy[0, :, :, 0], test_data['hy'][n + 1])
+            error += relative_norm(E[0, 1:-1, 1:-1, 0], test_data['e'][n + 1][1:-1,1:-1]) + \
+                     relative_norm(Hx[0, 1:-1, :, 0], test_data['hx'][n + 1][1:-1,:]) + \
+                     relative_norm(Hy[0, :, 1:-1, 0], test_data['hy'][n + 1][:,1:-1])
+            error=error/(3 * (C.TIME_STEPS - 1))
         else:
-            error += np.mean(abs(polar(E[0, :, :, 0])[0] - polar(test_data['e'][n + 1])[0]) ** 2) + \
-                     np.mean(abs(polar(Hx[0, :, :, 0])[0] - polar(test_data['hx'][n + 1])[0]) ** 2) + \
-                     np.mean(abs(polar(Hy[0, :, :, 0])[0] - polar(test_data['hy'][n + 1])[0]) ** 2)
 
-    return error / (3 * (C.TIME_STEPS - 1))
+            E_pred=tf.matmul(tf.reshape(E[0, 5:-5, 5:-5, 0],[-1,1]),
+                             tf.transpose(tf.reshape(E[0, 5:-5, 5:-5, 0],[-1,1])))
+            E_true=tf.matmul(tf.reshape(test_data['e'][n + 1][5:-5, 5:-5],[-1,1]),
+                             tf.transpose(tf.reshape(test_data['e'][n + 1][5:-5, 5:-5],[-1,1])))
+            Hx_pred = tf.matmul(tf.reshape(Hx[0, 5:-5, 5:-5, 0], [-1, 1]),
+                               tf.transpose(tf.reshape(Hx[0, 5:-5, 5:-5, 0], [-1, 1])))
+            Hx_true = tf.matmul(tf.reshape(test_data['hx'][n + 1][5:-5, 5:-5], [-1, 1]),
+                               tf.transpose(tf.reshape(test_data['hx'][n + 1][5:-5, 5:-5], [-1, 1])))
+            Hy_pred = tf.matmul(tf.reshape(Hy[0, 5:-5, 5:-5, 0], [-1, 1]),
+                               tf.transpose(tf.reshape(Hy[0, 5:-5, 5:-5, 0], [-1, 1])))
+            Hy_true = tf.matmul(tf.reshape(test_data['hy'][n + 1][5:-5, 5:-5], [-1, 1]),
+                               tf.transpose(tf.reshape(test_data['hy'][n + 1][5:-5, 5:-5], [-1, 1])))
+
+
+            # E = np.matmul(E, E.T)
+
+            de, u, v = tf.linalg.svd(E_pred, full_matrices=False, compute_uv=True)
+            dhx, u, v = tf.linalg.svd(Hx_pred, full_matrices=False, compute_uv=True)
+            dhy, u, v = tf.linalg.svd(Hy_pred, full_matrices=False, compute_uv=True)
+            detrue, u, v = tf.linalg.svd(E_true, full_matrices=False, compute_uv=True)
+            dhxtrue, u, v = tf.linalg.svd(Hx_true, full_matrices=False, compute_uv=True)
+            dhytrue, u, v = tf.linalg.svd(Hy_true, full_matrices=False, compute_uv=True)
+
+            error+= abs(tf.reduce_sum((1 - de) ** 2) - tf.reduce_sum((1 - detrue) ** 2)) \
+            +abs(tf.reduce_sum((1 - dhx) ** 2) - tf.reduce_sum((1 - dhxtrue) ** 2))+ \
+            abs(tf.reduce_sum((1 - dhy) ** 2) - tf.reduce_sum((1 - dhytrue) ** 2))
+
+            # error+=abs(frob_norm(polar(E[0, 5:-5, 5:-5, 0])[0], E[0, 5:-5, 5:-5, 0])- \
+            # frob_norm(polar(test_data['e'][n + 1][5:-5,5:-5])[0], test_data['e'][n + 1][5:-5,5:-5]))+ \
+            # abs(frob_norm(polar(Hx[0, 5:-5, 5:-5, 0])[0], Hx[0, 5:-5, 5:-5, 0]) - \
+            #     frob_norm(polar(test_data['hx'][n + 1][5:-5,5:-5])[0], test_data['hx'][n + 1][5:-5,5:-5]))+ \
+            # abs(frob_norm(polar(Hy[0, 5:-5, 5:-5, 0])[0], Hy[0, 5:-5, 5:-5, 0]) - \
+            #     frob_norm(polar(test_data['hy'][n + 1][5:-5,5:-5])[0], test_data['hy'][n + 1][5:-5,5:-5]))
+            # error = error / (3 * (C.TIME_STEPS - 3))
+            # error += np.sum(abs(polar(E[0, :, :, 0])[0]-polar(test_data['e'][n + 1])[0] )**2)+\
+            # np.sum(abs(polar(Hx[0, :, :, 0])[0] - polar(test_data['hx'][n + 1])[0]) ** 2)+ \
+            #          np.sum(abs(polar(Hy[0, :, :, 0])[0] - polar(test_data['hy'][n + 1])[0]) ** 2)
+
+
+    return error
 
 
 def amper(E, Hx, Hy, beta, delta, gamma, C):
@@ -177,9 +215,63 @@ def pad_function(input):
 
 
 def custom_loss(y_true, y_pred):
-    assert y_true.shape == y_pred.shape
-    # return tf.math.reduce_mean(abs(y_true[:, 5:-5, 3:-3, :] - y_pred[:, 3:-3, 3:-3, :])) / C.CFL
-    return tf.math.reduce_mean(abs((y_true - y_pred) )) / model_constants.CFL
+    #
+    # if y_true.shape[0]==None:
+    #     X1 = [tf.reduce_mean((abs(tf_polar(y_true[i,5 :-5, 5:-5, 0] - y_pred[i, 5:-5, 5:-5, 0])))) for i in
+    #          np.arange(0, 1)]
+    # else:
+    #
+    #    X1 = [abs(frob_norm(tf_polar(y_true[i, 5:-5, 5:-5, 0]), y_true[i, 5:-5, 5:-5, 0]) - \
+    #           frob_norm(tf_polar(y_pred[i, 5:-5, 5:-5, 0]), y_pred[i, 5:-5, 5:-5, 0])) \
+    #       for i in np.arange(0, int(y_true.shape[0]))
+    #       ]
+    return tf.math.reduce_mean(abs(y_true[0, 3:-3, 3:-3, 0] - y_pred[0, 3:-3, 3:-3, 0])**2)/model_constants.CFL \
+      # +tf.math.reduce_mean(X1)*model_constants.CFL
+
+
+    # assert y_true.shape == y_pred.shape
+    # if y_true.shape[0]==None:
+    #     X1 = [tf.reduce_mean((abs(tf_polar(y_true[i,5 :-5, 5:-5, 0] - y_pred[i, 5:-5, 5:-5, 0])))) for i in
+    #          np.arange(0, 1)]
+    #     X2=X1
+    # else:
+
+        # X1=tf_polar(sum([tf.matmul(tf.transpose(tf_polar(y_true[i,5 :-5, 5:-5, 0])), y_pred[i,5 :-5, 5:-5, 0])
+        #     for i in np.arange(0, int(y_true.shape[0]))]))
+        # X2=sum([frob_norm(tf_polar(y_pred[i,5:-5,5:-5,0]),tf.matmul(tf_polar(y_true[i,5:-5,5:-5,0]),X1))
+        #  for i in np.arange(0, int(y_true.shape[0]))])
+
+
+
+        #
+
+        # X1=[abs(tf_polar(y_true[i, 5:-5, 5:-5, 0])-tf_polar(y_pred[i, 5:-5, 5:-5, 0]))
+        #     for i in np.arange(0, int(y_true.shape[0]))]
+    # ytrue=tf.reshape(y_true[:,5:-5,5:-5,:],[-1,y_true[:,5:-5,5:-5,:].shape[1],1])
+    # dtrue, u, v = tf.linalg.svd(y_true[:, 5:-5, 5:-5, :], full_matrices=False, compute_uv=True)
+    # d, u, v = tf.linalg.svd(y_pred[:, 5:-5, 5:-5, :], full_matrices=False, compute_uv=True)
+    # X1=abs(tf.reduce_sum((1-dtrue)**2)-tf.reduce_sum((1-d)**2))
+
+        # X2=[frob_norm(y_true[i,5:-5,5:-5,0],y_pred[i,5:-5,5:-5,0])
+        #          for i in np.arange(0, int(y_true.shape[0]))]
+
+
+        # X1= [tf.reduce_mean((abs(tf_polar(y_true[i,5:-5,5:-5,0])-y_true[i,5:-5,5:-5,0])**2)) for i in np.arange(0, int(y_true.shape[0]))]
+        # X2=  [tf.reduce_mean((abs(tf_polar(y_pred[i,5:-5,5:-5,0])-y_pred[i,5:-5,5:-5,0])**2)) for i in np.arange(0, int(y_true.shape[0]))]
+        # X3=  [tf.reduce_mean((abs(tf_polar(y_pred[i,5:-5,5:-5,0])-y_pred[i,5:-5,5:-5,0])**2)) for i in np.arange(0, int(y_true.shape[0]))]
+
+    # return tf.reduce_mean(X1)
+
+           # +0*tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,:] - y_pred[:,5:-5,5:-5,:]))/model_constants.CFL
+        # tf.
+           # tf.math.reduce_mean(abs(y_true - y_pred))
+
+           # tf.math.reduce_mean(abs((y_true - y_pred)))/model_constants.CFL
+        # tf.math.reduce_mean(X1)+\
+        #    tf.math.reduce_mean(abs((y_true - y_pred)))/model_constants.CFL
+        # tf.reduce_mean(X1)+tf.reduce_mean(X2)+ \
+        #    tf.math.reduce_mean((y_true - y_pred)**2)+\
+
     # return tf.math.reduce_mean(abs(y_true[:,5:-5,5:-5,] - y_pred[:,5:-5,5:-5,:])) / C.DT
 
 
@@ -214,3 +306,8 @@ def fHY(FHY, m, T, omega, C):
     t = T + m * C.DT / 2
     z = np.sin(omega * t) * (1 / omega) * FHY
     return z[:, :-1, 1:-1]
+
+def tf_polar(A):
+    d, u, v = tf.linalg.svd(A, full_matrices=False, compute_uv=True)
+    # return tf.reduce_sum((1-d)**2)-frob_norm(A,tf.matmul(u, tf.transpose(v)))
+    return tf.matmul(u, tf.transpose(v))
