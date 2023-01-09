@@ -2,11 +2,15 @@ import pickle
 import time
 import os
 import tracemalloc
+import math
 
+import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
+from scipy.linalg import block_diag
 import numpy as np
 
 from DRP_multiple_networks.constants import Constants
-from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2
+from DRP_multiple_networks.auxilary.aux_functions import fE, fHX, fHY, dim_red1, dim_red2, chebyshev_nodes, compute_Q
 
 """
 This file is used to gennerate data for training and for evaluation
@@ -118,7 +122,8 @@ def create_train_data(gen_base, options):
     return 1
 
 
-def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS, X1=Constants.X1, X2=Constants.X2):
+def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS,
+                   X1=Constants.X1, X2=Constants.X2):
     """
     This function generate the base functions and their energy given by the modes in the file constants.k_train
     """
@@ -138,9 +143,9 @@ def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_
 
             B.set('e', fE(t, x, y, k1, k2, c))
 
-            B.set('hx', fHX(t , x, y, k1, k2, c, h))
+            B.set('hx', fHX(t, x, y, k1, k2, c, h))
 
-            B.set('hy', fHY(t , x, y, k1, k2, c, h))
+            B.set('hy', fHY(t, x, y, k1, k2, c, h))
             if k1 == k2:
                 B.set('energy', np.vstack([1.] * time_steps))
             else:
@@ -151,7 +156,8 @@ def generate_basis(name, h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_
     return 1
 
 
-def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS, X1=Constants.X1, X2=Constants.X2):
+def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constants.T, time_steps=Constants.TIME_STEPS,
+                     X1=Constants.X1, X2=Constants.X2):
     """
     test_data[e] is a list and each element is a base function of rank 3-(t,x,y)
     for test.
@@ -161,7 +167,7 @@ def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constant
     L1 = []
     L2 = []
     L3 = []
-    generate_basis('test', h,dt, t_f, time_steps, X1, X2)
+    generate_basis('test', h, dt, t_f, time_steps, X1, X2)
     for p in list(base_function.base_pathes['test']):
         with open(p, 'rb') as file:
             l = pickle.load(file)
@@ -175,11 +181,49 @@ def create_test_data(options='lt', h=Constants.DX, dt=Constants.DT, t_f=Constant
         test_data['hx'] = [sum(test_data['hx'])]
         test_data['hy'] = [sum(test_data['hy'])]
 
-
     pickle.dump(test_data, open(path + 'test/test_data.pkl', "wb"))
 
     return 1
 
 
 if __name__ == "__main__":
-    create_train_data(gen_base=True, options='nonlt')
+    n = 10
+    t_steps =10
+    dt = 1 / (t_steps - 1)
+    # e=np.random.uniform(0, math.pi, size=(n, 2))
+    X=np.linspace(0,math.pi,n+1)[0:-1]
+    Y=X
+    t, x, y = np.meshgrid(np.linspace(0, 1, t_steps), X, Y,
+                          indexing='ij')
+    k1=[3,5,7]
+    k2=[3,5,7]
+    Q=compute_Q(t, x, y, k1, k2, t_steps, n)
+
+    # Q_new=block_diag(Q, Q,Q,Q)
+    Q_new=Q
+    # Q_new=block_diag(Q_new, Q_new)
+
+    k1=6
+    k2=7
+
+
+    # e=np.random.uniform(0, math.pi, size=(n, 2))
+    X=np.linspace(0,math.pi,n+1)[0:-1]
+    Y=X
+    t_steps = 10
+    t, x, y = np.meshgrid(np.linspace(0, 1, t_steps), X, Y,
+                          indexing='ij')
+
+    E = fE(t, x, y, k1, k2).real
+    Hx = fHX(t, x, y, k1, k2).real
+    Hy = fHY(t, x, y, k1, k2).real
+    A = np.zeros((n * n * 3, t_steps - 1))
+    B = np.zeros((n * n * 3, t_steps - 1))
+    for ind in range(t_steps - 1):
+            A[:, ind] = np.concatenate((E[ind].flatten(), Hx[ind].flatten(), Hy[ind].flatten()))
+            B[:, ind] = np.concatenate((E[ind + 1].flatten(), Hx[ind + 1].flatten(), Hy[ind + 1].flatten()))
+
+    print(A.shape)
+    err=[np.mean((np.linalg.matrix_power(Q_new,k)@A[:,0]-B[:,k-1])**2) for k  in range(t_steps-1)][1:]
+    print(np.mean(err))
+    print(err)
