@@ -1,6 +1,7 @@
 import pickle
 import os
 import time
+import random
 
 from keras import callbacks
 import numpy as np
@@ -8,12 +9,17 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.python.keras.layers import Lambda
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 from DRP_multiple_networks.constants import model_constants, Constants
 from DRP_multiple_networks.data_generator import create_train_data
 from utils import DRP_LAYER, custom_loss, custom_loss_drp, custom_loss3
 from drp import calculate_DRP
 from DRP_multiple_networks.auxilary.drp2 import calculate_DRP2
+
+from datetime import datetime
+now = datetime.now() # current date and time
+date_time=datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
 
 path = model_constants.PATH
 
@@ -24,7 +30,21 @@ load train data:
 with open(path + 'train/input.pkl', 'rb') as file:
     net_input = pickle.load(file)
 with open(path + 'train/output.pkl', 'rb') as file:
-    net_output = pickle.load(file)
+    net_output1 = pickle.load(file)
+    net_output=net_output1[:-1]
+
+random.seed(0)
+index_test = random.sample(range(len(net_input[0])),int((net_input[0].shape)[0]/5))
+index_train=list(set(range(len(net_input[0])))-set(index_test))
+X_test=[net_input[i][index_test] for i in range(len(net_input))]
+Y_test=[net_output[i][index_test] for i in range(len(net_output))]
+X_train=[net_input[i][index_train] for i in range(len(net_input))]
+Y_train=[net_output[i][index_train] for i in range(len(net_output))]
+
+
+
+
+
 
 # matplotlib.use("TkAgg")
 l = {"N": model_constants.N, "CFL": model_constants.CFL}
@@ -34,6 +54,10 @@ model_details = {"name": 'dl(2,3)_all', "net_num": 1, "energy_loss": False, "div
 
 name = model_details["name"]
 saving_path = path + 'Experiment_' + name + '_details/'
+
+
+
+
 
 isExist = os.path.exists(saving_path)
 if not isExist:
@@ -107,7 +131,7 @@ for k in range(Constants.CROSS_VAL):
     model.save(saving_path + 'model.pkl')
     # 
     earlystopping = callbacks.EarlyStopping(monitor="val_loss",
-                                            mode="min", patience=20,
+                                            mode="min", patience=10,
                                             restore_best_weights=False)
 
     checkpoint_filepath = saving_path + 'model_weights_val_number_' + str(k) + '.pkl'
@@ -119,11 +143,12 @@ for k in range(Constants.CROSS_VAL):
         mode='min',
         save_best_only=True)
     # csv loger
-    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=20, min_lr=1e-9)
+    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=10, min_lr=1e-9)
     l = np.squeeze(net_output[-1] * 0)
 
+
     history = model.fit(
-        net_input, net_output[:-1]
+        X_train, Y_train
         # + [l]
         ,
         callbacks=[earlystopping, model_checkpoint_callback, reduce_lr],
@@ -141,6 +166,16 @@ plt.show()
 print("--- %s seconds ---" % (time.time() - start_time))
 
 model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
+
+with open(model_constants.TEXPATH+'model_weights'+date_time+'.txt', 'w') as fp:
+
+        fp.write(str(np.array(model.trainable_weights))+' & '+ 'model_weights'+ ' \\\\ '+"\n"
+                 + "\n" + str(model.evaluate(X_test, Y_test, batch_size=8)[0]) + ' & ' + 'model_test' + ' \\\\ ' + "\n"
+                 + "\n" +str(model_constants.CFL)+' & '+ 'model_cfl'+ ' \\\\ '+"\n"
+                 + "\n" + str(model_constants.N) + ' & ' + 'model_N' + ' \\\\ ' + "\n"
+                 + "\n" + str(model_constants.T) + ' & ' + 'model_T' + ' \\\\ ' + "\n"
+                 + "\n" + str(model_constants.K1_TRAIN) + ' & ' + 'model_k1_train' + ' \\\\ ' + "\n"
+                 )
 print(model.trainable_weights)
 '''
 ignore everything below

@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 # @dataclass(frozen=True)
 class Constants:
+    TEXPATH='/Users/idanversano/Documents/papers/compact_maxwell/data/'
     PATH = '/Users/idanversano/documents/pycharm/files/'
     FIGURES_PATH = '/Users/idanversano/documents/papers/drp/figures/'
     # PATH = '/home/ubuntu/files/'
@@ -17,13 +18,13 @@ class Constants:
     PI = math.pi
 
     CROSS_VAL = 1
-    EPOCHS = 600
-    BATCH_SIZE =8
+    EPOCHS = 100
+    BATCH_SIZE =4
     # K1_TRAIN = np.arange(17,20, 1)
     # K2_TRAIN = np.arange(17, 19, 1)
     #
-    K1_TRAIN = np.array([2,6,12,15])
-    K2_TRAIN = np.array([2,6,12,15])
+    K1_TRAIN = np.array([11,13,15])
+    K2_TRAIN = np.array([10,12,14])
 
     K1_DRP = np.arange(11, 20, 1)  # should be N
     K2_DRP = np.arange(11, 20, 1)
@@ -118,5 +119,5 @@ class Constants:
         self.KDOWN = tf.reverse(self.KUP, [0])
 
 
-model_constants = Constants(21, 1, 1,
-                            72, 0.001, 1.)
+model_constants = Constants(17, 1, 1,
+                            1/(6*(2**0.5)), 0.001, 1.)
