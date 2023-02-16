@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 # @dataclass(frozen=True)
 class Constants:
-    TEXPATH='/Users/idanversano/Documents/papers/compact_maxwell/data/'
+    TEXPATH='/Users/idanversano/Documents/papers/compact_maxwell/data/model_expeiments/'
     PATH = '/Users/idanversano/documents/pycharm/files/'
     FIGURES_PATH = '/Users/idanversano/documents/papers/drp/figures/'
     # PATH = '/home/ubuntu/files/'
@@ -18,7 +18,7 @@ class Constants:
     PI = math.pi
 
     CROSS_VAL = 1
-    EPOCHS = 100
+    EPOCHS = 2
     BATCH_SIZE =4
     # K1_TRAIN = np.arange(17,20, 1)
     # K2_TRAIN = np.arange(17, 19, 1)

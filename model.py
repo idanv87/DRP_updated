@@ -167,7 +167,7 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 model.load_weights(saving_path + 'model_weights_val_number_' + str(0) + '.pkl').expect_partial()
 
-with open(model_constants.TEXPATH+'model_weights'+date_time+'.txt', 'w') as fp:
+with open(model_constants.TEXPATH+'model_weights '+str(model_constants.CFL)+' '+date_time+'.txt', 'w') as fp:
 
         fp.write(str(np.array(model.trainable_weights))+' & '+ 'model_weights'+ ' \\\\ '+"\n"
                  + "\n" + str(model.evaluate(X_test, Y_test, batch_size=8)[0]) + ' & ' + 'model_test' + ' \\\\ ' + "\n"
@@ -175,6 +175,7 @@ with open(model_constants.TEXPATH+'model_weights'+date_time+'.txt', 'w') as fp:
                  + "\n" + str(model_constants.N) + ' & ' + 'model_N' + ' \\\\ ' + "\n"
                  + "\n" + str(model_constants.T) + ' & ' + 'model_T' + ' \\\\ ' + "\n"
                  + "\n" + str(model_constants.K1_TRAIN) + ' & ' + 'model_k1_train' + ' \\\\ ' + "\n"
+                 + "\n" + str(model_constants.K2_TRAIN) + ' & ' + 'model_k2_train' + ' \\\\ ' + "\n"
                  )
 print(model.trainable_weights)
 '''
