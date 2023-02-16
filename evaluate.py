@@ -22,12 +22,13 @@ path = Constants.PATH
 
 
 # var=calculate_DRP2()
+
 # print(var)
 # print(q)
 # var=-0.09153268
 # var=-0.08874854
-var2=[0,  -1/24, 0]
-# var2=[-0.47707667,  0.2893196,  -0.08318479]
+var2=[0,-0.05113776,0] # high
+
 
 models = {'Yee(2,0)': [0,0.,0], 'Yee(4,0)': [0,-1 / 24,0], 'drp(2,3)': var2, 'dl(2,1)': [],'dl(2,1)_all': [], 'dl(2,3)_all': [], 'dl(2,3)': [],
           'dl(4,1)': [], 'model_test': []}
@@ -75,14 +76,14 @@ def dr_calculator(names, save=(False,'False')):
     return 1
 
 
-def error_print(type, names, n=None, x=None, t=None, time_steps=None, k1_test=None, k2_test=None, solve=True, save=('False','False')):
+def error_print(type, names, n=None, x=None, t=None, cfl=None, k1_test=None, k2_test=None, solve=True, save=('False','False')):
     '''
     This function recieve model names to evaluate over
     test data
     '''
 
     if solve==True:
-        solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
+        solve_equation(names, n, x, t, cfl, k1_test, k2_test)
 
     with open(path + "figures/losses.pkl", 'rb') as file:
         loss = pickle.load(file)
@@ -123,16 +124,14 @@ def error_print(type, names, n=None, x=None, t=None, time_steps=None, k1_test=No
 
 
 # loop starts here
-def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
+def solve_equation(names, n, x, t, cfl, k1_test, k2_test):
     loss = dict((key, []) for key in list(names))
 
     for i in range(len(n)):
-        test_constants = Constants(n[i], x[i], t[i], time_steps[i], k1_test[i], k2_test[i])
+        test_constants = Constants(n[i], x[i], t[i], cfl[i], k1_test[i], k2_test[i])
         create_test_data(test_constants)
         with open(path + 'test/test_data.pkl', 'rb') as file:
             test_data = pickle.load(file)
-
-        data = {name: test_data[name][0] for name in list(test_data)}
         assert len(test_data['e'])==1
 
         data = {name: test_data[name][0] for name in list(test_data)}
@@ -171,18 +170,18 @@ def solve_equation(names, n, x, t, time_steps, k1_test, k2_test):
 # k1_test = [[43]]*6
 # k2_test = k1_test
 
-n = [17,33,65,129,257]
-x=[1]*5
-t = [1]*5
-time_steps = [33,65,129,257,513]
-k1_test = [[2]]*5
-k2_test = [[1]]*5
+n = [17]
+x=[1]
+t = [1]
+cfl = [0.1]
+k1_test = [[17]]*1
+k2_test = [[18]]*1
 
-names=['dl(2,3)_all']
+names=['dl(2,3)']
 #
 # dr_calculator(names, save=(True,'fig0001'))
 # print(q)
-error_print('time',names, n, x, t, time_steps, k1_test, k2_test, solve=True, save=(False,'fig36'))
+error_print('time',names, n, x, t, cfl, k1_test, k2_test, solve=True, save=(False,'fig36'))
 # solve_equation(names, n, x, t, time_steps, k1_test, k2_test)
 print(q)
 ######################################################

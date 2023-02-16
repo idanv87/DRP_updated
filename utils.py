@@ -225,7 +225,7 @@ def custom_loss(y_true, y_pred):
     #           frob_norm(tf_polar(y_pred[i, 5:-5, 5:-5, 0]), y_pred[i, 5:-5, 5:-5, 0])) \
     #       for i in np.arange(0, int(y_true.shape[0]))
     #       ]
-    return tf.math.reduce_mean(abs(y_true[0, 3:-3, 3:-3, 0] - y_pred[0, 3:-3, 3:-3, 0])**2)/model_constants.CFL \
+    return tf.math.reduce_mean((y_true[0, 3:-3, 3:-3, 0] - y_pred[0, 3:-3, 3:-3, 0])**2)/model_constants.CFL \
       # +tf.math.reduce_mean(X1)*model_constants.CFL
 
 

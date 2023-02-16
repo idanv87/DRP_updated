@@ -22,8 +22,8 @@ class Constants:
     # K1_TRAIN = np.arange(17,20, 1)
     # K2_TRAIN = np.arange(17, 19, 1)
     #
-    K1_TRAIN = np.array([1,17])
-    K2_TRAIN = np.array([1,17])
+    K1_TRAIN = np.array([2,6,12,15])
+    K2_TRAIN = np.array([2,6,12,15])
 
     K1_DRP = np.arange(11, 20, 1)  # should be N
     K2_DRP = np.arange(11, 20, 1)
@@ -49,19 +49,23 @@ class Constants:
     '''
     A = np.array([-23 / 24, 7 / 8, 1 / 8, -1 / 24, 0.]).reshape(1, 5)
 
-    def __init__(self, n, x, t, time_steps, k1_test, k2_test):
+    def __init__(self, n, x, t, cfl, k1_test, k2_test):
+
         self.XMAX = x
+        self.CFL = cfl
         self.N = n
-        self.TIME_STEPS = time_steps
         self.T = t
         self.K1_TEST = k1_test
         self.K2_TEST = k2_test
-        # self.TEST_NUM = len(self.K1_TEST) * len(self.K2_TEST)
 
-        self.DT = self.T / (self.TIME_STEPS - 1)
+        # self.TEST_NUM = len(self.K1_TEST) * len(self.K2_TEST)
         self.DX = self.XMAX / (self.N - 1)
         self.DY = self.XMAX / (self.N - 1)
-        self.CFL = self.DT / self.DX
+        self.DT = self.DX*self.CFL
+        self.TIME_STEPS=int(self.T/self.DT)
+
+
+
         self.X1 = np.linspace(0., self.XMAX, self.N)
         self.X2 = np.linspace(0., self.XMAX, self.N)
         self.X, self.Y = np.meshgrid(self.X1, self.X2, indexing='ij')
@@ -114,5 +118,5 @@ class Constants:
         self.KDOWN = tf.reverse(self.KUP, [0])
 
 
-model_constants = Constants(17, 1, 1,
-                            33, 1., 1.)
+model_constants = Constants(21, 1, 1,
+                            72, 0.001, 1.)
